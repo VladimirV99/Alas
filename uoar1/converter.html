@@ -7,31 +7,153 @@
   <script type="text/javascript" src="uoar_core.js"></script>
   <script>
 
+    var output = "";
+
+    function addToOutput(text){
+      output = output.concat(text + "\n");
+    }
+
+    function clearOutput(){
+      output = "";
+    }
+
     function calculate(){
       var val = document.getElementById('input').value;
       var base1 = document.getElementById('base_src').value;
       var base2 = document.getElementById('base_dest').value;
 
-      var res = convert(val, base1, base2);
+      clearStackTrace();
+      var res = convertBases(val, base1, base2, false, true);
 
-      document.getElementById("text1").innerHTML=res;
+      document.getElementById("text1").innerHTML=output;
     }
 
-    function convert(val, base1, base2){
-      if(!isValidBase(base1) || !isValidBase(base2)){
-        console.error("Invalid base");
+    function toDecimal(number, base, standardized=false, log=true){
+      if(!isValidBase(base)){
+        addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
+        return null;
+      } 
+      if(!standardized){
+        number = standardizeNumber(number, base, true);
+        if(number == null){
+          return null;
+        }
+      }
+      var work1 = "";
+      var work2 = "";
+      addToOutput("(" + number + ")" + base + " = ");
+      var temp;
+
+      var radix = number.split(/[.,]/);
+      var res = getSign(number, true);
+      var num_length = radix[0].length-1;
+      var decimal = 0;
+      var i = 0;
+      while(num_length>0){
+        temp = getValueAt(radix[0], i+1, log);
+        work1 = work1.concat(temp + "*" + base + "^" + (num_length-1));
+        temp = temp * Math.pow(base, num_length-1);
+        work2 = work2.concat(temp);
+        decimal += temp;
+        i++;
+        num_length--;
+        if(num_length>0){
+          work1 = work1.concat("+");
+          work2 = work2.concat("+");
+        }
+      }
+      res = res + decimal.toString();
+
+      if(radix.length==2){
+        var fraction = 0;
+        res = res.concat(".");
+        var frac_len = radix[1].length;
+        for(let i = 0; i<frac_len; i++){
+          temp = getValueAt(radix[1], i, log);
+          work1 = work1.concat(" + " + temp + "*" + base + "^(-" + (i+1) + ")");
+          work2 = work2.concat(" + " + temp + "/" + Math.pow(base, i+1));
+          fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(base, i+1)));
+        } 
+        res = res.concat(fraction.toString());
+      }
+      addToOutput(work1 + " = ");
+      addToOutput(work2 + " = ");
+      addToOutput("(" + res + ")10");
+      return trimNumber(res);
+    }
+
+    function convertBases(number, base_from, base_to, standardized=false, log=true){
+      if(!isValidBase(base_from) || !isValidBase(base_to)){
+        addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
         return null;
       }
-      var std_val = standardizeNumber(val, base1);
-      if(std_val==null){
-        return null;
+      var std_val;
+      if(!standardized){
+        std_val = standardizeNumber(number, base_from);
+        if(std_val==null){
+          addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
+          return null;
+        }
+      }else{
+        std_val = number;
       }
-      if(base1==base2){
+      if(base_from==base_to){
         return std_val;
       }
-      console.log(toDecimal(std_val, base1, true));
-      var res = fromDecimal(toDecimal(std_val, base1, true), base2, true);
-      console.log(res);
+      var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
+      if(res==null){
+        addToStackTrace("convertBases", "Conversion error, result null", log);
+      }
+      addToOutput(res);
+      return res;
+    }
+
+    function fromDecimal(number, base, standardized=false, log=true){
+      if(!isValidBase(base)){
+        addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
+        return null;
+      }
+      if(!standardized){
+        number = standardizeNumber(number, 10, true);
+        if(number == null){
+          addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
+          return null;
+        }
+      }
+      
+      var res = getSign(number, true);
+      var num_arr = [];
+
+      var radix = number.split(/[.,]/);
+
+      var whole = baseToDecimalInteger(radix[0], 10);
+      if(whole<0){
+        whole = -whole;
+      }
+      while(whole>0){
+        num_arr.push(toValue(whole%base));
+        whole = Math.floor(whole/base);
+      }
+      num_arr.reverse();
+      for(var i = 0; i<num_arr.length; i++){
+        res = res.concat(num_arr[i]);
+      }
+      
+      if(radix.length==2){
+        radix[1] = addZeroesAfter(radix[1], PRECISION);
+        var frac = baseToDecimalInteger(radix[1], 10);
+        res = res.concat(".");
+        var limit = 0;
+        var temp = 0;
+        while(frac>0 && limit<PRECISION){
+          frac = frac*base;
+          temp = Math.floor(frac/PRECISION_NUMBER);
+          frac -= temp*PRECISION_NUMBER;
+          res = res.concat(temp);
+          limit++;
+        }
+      }
+
       return res;
     }
 
@@ -41,7 +163,7 @@
       //console.log("TD-"+toDecimal("123", 10));
       //console.log("C-"+convert("7DE2", 16, 8));
       // console.log("FD2- " + getSign("-+-83.625", false));
-      console.log(testST());
+      //console.log(decimalTo8421("1236"));
     }
   </script>
 </head>

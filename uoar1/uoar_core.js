@@ -123,7 +123,8 @@ function isSignAt(number, index){
  * @returns {number} First index after the sign
  */
 function getSignEnd(number){
-  for(let i=0; i<number.length; i++){
+  var i;
+  for(i=0; i<number.length; i++){
     if(!isSignAt(number, i) && number.charAt(i)!=SPACE){
       break;
     }
@@ -251,6 +252,7 @@ function standardizeNumber(number, base, log=true){
     var res = number.replace(SPACE, "");
     res = trimSign(res);
     res = trimNumber(res);
+    // var num_length = radix[0].length-1;
     return res;
   }else{
     addToStackTrace("standardizeNumber", "Invalid number \"" + number + "\"", log);
@@ -334,6 +336,40 @@ function getSign(number, standardized=false){
 }
 
 /**
+ * Converts a string to an integer
+ * @param {string} number Number to convert 
+ * @param {number} base Base of the number
+ * @param {boolean} standardized Treat as standardized
+ * @param {boolean} log Should log
+ * @returns {number} Number converted to an integer
+ */
+function baseToDecimalInteger(number, base, standardized=false, log=true){
+  if(!isValidBase(base)){
+    addToStackTrace("baseToDecimalInteger", "Invalid base \"" + base + "\"");
+    return null;
+  } 
+  if(!standardized){
+    number = standardizeNumber(number, base, true);
+    if(number == null){
+      return null;
+    }
+  }
+
+  var radix = number.split(/[.,]/);
+  var num_length = radix[0].length-1;
+  var decimal = 0;
+  var i = 0;
+  while(num_length>0){
+    decimal += getValueAt(radix[0], num_length, log) * Math.pow(base,i);
+    i++;
+    num_length--;
+  }
+
+  decimal *= getSignMultiplier(number, standardized);
+  return decimal;
+}
+
+/**
  * Converts given nimber from given base to base 10
  * @param {string} number Standardized Signed Number to convert
  * @param {number} base Base to convert from
@@ -347,7 +383,6 @@ function toDecimal(number, base, standardized=false, log=true){
     return null;
   } 
   if(!standardized){
-    // number = trimSign(number);
     number = standardizeNumber(number, base, true);
     if(number == null){
       return null;
@@ -355,70 +390,24 @@ function toDecimal(number, base, standardized=false, log=true){
   }
 
   var radix = number.split(/[.,]/);
-  // if(!standardized){
-  //   if(radix.length>2){
-  //     if(log)
-  //       console.log("Conversion Error: Multiple Radix Points in \"" + number + "\"");
-  //     return null;
-  //   }
-  // }
-  
-  var res = number.charAt(0);
+  var res = getSign(number, true);
   var num_length = radix[0].length-1;
   var decimal = 0;
   let i = 0;
-  // if(standardized){
-    while(num_length>0){
-      decimal += getValueAt(radix[0], num_length, log) * Math.pow(base,i);
-      i++;
-      num_length--;
-    }
-  // }else{
-  //   let temp;
-  //   while(num_length>0){
-  //     temp = getValueAt(radix[0], num_length, log);
-  //     if(temp==null){
-  //       if(log)
-  //         console.error("Conversion Error: Unknown symbol \"" + radix[0].charAt(num_length) + "\" in \"" + number + "\"");
-  //       return null;
-  //     }else if(temp >= base){
-  //       if(log)
-  //         console.error("Conversion Error: Unknown symbol \"" + radix[0].charAt(num_length) + "\" in number \"" + number + "\" for base " + base);
-  //       return null;
-  //     }else{
-  //       decimal += temp * Math.pow(base,i);
-  //     }
-  //     i++;
-  //     num_length--;
-  //   }
-  // }
+  while(num_length>0){
+    decimal += getValueAt(radix[0], num_length, log) * Math.pow(base,i);
+    i++;
+    num_length--;
+  }
   res = res + decimal.toString();
 
   if(radix.length==2){
     var fraction = 0;
     res = res.concat(".");
     var frac_len = radix[1].length;
-    // if(standardized){
-      for(let i = 0; i<frac_len; i++){
-        fraction += (Math.floor(getValueAt(radix[1], i, log) * PRECISION_NUMBER / Math.pow(base, i+1)));
-      }
-    // }else{
-    //   let temp;
-    //   for(let i = 0; i<frac_len; i++){
-    //     temp = getValueAt(radix[1], i, log);
-    //     if(temp==null){
-    //       if(log)
-    //         console.error("Conversion Error: Unknown symbol \"" + radix[1].charAt(num_length) + "\" in \"" + number + "\"");
-    //       return null;
-    //     }else if(temp >= base){
-    //       if(log)
-    //         console.error("Conversion Error: Unknown symbol \"" + radix[1].charAt(num_length) + "\" in number \"" + number + "\" for base " + base);
-    //       return null;
-    //     }else{
-    //       fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(base, i+1)));
-    //     }
-    //   }
-    // }
+    for(let i = 0; i<frac_len; i++){
+      fraction += (Math.floor(getValueAt(radix[1], i, log) * PRECISION_NUMBER / Math.pow(base, i+1)));
+    }
     res = res.concat(fraction.toString());
   }
 
@@ -435,21 +424,14 @@ function toDecimal(number, base, standardized=false, log=true){
  */
 function fromDecimal(number, base, standardized=false, log=true){
   if(!isValidBase(base)){
-    error = "fromDecimal: Invalid base " + base;
-    error_message = error_message.concat(error);
-    if(log)
-      console.error(error);
+    addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
     return null;
   }
   if(!standardized){
-    if(!isNumberValid(number, 10)){
-      error = "fromDecimal: Invalid number \"" + number + "\" for base 10";
-      error_message = error_message.concat(error);
-      if(log)
-        console.error(error);
+    number = standardizeNumber(number, 10, true);
+    if(number == null){
+      addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
-    }else{
-      number = standardizeNumber(number, 10);
     }
   }
   
@@ -457,10 +439,6 @@ function fromDecimal(number, base, standardized=false, log=true){
   var num_arr = [];
 
   var radix = number.split(/[.,]/);
-  // if(radix.length>2){
-  //   console.log("Conversion Error: Multiple Radix Points in \"" + number + "\"");
-  //   return null;
-  // }
 
   var whole = baseToDecimalInteger(radix[0], 10);
   if(whole<0){
@@ -476,10 +454,7 @@ function fromDecimal(number, base, standardized=false, log=true){
   }
   
   if(radix.length==2){
-    if(radix[1].replace(SPACE, "").length>PRECISION){
-      radix[1] = radix[1].replace(SPACE, "").substr(0, PRECISION);
-    }
-    radix[1] = addZeroesAfter(radix[1], PRECISION); //TODO Trim to precision in standardize
+    radix[1] = addZeroesAfter(radix[1], PRECISION);
     var frac = baseToDecimalInteger(radix[1], 10);
     res = res.concat(".");
     var limit = 0;
@@ -496,157 +471,146 @@ function fromDecimal(number, base, standardized=false, log=true){
   return res;
 }
 
-function convertBases(number, base_from, base_to){
-  if(!isValidBase(base1) || !isValidBase(base2)){
-    console.error("Invalid base");
+/**
+ * Converts a number from base_from to base_to
+ * @param {string} number Number to convert 
+ * @param {number} base_from Base to convert from
+ * @param {number} base_to Base to convert to
+ * @param {boolean} [standardized=false] Treat as standardized 
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Number converted from base_from to base_to
+ */
+function convertBases(number, base_from, base_to, standardized=false, log=true){
+  if(!isValidBase(base_from) || !isValidBase(base_to)){
+    addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
     return null;
   }
-  var std_val = standardizeNumber(val, base1);
-  if(std_val==null){
-    return null;
+  var std_val;
+  if(!standardized){
+    std_val = standardizeNumber(number, base_from);
+    if(std_val==null){
+      addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
+      return null;
+    }
+  }else{
+    std_val = number;
   }
-  if(base1==base2){
+  if(base_from==base_to){
     return std_val;
   }
-  var res = fromDecimal(toDecimal(std_val, base1, true), base2, true);
+  var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
+  if(res==null){
+    addToStackTrace("convertBases", "Conversion error, result null", log);
+  }
   return res;
 }
 
-function baseToDecimalInteger(number, base, standardized=false, log=true){
-  if(!standardized)
-    number = trimSign(number);
-
-  var radix = number.split(/[.,]/);
-  if(!standardized){
-    if(radix.length>2){
-      error = "Multiple Radix Points in \"" + number + "\"";
-      error_message = error_message.concat("Conversion Error: " + error);
-      if(log)
-        console.log("Conversion Error: " + error);
-      return null;
-    }
-  }
-
-  var num_length = radix[0].length-1;
-  var decimal = 0;
-  var i = 0;
-  var temp;
-  while(num_length>0){
-    temp = getValueAt(radix[0], num_length, log);
-    if(temp==null){
-
-      console.error("Conversion Error: Unknown symbol \"" + number.charAt(num_length) + "\" in \"" + number + "\"");
-      return null;
-    }else if(temp >= base){
-      console.error("Conversion Error: Unknown symbol \"" + number.charAt(num_length) + "\" in number \"" + number + "\" for base " + base);
-      return null;
-    }else{
-      decimal += temp * Math.pow(base,i);
-    }
-    i++;
-    num_length--;
-  }
-
-  decimal *= getSignMultiplier(number, standardized);
-  return decimal;
-}
-
-function addZeroesAfter(number, total){
-  var offset = 0;
-  if(hasSign(number)){
-    for(let i=0; i<number.length; i++){
-      if(isSignAt(number, i))//TODO Make getSignEnd(number);
-        offset++;
-      else {
-        break;
-      }
-    }
-  }
-  console.log("t2 - " + number + " " + offset);
-
-  var toAdd = total - number.substr(offset).replace(/[.,]/, "").length;
-  console.log("aza " + number.substr(offset).replace(/[.,]/, "") + " " + number.substr(offset).replace(/[.,]/, "").length);
-
+/**
+ * Adds zeroes after the number to specified length
+ * @param {string} number Number to add zeroes to
+ * @param {number} length Length of the number to return 
+ * @returns {string} Number with the specified length with zeroes at the end
+ */
+function addZeroesAfter(number, length){
+  var offset = getSignEnd(number);
+  var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
+  var res = number;
   if(toAdd>0){
     for(let i=0; i<toAdd; i++){
-      number = number.concat("0");
-    }
-  }
-  return number;
-}
-
-function addZeroesBefore(number, total){
-  var offset = 0;
-  if(hasSign(number)){
-    for(i=0; i<number.length; i++){
-      if(number[i]=='-' || number[i]=='+')//TODO Make isSign(number, pos) and getSignEnd(number);
-        offset++;
-      else {
-        break;
-      }
-    }
-  }
-
-
-  var res = "";
-  var toAdd = total - number.substr(offset).replace(/[.,]/, "").length;
-  console.log(total + " " + number.substr(offset).replace(/[.,]/, "") + " " + toAdd);
-
-  if(toAdd<0)
-    return number;
-
-  for(i = 0; i<number.length; i++){
-    if(number[i] != '+' && number[i]!='-'){
-      for(j=0; j<toAdd; j++){
-        res+="0";
-      }
-      res += number.substr(i);
-      break;
-    }else{
-      res += number[i];
+      res = res.concat("0");
     }
   }
   return res;
 }
 
-
-
-
-
-
-
-function digitToBinary(digit){
-  val = getValueAt(digit, 0);
-  //console.log(val);
-  if(val>9)
-    return null;
-  var arr = [];
-  while(val >0){
-
-    arr.push((val%2).toString());
-    //console.log(arr);
-    val = Math.floor(val/2);
+/**
+ * Adds zeroes before the number to specified length
+ * @param {string} number Number to add zeroes to
+ * @param {number} length Length of the number to return 
+ * @returns {string} Number with the specified length with zeroes at the beginning
+ */
+function addZeroesBefore(number, length){
+  var offset = getSignEnd(number);
+  var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
+  var res = number;
+  if(toAdd>0){
+    res = number.substr(0, offset);
+    for(let i=0; i<toAdd; i++){
+      res = res.concat("0");
+    }
+    res = res.concat(number.substr(offset));
   }
-  //console.log(arr.reverse().join(""));
-  if(arr.length==0){
-    return "0000";
-  }else
-  return addZeroesBefore(arr.reverse().join(""), 4);
+  return res;
 }
 
-function decimalTo8421(number){
+/**
+ * Converts the specified digit from the number to binary
+ * @param {string} number Number whose digit to convert
+ * @param {number} index Index of the digit to convert
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Digit converted to binary
+ */
+function digitToBinary(number, index, log=true){
+  val = getValueAt(number, index);
+  if(val==null){
+    addToStackTrace("digitToBinary", "Invalid digit \"" + number.charAt(index) + "\"", log);
+    return null;
+  }
+  var arr = [];
+  while(val >0){
+    arr.push((val%2).toString());
+    val = Math.floor(val/2);
+  }
+  if(arr.length==0){
+    return "0";
+  }
+  return arr.reverse().join("");
+}
+
+/**
+ * Converts the given number to binary
+ * @param {number} number Number to convert
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Number converted to binary
+ */
+function numberToBinary(number, log=true){
+  if(number<0){
+    addToStackTrace("numberToBinary", "Negative number to convert", log);
+    return null;
+  }
+  var arr = [];
+  while(number >0){
+    arr.push((number%2).toString());
+    number = Math.floor(number/2);
+  }
+  if(arr.length==0){
+    return "0";
+  }
+  return arr.reverse().join("");
+}
+
+/**
+ * Convert given decimal number to 8421
+ * @param {string} number Decimal number to convert
+ * @param {boolean} log Should log
+ * @returns Number converted to 8421 
+ */
+function decimalTo8421(number, log=true){
   var res = "";
-  var limit = 5;
-  var c = 0;
-  for(v=0; v<number.length; v++){
-    if(c==limit)
+  var temp;
+  for(let i=0; i<number.length; i++){
+    temp = getValueAt(number, i);
+    if(temp>9){
+      addToStackTrace("decimalTo8421", "Value out of bounds", log);
       return null;
-    temp = digitToBinary(number[v]);
-    console.log(v + " " + number[v] + " " + temp);
-    if(temp == null)
+    }
+    temp = numberToBinary(temp);
+    if(temp==null){
+      addToStackTrace("decimalTo8421", "Invalid digit \"" + number.charAt(i) + "\"", log);
       return null;
+    }
+    temp = addZeroesBefore(temp, 4);
     res += temp;
-    c++;
   }
   return res;
 }
