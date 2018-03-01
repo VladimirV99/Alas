@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Konverter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="uoar_core.js"></script>
+  <script>
+
+    function calculate(){
+      var val = document.getElementById('input').value;
+      var base1 = document.getElementById('base_src').value;
+      var base2 = document.getElementById('base_dest').value;
+
+      var res = convert(val, base1, base2);
+
+      document.getElementById("text1").innerHTML=res;
+    }
+
+    function convert(val, base1, base2){
+      if(!isValidBase(base1) || !isValidBase(base2)){
+        console.error("Invalid base");
+        return null;
+      }
+      var std_val = standardizeNumber(val, base1);
+      if(std_val==null){
+        return null;
+      }
+      if(base1==base2){
+        return std_val;
+      }
+      console.log(toDecimal(std_val, base1, true));
+      var res = fromDecimal(toDecimal(std_val, base1, true), base2, true);
+      console.log(res);
+      return res;
+    }
+
+    function test(){
+      //console.log("GV-" + getValueAt("1DEE", 4));
+      //console.log("TN-"+trimSign("--+-+--123"));
+      //console.log("TD-"+toDecimal("123", 10));
+      //console.log("C-"+convert("7DE2", 16, 8));
+      // console.log("FD2- " + getSign("-+-83.625", false));
+      console.log(testST());
+    }
+  </script>
+</head>
+<body>
+
+  <div class="container" id="main">
+
+    <p>Pretvoriti broj: </p>
+    <input type="text" id="input"></input>
+    <p>Iz sistema: </p>
+    <input type="number" id="base_src"></input>
+    <p>U sistem: </p>
+    <input type="number" id="base_dest"></input>
+    <br><br>
+    <input value="Izracunaj" type="button" name="calc" id="calc" onclick="calculate()"></input>
+
+    <p id="text1">
+      resenje
+    </p>
+
+    <input value="Test" type="button" name="test" id="test" onclick="test()"></input>
+
+
+  </div>
+
+</body>
+</html>
