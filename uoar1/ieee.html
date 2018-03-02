@@ -318,45 +318,46 @@ return res;
     }
 
     function DPDtoDecimal(number){
-      if(number.length!=10)
-      return null; //do recursion if number%10==0
+      if(!isNumberValid(number, 2)){
+        addToStackTrace("DPDtoDecimal", "Invalid number \"" + number + "\"", true);
+        return null;
+      }
 
-      vwxst = number[6] + number[7] + number[8] + number[3] + number[4];
-
-var res =  "";
-      if(vwxst[0]=="0"){
-        res += "0" + number.substr(0, 3) + "0" + number.substr(3, 3) + "0" + number.substr(7,3);
-      }else {
-        temp = vwxst.substr(1,2);
+      var res =  "";
+      
+      if(number.length<10){
+        number = addZeroesBefore(number, 10);
+      }else if(number.length>10){
+        console.log(number.substr(0, number.length-10));
+        res = res.concat(DPDtoDecimal(number.substr(0, number.length-10)));
+      }
+ 
+      vwxst = number.substr(6, 3) + number.substr(3, 2);
+      if(vwxst.charAt(0)=="0"){
+        res = res.concat("0" + number.substr(0, 3) + "0" + number.substr(3, 3) + "0" + number.substr(7,3));
+      }else{
+        let temp = vwxst.substr(1,2);
         if(temp=="00"){
-          res += "0" + number.substr(0, 3) + "0" + number.substr(3, 3) + "100" + number[9];
+          res = res.concat("0" + number.substr(0, 3) + "0" + number.substr(3, 3) + "100" + number.charAt(9));
         }else if(temp=="01"){
-          res += "0" + number.substr(0, 3) + "100" + number[5] + "0" + number.substr(3,2) + number[9];
+          res = res.concat("0" + number.substr(0, 3) + "100" + number.charAt(5) + "0" + number.substr(3,2) + number.charAt(9));
         }else if(temp=="10"){
-          res += "100" + number[2] + "0" + number.substr(3, 3) + "0" + number.substr(0, 2) + number[9];
+          res = res.concat("100" + number.charAt(2) + "0" + number.substr(3, 3) + "0" + number.substr(0, 2) + number.charAt(9));
         }else{
           temp = vwxst.substr(3,2);
           if(temp=="00"){
-            res += "100" + number[2] + "100" + number[5] + "0" + number.substr(0, 2) + number[9];
+            res = res.concat("100" + number.charAt(2) + "100" + number.charAt(5) + "0" + number.substr(0, 2) + number.charAt(9));
           }else if(temp=="01"){
-            res += "100" + number[2] + "0" + number.substr(0, 2) + number[5] + "100" + number[9];
+            res = res.concat("100" + number.charAt(2) + "0" + number.substr(0, 2) + number.charAt(5) + "100" + number.charAt(9));
           }else if(temp=="10"){
-            res += "0" + number.substr(0, 3) + "100" + number[5] + "100" + number[9];
+            res = res.concat("0" + number.substr(0, 3) + "100" + number.charAt(5) + "100" + number.charAt(9));
           }else{
-            res += "100"+number[2]+"100"+number[5]+"100"+number[8];
+            res = res.concat("100" + number.charAt(2) + "100" + number.charAt(5) + "100" + number.charAt(9));
           }
         }
       }
+
       return res;
-    }
-
-
-    function divide(dividend, divisor, base){
-
-    }
-
-    function addSigned(add1, add2, base){
-
     }
 
     function test(){
@@ -376,9 +377,9 @@ var res =  "";
       //console.log("bcd1 - " + digitToBinary("7"));
        // console.log("bcd2 - " + decimalTo8421("678"));
       // console.log("toDPD - " + decimalToDPD("100101101000")); // 111 010 1 110
-      // console.log("fromDPD - " + DPDtoDecimal("1110101110"));
+      console.log("fromDPD - " + DPDtoDecimal("11110101110"));
       //console.log("normailzeDec - " + normalizeDecimal("-10101000.00110"));
-      console.log("normailzeDec - " + getNormailzeExponentDecimal("-246.8957"));
+      // console.log("normailzeDec - " + getNormailzeExponentDecimal("-246.8957"));
       //console.log("getNormailzeExponent - " + getNormailzeExponentDecimal("-10101000.00"));
     }
   </script>

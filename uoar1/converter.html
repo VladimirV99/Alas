@@ -23,6 +23,7 @@
       var base2 = document.getElementById('base_dest').value;
 
       clearStackTrace();
+      clearOutput();
       var res = convertBases(val, base1, base2, false, true);
 
       document.getElementById("text1").innerHTML=output;
@@ -32,12 +33,15 @@
       if(!isValidBase(base)){
         addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
         return null;
-      } 
+      }
       if(!standardized){
         number = standardizeNumber(number, base, true);
         if(number == null){
           return null;
         }
+      }
+      if(base==10){
+        return number;
       }
       var work1 = "";
       var work2 = "";
@@ -120,17 +124,25 @@
           return null;
         }
       }
+      if(base==10){
+        return number;
+      }
       
       var res = getSign(number, true);
       var num_arr = [];
 
       var radix = number.split(/[.,]/);
 
+      var work1 = "";
+      var work2 = "";
+
       var whole = baseToDecimalInteger(radix[0], 10);
       if(whole<0){
         whole = -whole;
       }
       while(whole>0){
+        work1 = work1.concat("<td>" + Math.floor(whole/base) + "</td>");
+        work2 = work2.concat("<td>" + (whole%base) + "</td>");
         num_arr.push(toValue(whole%base));
         whole = Math.floor(whole/base);
       }
@@ -138,6 +150,16 @@
       for(var i = 0; i<num_arr.length; i++){
         res = res.concat(num_arr[i]);
       }
+      addToOutput("<table>");
+      addToOutput("<tr>");
+      addToOutput(work1);
+      addToOutput("</tr>");
+      addToOutput("<tr>");
+      addToOutput(work2);
+      addToOutput("</tr>");
+      addToOutput("</table>");
+
+      
       
       if(radix.length==2){
         radix[1] = addZeroesAfter(radix[1], PRECISION);
@@ -145,25 +167,33 @@
         res = res.concat(".");
         var limit = 0;
         var temp = 0;
+        work1 = "<td>" + trimNumber("0."+frac.toString()) + "</td>";
+        work2 = "<td>" + temp + "</td>";
         while(frac>0 && limit<PRECISION){
           frac = frac*base;
           temp = Math.floor(frac/PRECISION_NUMBER);
           frac -= temp*PRECISION_NUMBER;
+          work1 = work1.concat("<td>" + trimNumber("0."+frac.toString()) + "</td>");
+          work2 = work2.concat("<td>" + temp + "</td>");
           res = res.concat(temp);
           limit++;
         }
       }
 
+      addToOutput("<table>");
+      addToOutput("<tr>");
+      addToOutput(work1);
+      addToOutput("</tr>");
+      addToOutput("<tr>");
+      addToOutput(work2);
+      addToOutput("</tr>");
+      addToOutput("</table>");
+
       return res;
     }
 
     function test(){
-      //console.log("GV-" + getValueAt("1DEE", 4));
-      //console.log("TN-"+trimSign("--+-+--123"));
-      //console.log("TD-"+toDecimal("123", 10));
-      //console.log("C-"+convert("7DE2", 16, 8));
-      // console.log("FD2- " + getSign("-+-83.625", false));
-      //console.log(decimalTo8421("1236"));
+      
     }
   </script>
 </head>

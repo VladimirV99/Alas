@@ -132,6 +132,10 @@ function getSignEnd(number){
   return i;
 }
 
+function removeSign(){
+  //TODO For checks in IEEE/DPD
+}
+
 /**
  * Checks if a number is valid
  * @param {string} number Number to validate
@@ -215,7 +219,7 @@ function trimNumber(number){
     if(isSign(number.charAt(i))){
       res = res.concat(number.charAt(i));
       continue;
-    }else if(number.charAt(i)!='0' || (number.charAt(i)=='0' && number.length > i && isSign(number.charAt(i+1)))){
+    }else if(number.charAt(i)!='0' || (number.charAt(i)=='0' && number.length > i && isRadixPoint(number.charAt(i+1)))){
       res = res.concat(number.substr(i));
       break;
     }
@@ -231,9 +235,9 @@ function trimNumber(number){
       }
     }
     if(i+1>PRECISION){
-      res = res.substr(0,i+1);
-    }else{
       res = res.substr(0,PRECISION);
+    }else{
+      res = res.substr(0,i+1);
     }
   }
 
@@ -388,6 +392,9 @@ function toDecimal(number, base, standardized=false, log=true){
       return null;
     }
   }
+  if(base==10){
+    return number;
+  }
 
   var radix = number.split(/[.,]/);
   var res = getSign(number, true);
@@ -433,6 +440,9 @@ function fromDecimal(number, base, standardized=false, log=true){
       addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
     }
+  }
+  if(base==10){
+    return number;
   }
   
   var res = getSign(number, true);
