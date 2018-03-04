@@ -35,8 +35,9 @@
         return null;
       }
       if(!standardized){
-        number = standardizeNumber(number, base, true);
+        number = standardizeNumber(number, base, log);
         if(number == null){
+          addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
           return null;
         }
       }
@@ -67,7 +68,7 @@
         }
       }
       res = res + decimal.toString();
-
+      
       if(radix.length==2){
         var fraction = 0;
         res = res.concat(".");
@@ -86,39 +87,13 @@
       return trimNumber(res);
     }
 
-    function convertBases(number, base_from, base_to, standardized=false, log=true){
-      if(!isValidBase(base_from) || !isValidBase(base_to)){
-        addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
-        return null;
-      }
-      var std_val;
-      if(!standardized){
-        std_val = standardizeNumber(number, base_from);
-        if(std_val==null){
-          addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
-          return null;
-        }
-      }else{
-        std_val = number;
-      }
-      if(base_from==base_to){
-        return std_val;
-      }
-      var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
-      if(res==null){
-        addToStackTrace("convertBases", "Conversion error, result null", log);
-      }
-      addToOutput(res);
-      return res;
-    }
-
     function fromDecimal(number, base, standardized=false, log=true){
       if(!isValidBase(base)){
         addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
         return null;
       }
       if(!standardized){
-        number = standardizeNumber(number, 10, true);
+        number = standardizeNumber(number, 10, log);
         if(number == null){
           addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
           return null;
@@ -159,8 +134,6 @@
       addToOutput("</tr>");
       addToOutput("</table>");
 
-      
-      
       if(radix.length==2){
         radix[1] = addZeroesAfter(radix[1], PRECISION);
         var frac = baseToDecimalInteger(radix[1], 10);
@@ -174,12 +147,11 @@
           temp = Math.floor(frac/PRECISION_NUMBER);
           frac -= temp*PRECISION_NUMBER;
           work1 = work1.concat("<td>" + trimNumber("0."+frac.toString()) + "</td>");
-          work2 = work2.concat("<td>" + temp + "</td>");
-          res = res.concat(temp);
+          work2 = work2.concat("<td>" + toValue(temp) + "</td>");
+          res = res.concat(toValue(temp));
           limit++;
         }
       }
-
       addToOutput("<table>");
       addToOutput("<tr>");
       addToOutput(work1);
@@ -189,6 +161,32 @@
       addToOutput("</tr>");
       addToOutput("</table>");
 
+      return res;
+    }
+
+    function convertBases(number, base_from, base_to, standardized=false, log=true){
+      if(!isValidBase(base_from) || !isValidBase(base_to)){
+        addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
+        return null;
+      }
+      var std_val;
+      if(!standardized){
+        std_val = standardizeNumber(number, base_from, log);
+        if(std_val==null){
+          addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
+          return null;
+        }
+      }else{
+        std_val = number;
+      }
+      if(base_from==base_to){
+        return std_val;
+      }
+      var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
+      if(res==null){
+        addToStackTrace("convertBases", "Conversion error, result null", log);
+      }
+      addToOutput(res);
       return res;
     }
 

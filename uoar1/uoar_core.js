@@ -84,13 +84,14 @@ function toValue(value, log = true){
 }
 
 /**
- * Checks if the given string is a radix point
- * @param {string} character Char to check
- * @returns {boolean} true if character is a radix point, false otherwise
+ * Checks if the given string has a radix point at specified index
+ * @param {string} number Number to check
+ * @param {number} index Index to check at
+ * @returns {boolean} true if number has a radix point at index, false otherwise
  */
-function isRadixPoint(character){
+function isRadixPointAt(number, index){
   for(let radix of RADIX){
-    if(character==radix){
+    if(number.charAt(index)==radix){
       return true;
     }
   }
@@ -98,19 +99,28 @@ function isRadixPoint(character){
 }
 
 /**
+ * Checks if the given string is a radix point
+ * @param {string} character Character to check
+ * @returns {boolean} true if character is a radix point, false otherwise
+ */
+function isRadixPoint(character){
+  return isRadixPointAt(character, 0);
+}
+
+/**
  * Checks if the given string is a sign
- * @param {string} char Char to check
+ * @param {string} character Character to check
  * @returns {boolean} true if character is a sign, false otherwise
  */
-function isSign(char){
-  return isSignAt(char, 0);
+function isSign(character){
+  return isSignAt(character, 0);
 }
 
 /**
  * Checks if the given string has a sign at specified index
  * @param {string} number Number to check
  * @param {number} index Index to check at
- * @returns {boolean} true if character is a sign, false otherwise
+ * @returns {boolean} true if number has a sign at index, false otherwise
  */
 function isSignAt(number, index){
   var temp = number.charAt(index);
@@ -219,7 +229,7 @@ function trimNumber(number){
     if(isSign(number.charAt(i))){
       res = res.concat(number.charAt(i));
       continue;
-    }else if(number.charAt(i)!='0' || (number.charAt(i)=='0' && number.length > i && isRadixPoint(number.charAt(i+1)))){
+    }else if(number.charAt(i)!='0' || (number.charAt(i)=='0' && number.length > i && isRadixPointAt(number, i+1))){
       res = res.concat(number.substr(i));
       break;
     }
@@ -228,17 +238,13 @@ function trimNumber(number){
     let i;
     for(i=res.length-1; i>=0; i--){
       if(res.charAt(i)!='0'){
-        if(isRadixPoint(res.charAt(i))){
+        if(isRadixPointAt(res, i)){
           i--;
         }
         break;
       }
     }
-    if(i+1>PRECISION){
-      res = res.substr(0,PRECISION);
-    }else{
-      res = res.substr(0,i+1);
-    }
+    res = res.substr(0,i+1);
   }
 
   return res;
@@ -252,14 +258,17 @@ function trimNumber(number){
  * @returns {string} Standardized number
  */
 function standardizeNumber(number, base, log=true){
+  if(!isValidBase(base)){
+    addToStackTrace("standardizeNumber", "Invalid base \"" + base + "\"", log);
+    return null;
+  }
   if(isNumberValid(number, base)){
     var res = number.replace(SPACE, "");
     res = trimSign(res);
     res = trimNumber(res);
-    // var num_length = radix[0].length-1;
     return res;
   }else{
-    addToStackTrace("standardizeNumber", "Invalid number \"" + number + "\"", log);
+    addToStackTrace("standardizeNumber", "Invalid number \"" + number + "\" for base " + base, log);
     return null;
   }
 }
@@ -353,7 +362,7 @@ function baseToDecimalInteger(number, base, standardized=false, log=true){
     return null;
   } 
   if(!standardized){
-    number = standardizeNumber(number, base, true);
+    number = standardizeNumber(number, base, log);
     if(number == null){
       return null;
     }
@@ -387,8 +396,9 @@ function toDecimal(number, base, standardized=false, log=true){
     return null;
   } 
   if(!standardized){
-    number = standardizeNumber(number, base, true);
+    number = standardizeNumber(number, base, log);
     if(number == null){
+      addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
       return null;
     }
   }
@@ -417,7 +427,6 @@ function toDecimal(number, base, standardized=false, log=true){
     }
     res = res.concat(fraction.toString());
   }
-
   return trimNumber(res);
 }
 
@@ -435,7 +444,7 @@ function fromDecimal(number, base, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number = standardizeNumber(number, 10, true);
+    number = standardizeNumber(number, 10, log);
     if(number == null){
       addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
@@ -497,7 +506,7 @@ function convertBases(number, base_from, base_to, standardized=false, log=true){
   }
   var std_val;
   if(!standardized){
-    std_val = standardizeNumber(number, base_from);
+    std_val = standardizeNumber(number, base_from, log);
     if(std_val==null){
       addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
       return null;
@@ -518,10 +527,15 @@ function convertBases(number, base_from, base_to, standardized=false, log=true){
 /**
  * Adds zeroes after the number to specified length
  * @param {string} number Number to add zeroes to
- * @param {number} length Length of the number to return 
+ * @param {number} length Length of the number to return
+ * @param {boolean} [log=true] Should log
  * @returns {string} Number with the specified length with zeroes at the end
  */
-function addZeroesAfter(number, length){
+function addZeroesAfter(number, length, log=true){
+  if(number==null){
+    addToStackTrace("addZeroesAfter", "Number is null", log);
+    return null;
+  }
   var offset = getSignEnd(number);
   var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
   var res = number;
@@ -536,10 +550,15 @@ function addZeroesAfter(number, length){
 /**
  * Adds zeroes before the number to specified length
  * @param {string} number Number to add zeroes to
- * @param {number} length Length of the number to return 
+ * @param {number} length Length of the number to return
+ * @param {boolean} [log=true] Should log
  * @returns {string} Number with the specified length with zeroes at the beginning
  */
-function addZeroesBefore(number, length){
+function addZeroesBefore(number, length, log=true){
+  if(number==null){
+    addToStackTrace("addZeroesBefore", "Number is null", log);
+    return null;
+  }
   var offset = getSignEnd(number);
   var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
   var res = number;
@@ -610,7 +629,7 @@ function decimalTo8421(number, log=true){
   var temp;
   for(let i=0; i<number.length; i++){
     temp = getValueAt(number, i);
-    if(temp>9){
+    if(temp>15){
       addToStackTrace("decimalTo8421", "Value out of bounds", log);
       return null;
     }
