@@ -27,15 +27,14 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
   if(std_exponent==null){
     addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_exponent + "\" for base 10", log);
     return null;
-  }exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
+  }
+  exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
   if(exponent>127 || exponent<-126){
     addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
   
   significand = normalizeBinary(significand, true, log);
-
-  console.log(significand + " * 2 ^ " + exponent);
 
   var res = "";
   if(significand.charAt(0)==MINUS){
@@ -82,15 +81,14 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
   if(std_exponent==null){
     addToStackTrace("convertToIEEE754Binary64", "Invalid number \"" + std_exponent + "\" for base 10", log);
     return null;
-  }exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
+  }
+  exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
   if(exponent>1023 || exponent<-1022){
     addToStackTrace("convertToIEEE754Binary64", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
   significand = normalizeBinary(significand, true, log);
-  
-  console.log(significand + " * 2 ^ " + exponent);
 
   var res = "";
   if(significand.charAt(0)==MINUS){
@@ -136,15 +134,14 @@ function convertToIEEE754Decimal32(significand, exponent, standardized=false, lo
   if(std_exponent==null){
     addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_exponent + "\" for base 10", log);
     return null;
-  }exponent = std_exponent + getNormalizeExponentDecimal(significand, true, log); 
+  }
+  exponent = std_exponent + getNormalizeExponentDecimal(significand, true, log); 
   if(exponent>96 || exponent<-95){
     addToStackTrace("convertToIEEE754Decimal32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
   significand = addZeroesBefore(normalizeDecimal(significand, true, log), 7);
-
-  console.log(significand + " * 10 ^ " + exponent);
 
   var res = "";
   if(significand.charAt(0)==MINUS){
@@ -200,15 +197,14 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
   if(std_exponent==null){
     addToStackTrace("convertToIEEE754Hexadecimal32", "Invalid number \"" + std_exponent + "\" for base 10", log);
     return null;
-  }exponent = std_exponent + getNormalizeExponentHexadecimal(significand, true, log); 
+  }
+  exponent = std_exponent + getNormalizeExponentHexadecimal(significand, true, log); 
   if(exponent>63 || exponent<-64){
     addToStackTrace("convertToIEEE754Hexadecimal32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
   significand = normalizeHexadecimal(significand, true, log);
-  
-  console.log(significand + " * 16 ^ " + exponent);
 
   var res = "";
   if(significand.charAt(0)==MINUS){
