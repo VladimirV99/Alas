@@ -10,26 +10,6 @@ var RADIX = ['.', ','];
 var PRECISION = 8;
 var PRECISION_NUMBER = Math.pow(10, PRECISION);
 
-var error = "";
-var error_message = "";
-
-function executeFunction(fun){
-  clearStackTrace();
-  fun();
-}
-
-var stackTrace = [];
-
-function addToStackTrace(source, message, log=true){
-  stackTrace.push({"source": source, "message": message});
-  if(log)
-    console.error(source + ": " + message);
-}
-
-function clearStackTrace(){
-  stackTrace = [];
-}
-
 /**
  * Converts the character at the given index of the given string to its Decimal Value.
  * @param {string} number The Number
@@ -602,9 +582,9 @@ function digitToBinary(number, index, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted to binary
  */
-function numberToBinary(number, log=true){
+function digitToBinary(number, log=true){
   if(number<0){
-    addToStackTrace("numberToBinary", "Negative number to convert", log);
+    addToStackTrace("digitToBinary", "Negative number to convert", log);
     return null;
   }
   var arr = [];
@@ -619,10 +599,36 @@ function numberToBinary(number, log=true){
 }
 
 /**
+ * Converts the given number from binary
+ * @param {string} number Number to convert
+ * @param {boolean} [log=true] Should log
+ * @returns {number} Number converted from binary
+ */
+function binaryToDigit(number, log=true){
+  if(!isNumberValid(number, 2)){
+    addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
+    return null;
+  }
+  var res = 0;
+  var power = 0;
+  var temp;
+  for(let i=number.length-1; i>=0; i--){
+    temp = getValueAt(number, i);
+    if(temp==null){
+      addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
+      return null;
+    }
+    res += temp * Math.pow(2, power);
+    power++;
+  }
+  return res;
+}
+
+/**
  * Convert given decimal number to 8421
  * @param {string} number Decimal number to convert
  * @param {boolean} log Should log
- * @returns Number converted to 8421 
+ * @returns {string} Number converted to 8421 
  */
 function decimalTo8421(number, log=true){
   var res = "";
@@ -633,13 +639,38 @@ function decimalTo8421(number, log=true){
       addToStackTrace("decimalTo8421", "Value out of bounds", log);
       return null;
     }
-    temp = numberToBinary(temp);
+    temp = digitToBinary(temp);
     if(temp==null){
       addToStackTrace("decimalTo8421", "Invalid digit \"" + number.charAt(i) + "\"", log);
       return null;
     }
     temp = addZeroesBefore(temp, 4);
     res += temp;
+  }
+  return res;
+}
+
+/**
+ * Convert given 8421 number to decimal
+ * @param {string} number 8421 number to convert
+ * @param {boolean} log Should log
+ * @returns {string} Number converted to decimal 
+ */
+function decimalFrom8421(number, log=true){
+  var res = "";
+  var temp = 0;
+  for(let i=0; i<number.length; i+=4){
+    temp = binaryToDigit(number.substr(i, 4));
+    if(temp==null){
+      addToStackTrace("decimalFrom8421", "Invalid number", log);
+      return null;
+    }
+    if(temp>15){
+      addToStackTrace("decimalFrom8421", "Digit out of bounds", log);
+      return null;
+    }
+    temp = toValue(temp, log);
+    res = res.concat(temp);
   }
   return res;
 }

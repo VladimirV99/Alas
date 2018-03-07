@@ -27,12 +27,21 @@
       document.getElementById("text1").innerHTML=output;
     }
 
-    function calculateDecimal32(){
+    function calculateDecimal32DPD(){
       var significand = document.getElementById('significand').value;
       var exponent = document.getElementById('exponent').value;
       clearStackTrace();
       clearOutput();
-      var res = convertToIEEE754Decimal32(significand, exponent);
+      var res = convertToIEEE754Decimal32DPD(significand, exponent);
+      document.getElementById("text1").innerHTML=output;
+    }
+
+    function calculateDecimal32BID(){
+      var significand = document.getElementById('significand').value;
+      var exponent = document.getElementById('exponent').value;
+      clearStackTrace();
+      clearOutput();
+      var res = convertToIEEE754Decimal32BID(significand, exponent);
       document.getElementById("text1").innerHTML=output;
     }
 
@@ -163,12 +172,12 @@
       return res;
     }
 
-    function convertToIEEE754Decimal32(significand, exponent, standardized=false, log=true){
+    function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false, log=true){
       var work1 = "";
       if(!standardized){
         let std_significand = standardizeNumber(significand, 10, log);
         if(std_significand==null){
-          addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_significand + "\" for base 2", log);
+          addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_significand + "\" for base 10", log);
           return null;
         }
         significand = std_significand;
@@ -207,9 +216,8 @@
 
       res = res.concat(SPACE);
       var na = addZeroesBefore(digitToBinary(significand, 1), 4);
-      var temp = addZeroesBefore(fromDecimal(trimSign((101+exponent).toString()), 2, true, log), 8).substr(1);
       var nb = addZeroesBefore(fromDecimal(trimSign((101+exponent).toString()), 2, true, log), 8).substr(1);
-      addToOutput("eksp: " + exponent.toString() + " + 101 = " + (101+exponent) + " = (" + temp + ")2 <br>");
+      addToOutput("eksp: " + exponent.toString() + " + 101 = " + (101+exponent) + " = (" + nb + ")2 <br>");
       if(na.charAt(0)=='0'){
         addToOutput("komb: " + nb.substr(0,2) + " " + na.substr(1,3) + " " + nb.substr(2,6) + "<br>");
         res = res.concat(nb.substr(0,2)+na.substr(1,3)+nb.substr(2,6));
@@ -227,7 +235,7 @@
       addToOutput("</tr>");
       addToOutput("<tr>");
       for(let i=0; i<6; i++){
-        addToOutput("<td>" + addZeroesBefore(digitToBinary(significand, 2+i), 4) + "</td>");
+        addToOutput("<td>" + addZeroesBefore(digitToBinary(significand.charAt(2+i)), 4) + "</td>");
       }
       addToOutput("</tr>");
       var nc1 = decimalToDPD(decimalTo8421(significand.substr(2, 3)));
@@ -236,6 +244,70 @@
       addToOutput("</table><br>");
       var nc = nc1 + nc2;
       res = res.concat(nc);
+      
+      addToOutput(res);
+      return res;
+    }
+
+    function convertToIEEE754Decimal32BID(significand, exponent, standardized=false, log=true){
+      var work1 = "";
+      if(!standardized){
+        let std_significand = standardizeNumber(significand, 10, log);
+        if(std_significand==null){
+          addToStackTrace("convertToIEEE754Decimal32BID", "Invalid number \"" + std_significand + "\" for base 10", log);
+          return null;
+        }
+        significand = std_significand;
+      }
+      work1 = work1.concat(significand.charAt(0) + "(" + significand.substr(1) + ")10");
+
+      let std_exponent = baseToDecimalInteger(exponent, 10, false, log);
+      if(std_exponent==null){
+        addToStackTrace("convertToIEEE754Decimal32BID", "Invalid number \"" + std_exponent + "\" for base 10", log);
+        return null;
+      }
+      work1 = work1.concat(" * 10^" + std_exponent);
+      exponent = std_exponent + getNormalizeExponentDecimal(significand, true, log); 
+      if(exponent>96 || exponent<-95){
+        addToStackTrace("convertToIEEE754Decimal32BID", "Exponent out of bounds \"" + exponent + "\"", log);
+        return null;
+      }
+      
+      significand = normalizeDecimal(significand, true, log);
+      
+
+      addToOutput(work1 + " = ");
+      addToOutput(significand.charAt(0) + "(" + significand.substr(1) + ")10 * 10^" + exponent + "<br>");
+
+      significand = addZeroesBefore(fromDecimal(significand, 2, true, log), 24);
+      if(significand.length>25){
+        addToStackTrace("convertToIEEE754Decimal32BID", "Significand out of bounds \"" + significand + "\"", log);
+        return null;
+      }
+
+      addToOutput(significand.charAt(0) + "(" + significand.substr(1) + ")2 * 10^" + exponent + "<br>");      
+
+      var res = "";
+      if(significand.charAt(0)==MINUS){
+        res = res.concat("1");
+      }else{
+        res = res.concat("0");
+      }
+
+      res = res.concat(SPACE);
+      var na = significand.substr(1,4);
+      var nb = addZeroesBefore(fromDecimal(trimSign((101+exponent).toString()), 2), 8).substr(1);
+      addToOutput("eksp: " + exponent.toString() + " + 101 = " + (101+exponent) + " = (" + nb + ")2 <br>");
+      if(na.charAt(0)=='0'){
+        addToOutput("komb: " + nb + " " + na.substr(1,3) + "<br>");
+        res = res.concat(nb+na.substr(1,3));
+      }else{
+        addToOutput("komb: 11 " + nb + " " + na.charAt(3));
+        res = res.concat("11"+nb+na.charAt(3));
+      }
+
+      res = res.concat(SPACE);
+      res = res.concat(significand.substr(5));
       
       addToOutput(res);
       return res;
@@ -300,6 +372,69 @@
       return res;
     }
 
+    function calculateDecimalBinary32(){
+      var ieee = document.getElementById('ieee').value;
+      clearStackTrace();
+      clearOutput();
+      var res = convertFromIEEE754Binary32(ieee);
+      document.getElementById("text2").innerHTML=output;
+    }
+
+    function convertFromIEEE754Binary32(number, log=true){
+      if(!isValidIEEE754(number, 32)){
+        addToStackTrace("convertFromIEEE754Binary32", "Invalid IEEE754 Binary32 number \"" + number + "\"", log);
+        return null;
+      }
+
+      var res = getSpecialValueBinary32(number);
+      if(res!=null){
+        addToOutput("specijalna vrednost: " + res.value + "<br>");
+        return res;
+      }
+
+      var significand = "";
+      if(number.charAt(0)=="1"){
+        significand = significand.concat("-");
+      }else{
+        significand = significand.concat("+");
+      }
+
+      var exponent = baseToDecimalInteger(number.substr(1, 8), 2);
+      addToOutput("eksp: (" + number.substr(1, 8) + ")2 - 127 = " + exponent + " - 127 = ");
+      exponent -= 127;
+      addToOutput(exponent + "<br>");
+
+      if(exponent==-127){
+        addToOutput("subnormalan broj<br>");
+        let temp = trimNumber(significand+"0."+number.substr(9, 23));
+        exponent += 1+getNormalizeExponentBinary(temp, true, log);
+        significand = normalizeBinary(temp);
+        addToOutput("(" + temp + ")2 * 2^" + exponent + " = " + "(" + significand + ")2 * 2^" + exponent + "<br>");
+      }else{
+        significand = trimNumber(significand.concat("1."+number.substr(9, 23)));
+        addToOutput("frakc: (" + significand + ")2<br>");
+      }
+
+      addToOutput("(" + significand + ")2 * 2^" + exponent + " = ");
+      var arr = significand.split(/[.,]/);
+      if(arr.length==2){
+        if(arr[1].length>5){
+          exponent -= arr[1].length-5;
+          arr = (arr[0] + arr[1].slice(0, arr[1].length-5) + "." + arr[1].slice(arr[1].length-5)).split(/[.,]/);
+          significand = arr.join(".");
+        }else if(arr[1].length<5){
+          exponent -= arr[1].length;
+          significand = arr.join("");
+        }
+      }
+      
+      significand = toDecimal(significand, 2);
+
+      res = {"significand": significand, "exponent": exponent, "special": false};
+      addToOutput("(" + significand + ")2 * 2^" + exponent + "<br>");
+      return res;
+    }
+
     function test(){
     }
   </script>
@@ -314,14 +449,23 @@
     <br><br>
     <input value="Izracunaj binary32" type="button" name="calc" id="calc" onclick="calculateBinary32()"></input>
     <input value="Izracunaj binary64" type="button" name="calc2" id="calc2" onclick="calculateBinary64()"></input>
-    <input value="Izracunaj decimal32" type="button" name="calc3" id="calc3" onclick="calculateDecimal32()"></input>
-    <input value="Izracunaj hexadecimal32" type="button" name="calc4" id="calc4" onclick="calculateHexadecimal32()"></input>
+    <input value="Izracunaj decimal32 DPD" type="button" name="calc3" id="calc3" onclick="calculateDecimal32DPD()"></input>
+    <input value="Izracunaj decimal32 BID" type="button" name="calc4" id="calc4" onclick="calculateDecimal32BID()"></input>
+    <input value="Izracunaj hexadecimal32" type="button" name="calc5" id="calc5" onclick="calculateHexadecimal32()"></input>
 
     <p id="text1">
       resenje
     </p>
 
     <input value="Test" type="button" name="test" id="test" onclick="test()"></input>
+
+    <hr>
+
+    <input type="text" name="ieee" id="ieee"></input>
+    <input type="button" name="calc6" id = "calc6" value="From binary32" onclick="calculateDecimalBinary32()"></input>
+    <p id="text2">
+      resenje
+    </p>
 
   </div>
 
