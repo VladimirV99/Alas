@@ -88,15 +88,6 @@ function isRadixPoint(character){
 }
 
 /**
- * Checks if the given string is a sign
- * @param {string} character Character to check
- * @returns {boolean} true if character is a sign, false otherwise
- */
-function isSign(character){
-  return isSignAt(character, 0);
-}
-
-/**
  * Checks if the given string has a sign at specified index
  * @param {string} number Number to check
  * @param {number} index Index to check at
@@ -105,6 +96,15 @@ function isSign(character){
 function isSignAt(number, index){
   var temp = number.charAt(index);
   return temp==PLUS || temp==MINUS;
+}
+
+/**
+ * Checks if the given string is a sign
+ * @param {string} character Character to check
+ * @returns {boolean} true if character is a sign, false otherwise
+ */
+function isSign(character){
+  return isSignAt(character, 0);
 }
 
 /**
@@ -122,8 +122,20 @@ function getSignEnd(number){
   return i;
 }
 
-function removeSign(){
+/**
+ * Removes sign from number
+ * @param {string} number Number to remove sign from
+ * @returns {string} Number without the sign
+ */
+function removeSign(number){ 
   //TODO For checks in IEEE/DPD
+  var i;
+  for(i=0; i<number.length; i++){
+    if(!isSignAt(number, i)){
+      break;
+    }
+  }
+  return number.substr(i);
 }
 
 /**

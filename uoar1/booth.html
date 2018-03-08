@@ -5,89 +5,99 @@
   <title>Butov Algoritam</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="uoar_core.js"></script>
+  <script type="text/javascript" src="output.js"></script>
   <script>
     function calculate() {
       document.getElementById("text1").innerHTML=
-      convertToBinary(document.getElementById('multiplicand').value)
+      signedToTC(fromDecimal(document.getElementById('multiplicand').value, 2), 2)
       +" * "+
-      convertToBinary(document.getElementById('multiplier').value);
+      signedToTC(fromDecimal(document.getElementById('multiplier').value, 2), 2);
     }
 
-    function convertToBinary(x){
-      console.log(x);
-
-      var sign = "0";
-      var ret = "";
-      var num_length = 0;
-
-      if(x<0){
-        sign="1";
-        x = -x;
+    function signedToTC(number, base, standardized=false, log=true){
+      var res = "";
+      if(getSign(number, standardized)==MINUS){
+        res = res.concat("0");
+      }else{
+        res = res.concat(toValue(base-1));
       }
-
-      var deg = 1;
-      while(deg<=x){
-        deg = deg*2;
-      }
-      deg = deg/2;
-
-      while(deg>=1){
-
-        if(x>=deg){
-          ret = ret.concat("1");
-          x = x - deg;
-        } else {
-          ret = ret.concat("0");
-        }
-
-        num_length++;
-        deg = deg/2;
-      }
-        console.log("2 " + num_length + " " + ret);
-
-      var sign_c = 0;
-      var sign_counter = 8-((num_length+1)%8);
-      var new_sign = sign;
-      while(sign_c<sign_counter){
-        new_sign = new_sign.concat(sign);
-        sign_c++;
-      }
-        console.log("3 " + sign + " " + sign_counter);
-
-      ret = new_sign.concat(ret);
-      return ret;
+      res = res.concat(number.substr(getSignEnd(number)));
+      return res;
     }
+
+    // function convertToBinary(x){
+    //   console.log(x);
+
+    //   var sign = "0";
+    //   var ret = "";
+    //   var num_length = 0;
+
+    //   if(x<0){
+    //     sign="1";
+    //     x = -x;
+    //   }
+
+    //   var deg = 1;
+    //   while(deg<=x){
+    //     deg = deg*2;
+    //   }
+    //   deg = deg/2;
+
+    //   while(deg>=1){
+
+    //     if(x>=deg){
+    //       ret = ret.concat("1");
+    //       x = x - deg;
+    //     } else {
+    //       ret = ret.concat("0");
+    //     }
+
+    //     num_length++;
+    //     deg = deg/2;
+    //   }
+    //     console.log("2 " + num_length + " " + ret);
+
+    //   var sign_c = 0;
+    //   var sign_counter = 8-((num_length+1)%8);
+    //   var new_sign = sign;
+    //   while(sign_c<sign_counter){
+    //     new_sign = new_sign.concat(sign);
+    //     sign_c++;
+    //   }
+    //     console.log("3 " + sign + " " + sign_counter);
+
+    //   ret = new_sign.concat(ret);
+    //   return ret;
+    // }
 
     // function toBinary(number){
     //   number = trimSign(number);
     // }
 
 
-    function toLenSigned(num, base, n, m){
-      // if(n+m+1<num.length){
-      //   return null;
-      // }
-      //res = num[0];
+    function toLenSigned(number, base, n, m, log=true){
+      //TODO trimSignedNumber(number);
+      // number = trimNumber(number);
       var res = "";
-
-      arr = num.split(/[.,]/);
-      whole = removeSign(arr[0]); //TODO add Standardize number (unsig, sig) to validate and trim sign and add 0 before radix
-      console.log("pp " + whole);
-      if(whole.length < n-m){
-        res += addSignBefore(whole, base, n-m);
-      } else if(whole.length > n-m){
-        console.log("Cant trim too big number");
+      var arr = number.split(/[.,]/);
+      if(arr.length>2){
+        addToStackTrace("toLenSigned", "Multiple radix points", log);
         return null;
       }
-      if(m>0){
-        frac="";
-        if(arr.length>1)
-          frac = arr[1];
-        res += "."
+      var whole = removeSign(arr[0]);
+      if(whole.length < n-m){
+        res = res.concat(addSignBefore(whole, base, n-m));
+      } else if(whole.length > n-m){
+        addToStackTrace("toLenSigned", "Can't trim. Number is too large", log);
+        return null;
+      }
+      if(m>0 && arr.length==2){
+        var frac = arr[1];
+        res = res.concat(".");
         if(frac.length<m){
-          res += addZeroesAfter(frac, m);
+          res = res.concat(addZeroesAfter(frac, m));
         }else if(frac.length > m){
-          res += frac.substr(0, m);
+          res = res.concat(frac.substr(0, m));
         }
       }
       return res;
@@ -120,16 +130,6 @@
         }
       }
       return res;
-    }
-
-    function removeSign(num){
-      for(i = 0; i<num.length; i++){
-        if(num[i]!='+' && num[i]!='-'){
-          break;
-        }
-      }
-      console.log("e - " + i + " " + num.substr(i));
-      return num.substr(i);
     }
 
     function addSignBefore(number, base, total){
@@ -368,7 +368,7 @@
 
     function test(){
       //console.log("ToLenUns - " + toLenUnsigned("92.001", 8, 4));
-      //console.log("ToLenS - " + toLenSigned("92.001", 10, 8, 4));
+      console.log("ToLenS - " + toLenSigned("00092.0010", 10, 8, 4));
       // console.log("addSignedTC - " + addSignedTC("FF17", "0A4", 16));
       //console.log("compTC  - " + complementTC("FA1E4", 16));
       // console.log("shiftRightA - " + shiftRightA("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
@@ -377,9 +377,9 @@
       // console.log("shiftLeft - " + shiftLeft("11011101", 3, "01")); //TODO Remove spaces when reading numbers
 
 
-      console.log(isNumberValid("+-1233.33388", 9));
-      console.log(isNumberValid("+-+--12333.33889F", 15));
-      console.log(isRadixPoint(',') + " " + isRadixPoint('f') +" " +  isRadixPoint('.'));
+      // console.log(isNumberValid("+-1233.33388", 9));
+      // console.log(isNumberValid("+-+--12333.33889F", 15));
+      // console.log(isRadixPoint(',') + " " + isRadixPoint('f') +" " +  isRadixPoint('.'));
     }
 
   </script>
