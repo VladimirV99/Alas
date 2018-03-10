@@ -185,7 +185,7 @@ function isValidUOARNumber(number){
     // if(!isRadixPoint(temp)){
       if(temp!=SPACE){
         temp = getValue(temp, false);
-        if(temp==null || temp>=base){
+        if(temp==null || temp>=number.base){
           return false;
         }
       }
@@ -201,7 +201,7 @@ function isValidUOARNumber(number){
     temp = number.fraction.charAt(i);
       if(temp!=SPACE){
         temp = getValue(temp, false);
-        if(temp==null || temp>=base){
+        if(temp==null || temp>=number.base){
           return false;
         }
       }
@@ -244,7 +244,9 @@ function isValidNumber(number, base){
 function runTests(){
   clearStackTrace();
   var tests = [];
-  tests.push({"test": toUOARNumber("+-+003.140", 5, true), "result": {"sign":"-","whole":"3","fraction":"14","number_type":NumberTypes.SIGNED,"base":5}});
+  // tests.push({"test": toUOARNumber("+-+003.140", 5, true), "result": {"sign":"-","whole":"3","fraction":"14","number_type":NumberTypes.SIGNED,"base":5}});
+  console.log(toDecimal(toUOARNumber("-10.1", 2, true)));
+
 
   for(test of tests){
     console.log(test.test);
@@ -414,11 +416,11 @@ function trimNumber(number){
  * @returns {string} Standardized number
  */
 function standardizeNumber(number, log=true){
-  // if(!isValidBase(number.base)){
-  //   addToStackTrace("standardizeNumber", "Invalid base \"" + base + "\"", log);
-  //   return null;
-  // }
-  if(isNumberValid(number)){
+  if(!isValidBase(number.base)){
+    addToStackTrace("standardizeNumber", "Invalid base \"" + number.base + "\"", log);
+    return null;
+  }
+  if(isValidUOARNumber(number)){
     // var res = number.replace(SPACE, "");
     number.whole = number.whole.replace(SPACE, "");
     number.fraction = number.fraction.replace(SPACE, "");
@@ -548,43 +550,53 @@ function baseToDecimalInteger(number, base, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted to base 10
  */
-function toDecimal(number, base, standardized=false, log=true){
-  if(!isValidBase(base)){
-    addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
-    return null;
-  } 
+function toDecimal(number, standardized=false, log=true){
+  // if(!isValidBase(base)){
+  //   addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
+  //   return null;
+  // } 
   if(!standardized){
-    number = standardizeNumber(number, base, log);
+    number = standardizeNumber(number, log);
     if(number == null){
       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
       return null;
     }
   }
-  if(base==10){
+  if(number.base==10){
     return number;
   }
 
-  var radix = number.split(/[.,]/);
-  var res = getSign(number, true);
-  var num_length = radix[0].length-1;
+  // var radix = number.split(/[.,]/);
+  // var res = getSign(number, true);
+  var res = new Object();
+  res.base = 10;
+  res.number_type = NumberTypes.SIGNED;
+  res.sign = number.sign;
+
+
+  // var num_length = radix[0].length-1;
+  var num_length = number.whole.length-1;
   var decimal = 0;
   let i = 0;
-  while(num_length>0){
-    decimal += getValueAt(radix[0], num_length, log) * Math.pow(base,i);
+  while(num_length>=0){
+    console.log(decimal + " " + num_length + " " + number.whole);
+    decimal += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
     i++;
     num_length--;
   }
-  res = res + decimal.toString();
+  res.whole = decimal.toString();
+  // res = res + decimal.toString();
 
-  if(radix.length==2){
+  // if(radix.length==2){
     var fraction = 0;
-    res = res.concat(".");
-    var frac_len = radix[1].length;
+    // res = res.concat(".");
+    var frac_len = number.fraction.length;
     for(let i = 0; i<frac_len; i++){
-      fraction += (Math.floor(getValueAt(radix[1], i, log) * PRECISION_NUMBER / Math.pow(base, i+1)));
+      fraction += (Math.floor(getValueAt(number.fraction, i, log) * PRECISION_NUMBER / Math.pow(number.base, i+1)));
     }
-    res = res.concat(fraction.toString());
-  }
+    // res = res.concat(fraction.toString());
+    res.fraction = fraction.toString();
+  // }
   return trimNumber(res);
 }
 
@@ -657,7 +669,7 @@ function fromDecimal(number, base, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted from base_from to base_to
  */
-function convertBases(number, base_from, base_to, standardized=false, log=true){
+function convertBases(number, base_to, log=true){
   if(!isValidBase(base_from) || !isValidBase(base_to)){
     addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
     return null;

@@ -20,63 +20,63 @@
       document.getElementById("text1").innerHTML=output;
     }
 
-    function toDecimal(number, base, standardized=false, log=true){
-      if(!isValidBase(base)){
-        addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
-        return null;
-      }
-      if(!standardized){
-        number = standardizeNumber(number, base, log);
-        if(number == null){
-          addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
-          return null;
-        }
-      }
-      if(base==10){
-        return number;
-      }
-      var work1 = "";
-      var work2 = "";
-      addToOutput("(" + number + ")" + base + " = ");
-      var temp;
+    // function toDecimal(number, base, standardized=false, log=true){
+    //   if(!isValidBase(base)){
+    //     addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
+    //     return null;
+    //   }
+    //   if(!standardized){
+    //     number = standardizeNumber(number, base, log);
+    //     if(number == null){
+    //       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
+    //       return null;
+    //     }
+    //   }
+    //   if(base==10){
+    //     return number;
+    //   }
+    //   var work1 = "";
+    //   var work2 = "";
+    //   addToOutput("(" + number + ")" + base + " = ");
+    //   var temp;
 
-      var radix = number.split(/[.,]/);
-      var res = getSign(number, true);
-      var num_length = radix[0].length-1;
-      var decimal = 0;
-      var i = 0;
-      while(num_length>0){
-        temp = getValueAt(radix[0], i+1, log);
-        work1 = work1.concat(temp + "*" + base + "^" + (num_length-1));
-        temp = temp * Math.pow(base, num_length-1);
-        work2 = work2.concat(temp);
-        decimal += temp;
-        i++;
-        num_length--;
-        if(num_length>0){
-          work1 = work1.concat("+");
-          work2 = work2.concat("+");
-        }
-      }
-      res = res + decimal.toString();
+    //   var radix = number.split(/[.,]/);
+    //   var res = getSign(number, true);
+    //   var num_length = radix[0].length-1;
+    //   var decimal = 0;
+    //   var i = 0;
+    //   while(num_length>0){
+    //     temp = getValueAt(radix[0], i+1, log);
+    //     work1 = work1.concat(temp + "*" + base + "^" + (num_length-1));
+    //     temp = temp * Math.pow(base, num_length-1);
+    //     work2 = work2.concat(temp);
+    //     decimal += temp;
+    //     i++;
+    //     num_length--;
+    //     if(num_length>0){
+    //       work1 = work1.concat("+");
+    //       work2 = work2.concat("+");
+    //     }
+    //   }
+    //   res = res + decimal.toString();
       
-      if(radix.length==2){
-        var fraction = 0;
-        res = res.concat(".");
-        var frac_len = radix[1].length;
-        for(let i = 0; i<frac_len; i++){
-          temp = getValueAt(radix[1], i, log);
-          work1 = work1.concat(" + " + temp + "*" + base + "^(-" + (i+1) + ")");
-          work2 = work2.concat(" + " + temp + "/" + Math.pow(base, i+1));
-          fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(base, i+1)));
-        } 
-        res = res.concat(fraction.toString());
-      }
-      addToOutput(work1 + " = ");
-      addToOutput(work2 + " = ");
-      addToOutput("(" + res + ")10");
-      return trimNumber(res);
-    }
+    //   if(radix.length==2){
+    //     var fraction = 0;
+    //     res = res.concat(".");
+    //     var frac_len = radix[1].length;
+    //     for(let i = 0; i<frac_len; i++){
+    //       temp = getValueAt(radix[1], i, log);
+    //       work1 = work1.concat(" + " + temp + "*" + base + "^(-" + (i+1) + ")");
+    //       work2 = work2.concat(" + " + temp + "/" + Math.pow(base, i+1));
+    //       fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(base, i+1)));
+    //     } 
+    //     res = res.concat(fraction.toString());
+    //   }
+    //   addToOutput(work1 + " = ");
+    //   addToOutput(work2 + " = ");
+    //   addToOutput("(" + res + ")10");
+    //   return trimNumber(res);
+    // }
 
     function fromDecimal(number, base, standardized=false, log=true){
       if(!isValidBase(base)){
