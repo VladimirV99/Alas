@@ -10,6 +10,24 @@ var RADIX = ['.', ','];
 var PRECISION = 8;
 var PRECISION_NUMBER = Math.pow(10, PRECISION);
 
+var NumberTypes = {
+  UNSIGNED: 0,
+  SIGNED: 1,
+  SMR: 2,
+  OC: 3,
+  TC: 4,
+  EK: 5
+};
+
+/**
+ * @typedef {Object} UOARNumber
+ * @property {string} sign
+ * @property {string} whole
+ * @property {string} fraction
+ * @property {number} base
+ * @property {number} number_type
+ */
+
 /**
  * Converts the character at the given index of the given string to its Decimal Value.
  * @param {string} number The Number
@@ -112,14 +130,20 @@ function isSign(character){
  * @param {string} number Number to operate on
  * @returns {number} First index after the sign
  */
-function getSignEnd(number){
-  var i;
-  for(i=0; i<number.length; i++){
-    if(!isSignAt(number, i) && number.charAt(i)!=SPACE){
-      break;
-    }
+function getSignEnd(number, number_type){
+  switch(number_type){
+    case NumberTypes.UNSIGNED:
+      return 0;
+    case NumberTypes.SIGNED:
+      var i;
+      for(i=0; i<number.length; i++){
+        if(!isSignAt(number, i) && number.charAt(i)!=SPACE){
+          break;
+        }
+      }
+      return i;
   }
-  return i;
+  return null;
 }
 
 /**
@@ -144,20 +168,61 @@ function removeSign(number){
  * @param {number} base Base of the number
  * @returns {boolean} true if valid, false otherwise.
  */
-function isNumberValid(number, base){
-  if(number==null || !isValidBase(base)){
+function isValidUOARNumber(number){
+  if(number==null || !isValidBase(number.base)){
+    return false;
+  }
+  // var i;
+  // var hasDecimal = false;
+  var temp = "";
+  for(let i=0; i<number.sign.length; i++){
+    temp = number.sign.charAt(i);
+    if(!isSign(temp) && temp!=SPACE)
+      break;
+  }
+  for(let i=0; i<number.whole.length; i++){
+    temp = number.whole.charAt(i);
+    // if(!isRadixPoint(temp)){
+      if(temp!=SPACE){
+        temp = getValue(temp, false);
+        if(temp==null || temp>=base){
+          return false;
+        }
+      }
+    // }else{
+    //   if(hasDecimal){
+    //     return false;
+    //   }else{
+    //     hasDecimal = true;
+    //   }
+    // }
+  }
+  for(let i=0; i<number.fraction.length; i++){
+    temp = number.fraction.charAt(i);
+      if(temp!=SPACE){
+        temp = getValue(temp, false);
+        if(temp==null || temp>=base){
+          return false;
+        }
+      }
+  }
+  return true;
+}
+
+function isValidNumber(number, base){
+  if(number==null || !isValidBase(number)){
     return false;
   }
   var i;
   var hasDecimal = false;
   var temp = "";
-  for(i = 0; i<number.length; i++){
-    temp = number.charAt(i);
+  for(i=0; i<number.length; i++){
+    temp = number.sign.charAt(i);
     if(!isSign(temp) && temp!=SPACE)
       break;
   }
   for(; i<number.length; i++){
-    temp = number.charAt(i);
+    temp = number.whole.charAt(i);
     if(!isRadixPoint(temp)){
       if(temp!=SPACE){
         temp = getValue(temp, false);
@@ -176,6 +241,74 @@ function isNumberValid(number, base){
   return true;
 }
 
+function runTests(){
+  clearStackTrace();
+  var tests = [];
+  tests.push({"test": toUOARNumber("+-+003.140", 5, true), "result": {"sign":"-","whole":"3","fraction":"14","number_type":NumberTypes.SIGNED,"base":5}});
+
+  for(test of tests){
+    console.log(test.test);
+    console.log(test.result);
+      // console.log(stackTrace); //TODO addPrintStackTrace()
+
+  }
+}
+
+function toUOARNumber(number, base, log=true){
+  if(number==null){
+    addToStackTrace("toUOARNumber", "Number is null", log);
+    return null;
+  }
+  if(!isValidBase(base)){
+    addToStackTrace("toUOARNumber", "Invalid base \"" + base + "\"", log);
+    return null;
+  }
+
+  // if(isValidNumber(number, base)){
+    var temp = "";
+    number = number.replace(SPACE, "");
+    var arr = number.split(/[.,]/);
+    if(arr.length>2){
+      // addToStackTrace();
+      return null;
+    }
+    var res = new Object();
+    res.base = base;
+    res.number_type = NumberTypes.SIGNED;
+    var i;
+    for(i=0; i<number.length; i++){
+      if(!isSignAt(number, i)){
+        break;
+      }
+    }
+    res.sign = number.substr(0, i);
+    res.whole = number.substr(i, arr[0].length-i);
+    for(let j=0; j<res.whole.length; j++){
+      temp = getValueAt(res.whole, j, log);
+      if(temp==null || temp>=base){
+        return null;
+      }
+    }
+    for(let j=0; j<arr[1].length; j++){
+      temp = getValueAt(arr[1], j, log);
+      if(temp==null || temp>=base){
+        return null;
+      }
+    }
+    res.fraction = arr[1];
+
+    // // var res = number.replace(SPACE, "");
+    // number.whole = 
+    // number.fraction = number.fraction.replace(SPACE, "");
+    res = trimSign(res);
+    res = trimNumber(res);
+    return res;
+  // }else{
+  //   addToStackTrace("toUOARNumber", "Invalid number \"" + number + "\" for base " + base, log);
+  //   return null;
+  // }
+}
+
 /**
  * Checks if a base is valid
  * @param {number} base Base to validate 
@@ -190,56 +323,87 @@ function isValidBase(base){
  * @returns {string} Trimmed number
  */
 function trimSign(number){
-  var num_len = number.length;
-  var index = 0;
-  var sign = 1;
-  for(; index<num_len; index++){
-    if(number.charAt(index)==MINUS){
-      sign *= -1;
-    }else if(number.charAt(index)!=PLUS && number.charAt(index)!=SPACE){
+  switch(number.number_type){
+    case NumberTypes.SIGNED:
+      var sign = 1;
+      for(let i=0; i<number.sign.length; i++){
+        if(number.sign.charAt(i)==MINUS){
+          sign *= -1;
+        }else if(number.sign.charAt(i)!=PLUS && number.sign.charAt(i)!=SPACE){
+          break;
+        }
+      }
+      if(sign==1){
+        number.sign = "+";
+      }else{
+        number.sign = "-";
+      }
+      return number;
       break;
-    }
   }
-  var res = "";
-  if(sign==1){
-    res += "+";
-  }else{
-    res += "-";
-  }
-  res += number.substr(index, num_len);
-  return res;
+  return null;
+
+  // var num_len = number.length;
+  // var index = 0;
+  // var sign = 1;
+  // for(; index<num_len; index++){
+  //   if(number.charAt(index)==MINUS){
+  //     sign *= -1;
+  //   }else if(number.charAt(index)!=PLUS && number.charAt(index)!=SPACE){
+  //     break;
+  //   }
+  // }
+  // var res = "";
+  // if(sign==1){
+  //   res += "+";
+  // }else{
+  //   res += "-";
+  // }
+  // res += number.substr(index, num_len);
+  // return res;
 }
 
 /**
  * Removes excess zeroes from a number
- * @param {string} number Number to trim
- * @returns {string} Trimmed number 
+ * @param {UOARNumber} number Number to trim
+ * @returns {UOARNumber} Trimmed number 
  */
 function trimNumber(number){
-  var res = "";
-  for(let i=0; i<number.length; i++){
-    if(isSign(number.charAt(i))){
-      res = res.concat(number.charAt(i));
-      continue;
-    }else if(number.charAt(i)!='0' || (number.charAt(i)=='0' && number.length > i && isRadixPointAt(number, i+1))){
-      res = res.concat(number.substr(i));
+  // var res = "";
+  
+  for(let i=0; i<number.whole.length; i++){
+    // if(isSign(number.charAt(i))){
+    //   res = res.concat(number.charAt(i));
+    //   continue;
+    // }else 
+    if(number.whole.charAt(i)!='0' || (number.whole.charAt(i)=='0' && number.whole.length-1==i /*&& isRadixPointAt(number, i+1)*/)){
+      //res = res.concat(number.substr(i));
+      number.whole = number.whole.substr(i);
       break;
     }
   }
-  if(res.split(/[.,]/).length==2){
-    let i;
-    for(i=res.length-1; i>=0; i--){
-      if(res.charAt(i)!='0'){
-        if(isRadixPointAt(res, i)){
-          i--;
-        }
-        break;
-      }
+  // if(res.split(/[.,]/).length==2){
+  //   let i;
+  //   for(i=res.length-1; i>=0; i--){
+  //     if(res.charAt(i)!='0'){
+  //       if(isRadixPointAt(res, i)){
+  //         i--;
+  //       }
+  //       break;
+  //     }
+  //   }
+  //   res = res.substr(0,i+1);
+  // }
+  var i;
+  for(i=number.fraction.length-1; i>=0; i--){
+    if(number.fraction.charAt(i)!='0'){
+      break;
+      
     }
-    res = res.substr(0,i+1);
   }
+  number.fraction = number.fraction.substr(0, i+1);
 
-  return res;
+  return number;
 }
 
 /**
@@ -249,16 +413,18 @@ function trimNumber(number){
  * @param {boolean} log Should log
  * @returns {string} Standardized number
  */
-function standardizeNumber(number, base, log=true){
-  if(!isValidBase(base)){
-    addToStackTrace("standardizeNumber", "Invalid base \"" + base + "\"", log);
-    return null;
-  }
-  if(isNumberValid(number, base)){
-    var res = number.replace(SPACE, "");
-    res = trimSign(res);
-    res = trimNumber(res);
-    return res;
+function standardizeNumber(number, log=true){
+  // if(!isValidBase(number.base)){
+  //   addToStackTrace("standardizeNumber", "Invalid base \"" + base + "\"", log);
+  //   return null;
+  // }
+  if(isNumberValid(number)){
+    // var res = number.replace(SPACE, "");
+    number.whole = number.whole.replace(SPACE, "");
+    number.fraction = number.fraction.replace(SPACE, "");
+    number = trimSign(number);
+    number = trimNumber(number);
+    return number;
   }else{
     addToStackTrace("standardizeNumber", "Invalid number \"" + number + "\" for base " + base, log);
     return null;
