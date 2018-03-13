@@ -15,76 +15,67 @@
 
       clearStackTrace();
       clearOutput();
-      var res = convertBases(val, base1, base2, false, true);
+      var res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
 
       document.getElementById("text1").innerHTML=output;
     }
 
-    // function toDecimal(number, base, standardized=false, log=true){
-    //   if(!isValidBase(base)){
-    //     addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
-    //     return null;
-    //   }
-    //   if(!standardized){
-    //     number = standardizeNumber(number, base, log);
-    //     if(number == null){
-    //       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
-    //       return null;
-    //     }
-    //   }
-    //   if(base==10){
-    //     return number;
-    //   }
-    //   var work1 = "";
-    //   var work2 = "";
-    //   addToOutput("(" + number + ")" + base + " = ");
-    //   var temp;
+    function toDecimal(number, standardized=false, log=true){
+      if(!standardized){
+        number = standardizeUOARNumber(number, log);
+        if(number == null){
+          addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
+          return null;
+        }
+      }
+      if(number.base==10){
+        return number;
+      }
+      var work1 = "";
+      var work2 = "";
+      addToOutput("(" + number.toSigned() + ")" + number.base + " = ");
 
-    //   var radix = number.split(/[.,]/);
-    //   var res = getSign(number, true);
-    //   var num_length = radix[0].length-1;
-    //   var decimal = 0;
-    //   var i = 0;
-    //   while(num_length>0){
-    //     temp = getValueAt(radix[0], i+1, log);
-    //     work1 = work1.concat(temp + "*" + base + "^" + (num_length-1));
-    //     temp = temp * Math.pow(base, num_length-1);
-    //     work2 = work2.concat(temp);
-    //     decimal += temp;
-    //     i++;
-    //     num_length--;
-    //     if(num_length>0){
-    //       work1 = work1.concat("+");
-    //       work2 = work2.concat("+");
-    //     }
-    //   }
-    //   res = res + decimal.toString();
+      var temp;
+      var num_length = number.whole.length-1;
+      var whole = 0;
+      let i = 0;
+      while(num_length>=0){
+        temp = getValueAt(number.whole, i, log);
+        work1 = work1.concat(temp + "*" + number.base + "^" + (num_length));
+        temp = temp * Math.pow(number.base, num_length);
+        work2 = work2.concat(temp);
+        whole += temp;
+        i++;
+        num_length--;
+        if(num_length>0){
+          work1 = work1.concat("+");
+          work2 = work2.concat("+");
+        }
+      }
+      whole = whole.toString();
+
+      var fraction = 0;
+      var frac_len = number.fraction.length;
+      for(let i = 0; i<frac_len; i++){
+        temp = getValueAt(number.fraction, i, log);
+        work1 = work1.concat(" + " + temp + "*" + number.base + "^(-" + (i+1) + ")");
+        work2 = work2.concat(" + " + temp + "/" + Math.pow(number.base, i+1));
+  
+        fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(number.base, i+1)));
+      }
+      fraction = fraction.toString();
       
-    //   if(radix.length==2){
-    //     var fraction = 0;
-    //     res = res.concat(".");
-    //     var frac_len = radix[1].length;
-    //     for(let i = 0; i<frac_len; i++){
-    //       temp = getValueAt(radix[1], i, log);
-    //       work1 = work1.concat(" + " + temp + "*" + base + "^(-" + (i+1) + ")");
-    //       work2 = work2.concat(" + " + temp + "/" + Math.pow(base, i+1));
-    //       fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(base, i+1)));
-    //     } 
-    //     res = res.concat(fraction.toString());
-    //   }
-    //   addToOutput(work1 + " = ");
-    //   addToOutput(work2 + " = ");
-    //   addToOutput("(" + res + ")10");
-    //   return trimNumber(res);
-    // }
+      var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
+      res = trimNumber(res);
+      addToOutput(work1 + " = ");
+      addToOutput(work2 + " = ");
+      addToOutput("(" + res.toSigned() + ")10");
+      return res;
+    }
 
     function fromDecimal(number, base, standardized=false, log=true){
-      if(!isValidBase(base)){
-        addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
-        return null;
-      }
       if(!standardized){
-        number = standardizeNumber(number, 10, log);
+        number = standardizeUOARNumber(number, log);
         if(number == null){
           addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
           return null;
@@ -94,28 +85,24 @@
         return number;
       }
       
-      var res = getSign(number, true);
-      var num_arr = [];
+      var whole = UOARNumberToDecimalInteger(number);
+      var fraction = "";
 
-      var radix = number.split(/[.,]/);
-
-      var work1 = "";
+      var work1 = "<td>" + whole + "</td>";
       var work2 = "";
 
-      var whole = baseToDecimalInteger(radix[0], 10);
-      if(whole<0){
+      var num_arr = [];
+      if(whole<0)
         whole = -whole;
-      }
       while(whole>0){
         work1 = work1.concat("<td>" + Math.floor(whole/base) + "</td>");
         work2 = work2.concat("<td>" + (whole%base) + "</td>");
         num_arr.push(toValue(whole%base));
         whole = Math.floor(whole/base);
       }
+      work2 = work2.concat("<td></td>");
       num_arr.reverse();
-      for(var i = 0; i<num_arr.length; i++){
-        res = res.concat(num_arr[i]);
-      }
+      whole = num_arr.join("");
       addToOutput("<table>");
       addToOutput("<tr>");
       addToOutput(work1);
@@ -124,22 +111,21 @@
       addToOutput(work2);
       addToOutput("</tr>");
       addToOutput("</table>");
-
-      if(radix.length==2){
-        radix[1] = addZeroesAfter(radix[1], PRECISION);
-        var frac = baseToDecimalInteger(radix[1], 10);
-        res = res.concat(".");
+      
+      if(number.fraction!=""){
+        number = fractionToLength(number, PRECISION, log);
+        var frac = UOARNumberToDecimalInteger(new UOARNumber(number.sign, number.fraction, "", number.base, number.number_type), false, true);
         var limit = 0;
         var temp = 0;
-        work1 = "<td>" + trimNumber("0."+frac.toString()) + "</td>";
+        work1 = "<td>" + trimNumber(new UOARNumber(number.sign, "0", frac.toString(), number.base, number.number_type)).toUnsigned() + "</td>";
         work2 = "<td>" + temp + "</td>";
         while(frac>0 && limit<PRECISION){
           frac = frac*base;
           temp = Math.floor(frac/PRECISION_NUMBER);
           frac -= temp*PRECISION_NUMBER;
-          work1 = work1.concat("<td>" + trimNumber("0."+frac.toString()) + "</td>");
+          work1 = work1.concat("<td>" + trimNumber(new UOARNumber(number.sign, "0", frac.toString(), number.base, number.number_type)).toUnsigned() + "</td>");
           work2 = work2.concat("<td>" + toValue(temp) + "</td>");
-          res = res.concat(toValue(temp));
+          fraction = fraction.concat(temp);
           limit++;
         }
       }
@@ -152,33 +138,7 @@
       addToOutput("</tr>");
       addToOutput("</table>");
 
-      return res;
-    }
-
-    function convertBases(number, base_from, base_to, standardized=false, log=true){
-      if(!isValidBase(base_from) || !isValidBase(base_to)){
-        addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
-        return null;
-      }
-      var std_val;
-      if(!standardized){
-        std_val = standardizeNumber(number, base_from, log);
-        if(std_val==null){
-          addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
-          return null;
-        }
-      }else{
-        std_val = number;
-      }
-      if(base_from==base_to){
-        return std_val;
-      }
-      var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
-      if(res==null){
-        addToStackTrace("convertBases", "Conversion error, result null", log);
-      }
-      addToOutput(res);
-      return res;
+      return new UOARNumber(number.sign, whole, fraction, base, number.number_type);
     }
 
     function test(){

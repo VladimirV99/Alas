@@ -10,6 +10,15 @@ var RADIX = ['.', ','];
 var PRECISION = 8;
 var PRECISION_NUMBER = Math.pow(10, PRECISION);
 
+/**
+ * @typedef {number} NumberType
+ */
+
+/** 
+ * Number type enum
+ * @readonly
+ * @enum {NumberType}
+*/
 var NumberTypes = {
   UNSIGNED: 0,
   SIGNED: 1,
@@ -18,6 +27,9 @@ var NumberTypes = {
   TC: 4,
   EK: 5
 };
+const number_type_description = [
+  "unsigned", "signed", "SMR", "OC", "TC", "EK"
+];
 
 /**
  * @typedef {Object} UOARNumber
@@ -25,8 +37,29 @@ var NumberTypes = {
  * @property {string} whole
  * @property {string} fraction
  * @property {number} base
- * @property {number} number_type
+ * @property {NumberType} number_type
  */
+function UOARNumber(sign, whole, fraction, base, number_type){
+  this.sign = sign;
+  this.whole = whole;
+  this.fraction = fraction;
+  this.base = base;
+  this.number_type = number_type;
+  this.toSigned = function(){
+    var res = this.sign + this.whole;
+    if(this.fraction!="" && this.fraction!="0"){
+      res = res.concat("." + this.fraction);
+    }
+    return res;
+  };
+  this.toUnsigned = function(){
+    var res = this.whole;
+    if(this.fraction!="" && this.fraction!="0"){
+      res = res.concat("." + this.fraction);
+    }
+    return res;
+  }
+}
 
 /**
  * Converts the character at the given index of the given string to its Decimal Value.
@@ -106,38 +139,58 @@ function isRadixPoint(character){
 }
 
 /**
+ * Checks if a base is valid
+ * @param {number} base Base to validate 
+ */
+function isValidBase(base){
+  return base!=null && base>1 && base<36;
+}
+
+/**
  * Checks if the given string has a sign at specified index
  * @param {string} number Number to check
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
  * @param {number} index Index to check at
  * @returns {boolean} true if number has a sign at index, false otherwise
  */
-function isSignAt(number, index){
+function isSignAt(number, base, number_type, index){
+  //TODO for SMR index==0
   var temp = number.charAt(index);
-  return temp==PLUS || temp==MINUS;
+  switch(number_type){
+    case NumberTypes.UNSIGNED:
+      return false;
+    case NumberTypes.SIGNED:
+      return temp==PLUS || temp==MINUS;
+  }
 }
 
 /**
  * Checks if the given string is a sign
  * @param {string} character Character to check
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
  * @returns {boolean} true if character is a sign, false otherwise
  */
-function isSign(character){
-  return isSignAt(character, 0);
+function isSign(character, base, number_type){
+  return isSignAt(character, base, number_type, 0);
 }
 
 /**
  * Gets the fist index after the sign
  * @param {string} number Number to operate on
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
  * @returns {number} First index after the sign
  */
-function getSignEnd(number, number_type){
+function getSignEnd(number, base, number_type){
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return 0;
     case NumberTypes.SIGNED:
       var i;
       for(i=0; i<number.length; i++){
-        if(!isSignAt(number, i) && number.charAt(i)!=SPACE){
+        if(!isSignAt(number, base, number_type, i) && number.charAt(i)!=SPACE){
           break;
         }
       }
@@ -149,86 +202,89 @@ function getSignEnd(number, number_type){
 /**
  * Removes sign from number
  * @param {string} number Number to remove sign from
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
  * @returns {string} Number without the sign
  */
-function removeSign(number){ 
+function removeSign(number, base, number_type){ 
   //TODO For checks in IEEE/DPD
-  var i;
-  for(i=0; i<number.length; i++){
-    if(!isSignAt(number, i)){
-      break;
-    }
+  switch(number_type){
+    case NumberTypes.UNSIGNED:
+      return number;
+    case NumberTypes.SIGNED:
+      let i;
+      for(i=0; i<number.length; i++){
+        if(!isSignAt(number, base, number_type, i)){
+          break;
+        }
+      }
+      return number.substr(i);
   }
-  return number.substr(i);
 }
 
 /**
- * Checks if a number is valid
- * @param {string} number Number to validate
- * @param {number} base Base of the number
+ * Checks if a UOARNumber is valid
+ * @param {UOARNumber} number Number to validate
  * @returns {boolean} true if valid, false otherwise.
  */
 function isValidUOARNumber(number){
   if(number==null || !isValidBase(number.base)){
     return false;
   }
-  // var i;
-  // var hasDecimal = false;
   var temp = "";
   for(let i=0; i<number.sign.length; i++){
     temp = number.sign.charAt(i);
-    if(!isSign(temp) && temp!=SPACE)
-      break;
+    if(!isSign(temp, number.base, number.number_type) && temp!=SPACE)
+      return false;
   }
   for(let i=0; i<number.whole.length; i++){
     temp = number.whole.charAt(i);
-    // if(!isRadixPoint(temp)){
-      if(temp!=SPACE){
-        temp = getValue(temp, false);
-        if(temp==null || temp>=number.base){
-          return false;
-        }
-      }
-    // }else{
-    //   if(hasDecimal){
-    //     return false;
-    //   }else{
-    //     hasDecimal = true;
-    //   }
-    // }
+    if(temp==SPACE)
+      continue;
+    temp = getValue(temp, false);
+    if(temp==null || temp>=number.base){
+      return false;
+    }
   }
   for(let i=0; i<number.fraction.length; i++){
     temp = number.fraction.charAt(i);
-      if(temp!=SPACE){
-        temp = getValue(temp, false);
-        if(temp==null || temp>=number.base){
-          return false;
-        }
-      }
+    if(temp==SPACE)
+      continue;
+    temp = getValue(temp, false);
+    if(temp==null || temp>=number.base){
+      return false;
+    }
   }
   return true;
 }
 
-function isValidNumber(number, base){
-  if(number==null || !isValidBase(number)){
+/**
+ * Checks if a number is valid
+ * @param {string} number Number to validate
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @returns {boolean} true if valid, false otherwise.
+ */
+function isValidNumber(number, base, number_type){
+  if(number==null || !isValidBase(base)){
     return false;
   }
   var i;
   var hasDecimal = false;
   var temp = "";
   for(i=0; i<number.length; i++){
-    temp = number.sign.charAt(i);
-    if(!isSign(temp) && temp!=SPACE)
+    temp = number.charAt(i);
+    if(!isSign(temp, base, number_type) && temp!=SPACE)
       break;
   }
   for(; i<number.length; i++){
-    temp = number.whole.charAt(i);
+    temp = number.charAt(i);
     if(!isRadixPoint(temp)){
-      if(temp!=SPACE){
-        temp = getValue(temp, false);
-        if(temp==null || temp>=base){
-          return false;
-        }
+      if(temp==SPACE)
+        continue;
+      temp = getValue(temp, false);
+      if(temp==null || temp>=base){
+        return false;
       }
     }else{
       if(hasDecimal){
@@ -243,20 +299,19 @@ function isValidNumber(number, base){
 
 function runTests(){
   clearStackTrace();
-  var tests = [];
   // tests.push({"test": toUOARNumber("+-+003.140", 5, true), "result": {"sign":"-","whole":"3","fraction":"14","number_type":NumberTypes.SIGNED,"base":5}});
   console.log(toDecimal(toUOARNumber("-10.1", 2, true)));
-
-
-  for(test of tests){
-    console.log(test.test);
-    console.log(test.result);
-      // console.log(stackTrace); //TODO addPrintStackTrace()
-
-  }
 }
 
-function toUOARNumber(number, base, log=true){
+/**
+ * Converts a number string written as specified type to a UOARNumber of the same type
+ * @param {string} number Number to convert to UOARNumber
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Number as UOARNumber
+ */
+function toUOARNumber(number, base, number_type, log=true){
   if(number==null){
     addToStackTrace("toUOARNumber", "Number is null", log);
     return null;
@@ -265,74 +320,48 @@ function toUOARNumber(number, base, log=true){
     addToStackTrace("toUOARNumber", "Invalid base \"" + base + "\"", log);
     return null;
   }
-
-  // if(isValidNumber(number, base)){
-    var temp = "";
-    number = number.replace(SPACE, "");
-    var arr = number.split(/[.,]/);
-    if(arr.length>2){
-      // addToStackTrace();
-      return null;
+  if(!isValidNumber(number, base, number_type)){
+    addToStackTrace("toUOARNumber", "Number is invalid", log);
+    return null;
+  }
+  
+  var temp = "";
+  number = number.replace(SPACE, "");
+  var arr = number.split(/[.,]/);
+  var i;
+  for(i=0; i<number.length; i++){
+    if(!isSignAt(number, base, number_type, i)){
+      break;
     }
-    var res = new Object();
-    res.base = base;
-    res.number_type = NumberTypes.SIGNED;
-    var i;
-    for(i=0; i<number.length; i++){
-      if(!isSignAt(number, i)){
-        break;
-      }
-    }
-    res.sign = number.substr(0, i);
-    res.whole = number.substr(i, arr[0].length-i);
-    for(let j=0; j<res.whole.length; j++){
-      temp = getValueAt(res.whole, j, log);
-      if(temp==null || temp>=base){
-        return null;
-      }
-    }
-    for(let j=0; j<arr[1].length; j++){
-      temp = getValueAt(arr[1], j, log);
-      if(temp==null || temp>=base){
-        return null;
-      }
-    }
-    res.fraction = arr[1];
-
-    // // var res = number.replace(SPACE, "");
-    // number.whole = 
-    // number.fraction = number.fraction.replace(SPACE, "");
-    res = trimSign(res);
-    res = trimNumber(res);
-    return res;
-  // }else{
-  //   addToStackTrace("toUOARNumber", "Invalid number \"" + number + "\" for base " + base, log);
-  //   return null;
-  // }
-}
-
-/**
- * Checks if a base is valid
- * @param {number} base Base to validate 
- */
-function isValidBase(base){
-  return base!=null && base>1 && base<36;
+  }
+  var sign = number.substr(0, i);
+  var whole = number.substr(i, arr[0].length-i);
+  var fraction = "";
+  if(arr.length==2){
+    fraction = arr[1];
+  }
+  var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  res = trimSign(res);
+  res = trimNumber(res);
+  return res;
 }
 
 /**
  * Trims the numbers sign to 1
- * @param {string} number Number to trim
- * @returns {string} Trimmed number
+ * @param {UOARNumber} number Number to trim
+ * @returns {UOARNumber} Trimmed number
  */
 function trimSign(number){
   switch(number.number_type){
+    case NumberTypes.UNSIGNED:
+      return number;
     case NumberTypes.SIGNED:
       var sign = 1;
       for(let i=0; i<number.sign.length; i++){
         if(number.sign.charAt(i)==MINUS){
           sign *= -1;
         }else if(number.sign.charAt(i)!=PLUS && number.sign.charAt(i)!=SPACE){
-          break;
+          return null;
         }
       }
       if(sign==1){
@@ -344,25 +373,6 @@ function trimSign(number){
       break;
   }
   return null;
-
-  // var num_len = number.length;
-  // var index = 0;
-  // var sign = 1;
-  // for(; index<num_len; index++){
-  //   if(number.charAt(index)==MINUS){
-  //     sign *= -1;
-  //   }else if(number.charAt(index)!=PLUS && number.charAt(index)!=SPACE){
-  //     break;
-  //   }
-  // }
-  // var res = "";
-  // if(sign==1){
-  //   res += "+";
-  // }else{
-  //   res += "-";
-  // }
-  // res += number.substr(index, num_len);
-  // return res;
 }
 
 /**
@@ -371,40 +381,18 @@ function trimSign(number){
  * @returns {UOARNumber} Trimmed number 
  */
 function trimNumber(number){
-  // var res = "";
-  
   for(let i=0; i<number.whole.length; i++){
-    // if(isSign(number.charAt(i))){
-    //   res = res.concat(number.charAt(i));
-    //   continue;
-    // }else 
-    if(number.whole.charAt(i)!='0' || (number.whole.charAt(i)=='0' && number.whole.length-1==i /*&& isRadixPointAt(number, i+1)*/)){
-      //res = res.concat(number.substr(i));
+    if(number.whole.charAt(i)!='0' || (number.whole.charAt(i)=='0' && number.whole.length-1==i)){
       number.whole = number.whole.substr(i);
       break;
     }
   }
-  // if(res.split(/[.,]/).length==2){
-  //   let i;
-  //   for(i=res.length-1; i>=0; i--){
-  //     if(res.charAt(i)!='0'){
-  //       if(isRadixPointAt(res, i)){
-  //         i--;
-  //       }
-  //       break;
-  //     }
-  //   }
-  //   res = res.substr(0,i+1);
-  // }
-  var i;
-  for(i=number.fraction.length-1; i>=0; i--){
+  for(let i=number.fraction.length-1; i>=0; i--){
     if(number.fraction.charAt(i)!='0'){
+      number.fraction = number.fraction.substr(0, i+1);
       break;
-      
     }
   }
-  number.fraction = number.fraction.substr(0, i+1);
-
   return number;
 }
 
@@ -415,20 +403,20 @@ function trimNumber(number){
  * @param {boolean} log Should log
  * @returns {string} Standardized number
  */
-function standardizeNumber(number, log=true){
+function standardizeUOARNumber(number, log=true){
   if(!isValidBase(number.base)){
-    addToStackTrace("standardizeNumber", "Invalid base \"" + number.base + "\"", log);
+    addToStackTrace("standardizeUOARNumber", "Invalid base \"" + number.base + "\"", log);
     return null;
   }
   if(isValidUOARNumber(number)){
-    // var res = number.replace(SPACE, "");
+    number.sign = number.sign.replace(SPACE, "");
     number.whole = number.whole.replace(SPACE, "");
     number.fraction = number.fraction.replace(SPACE, "");
     number = trimSign(number);
     number = trimNumber(number);
     return number;
   }else{
-    addToStackTrace("standardizeNumber", "Invalid number \"" + number + "\" for base " + base, log);
+    addToStackTrace("standardizeUOARNumber", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
     return null;
   }
 }
@@ -439,8 +427,9 @@ function standardizeNumber(number, log=true){
  * @returns {boolean} true if string has a sign, false otherwise
  */
 function hasSign(number){
-  var sign = number.trim().charAt(0);
-  return sign==MINUS || sign==PLUS;
+  return number!=null && number.sign!=""
+  // var sign = number.trim().charAt(0);
+  // return sign==MINUS || sign==PLUS;
 }
 
 /**
@@ -450,22 +439,24 @@ function hasSign(number){
  * @returns {number} 1 if positive, -1 if negative, 0 if invalid
  */
 function getSignMultiplier(number, standardized=false){
+  //TODO Switch type
   if(standardized){
-    var sign = number.charAt(0);
+    var sign = number.sign;
     if(sign==MINUS){
       return -1;
     } else if(sign==PLUS){
       return 1;
     }
   }else{
-    var num_len = number.length;
+    var num_len = number.sign.length;
     var index = 0;
     var sign = 1;
     for(; index<num_len; index++){
-      if(number.charAt(index)==MINUS){
+      if(number.sign.charAt(index)==MINUS){
         sign *= -1;
-      }else if(number.charAt(index)!=PLUS && number.charAt(index)!=SPACE){
-        break;
+      }else if(number.sign.charAt(index)!=PLUS && number.sign.charAt(index)!=SPACE){
+        //Invalid sign
+        return null;
       }
     }
     return sign;
@@ -516,6 +507,27 @@ function getSign(number, standardized=false){
  * @param {boolean} log Should log
  * @returns {number} Number converted to an integer
  */
+function UOARNumberToDecimalInteger(number, standardized=false, log=true){
+  if(!standardized){
+    number = standardizeUOARNumber(number, number.base, log);
+    if(number == null){
+      return null;
+    }
+  }
+
+  var num_length = number.whole.length-1;
+  var decimal = 0;
+  var i = 0;
+  while(num_length>=0){
+    decimal += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
+    i++;
+    num_length--;
+  }
+
+  decimal *= getSignMultiplier(number, standardized);
+  return decimal;
+}
+
 function baseToDecimalInteger(number, base, standardized=false, log=true){
   if(!isValidBase(base)){
     addToStackTrace("baseToDecimalInteger", "Invalid base \"" + base + "\"");
@@ -551,12 +563,8 @@ function baseToDecimalInteger(number, base, standardized=false, log=true){
  * @returns {string} Number converted to base 10
  */
 function toDecimal(number, standardized=false, log=true){
-  // if(!isValidBase(base)){
-  //   addToStackTrace("toDecimal", "Invalid base \"" + base + "\"");
-  //   return null;
-  // } 
   if(!standardized){
-    number = standardizeNumber(number, log);
+    number = standardizeUOARNumber(number, log);
     if(number == null){
       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
       return null;
@@ -566,37 +574,24 @@ function toDecimal(number, standardized=false, log=true){
     return number;
   }
 
-  // var radix = number.split(/[.,]/);
-  // var res = getSign(number, true);
-  var res = new Object();
-  res.base = 10;
-  res.number_type = NumberTypes.SIGNED;
-  res.sign = number.sign;
-
-
-  // var num_length = radix[0].length-1;
   var num_length = number.whole.length-1;
-  var decimal = 0;
+  var whole = 0;
   let i = 0;
   while(num_length>=0){
-    console.log(decimal + " " + num_length + " " + number.whole);
-    decimal += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
+    whole += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
     i++;
     num_length--;
   }
-  res.whole = decimal.toString();
-  // res = res + decimal.toString();
+  whole = whole.toString();
 
-  // if(radix.length==2){
-    var fraction = 0;
-    // res = res.concat(".");
-    var frac_len = number.fraction.length;
-    for(let i = 0; i<frac_len; i++){
-      fraction += (Math.floor(getValueAt(number.fraction, i, log) * PRECISION_NUMBER / Math.pow(number.base, i+1)));
-    }
-    // res = res.concat(fraction.toString());
-    res.fraction = fraction.toString();
-  // }
+  var fraction = 0;
+  var frac_len = number.fraction.length;
+  for(let i = 0; i<frac_len; i++){
+    fraction += (Math.floor(getValueAt(number.fraction, i, log) * PRECISION_NUMBER / Math.pow(number.base, i+1)));
+  }
+  fraction = fraction.toString();
+  
+  var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
   return trimNumber(res);
 }
 
@@ -609,12 +604,8 @@ function toDecimal(number, standardized=false, log=true){
  * @returns Number converted to specified base
  */
 function fromDecimal(number, base, standardized=false, log=true){
-  if(!isValidBase(base)){
-    addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
-    return null;
-  }
   if(!standardized){
-    number = standardizeNumber(number, 10, log);
+    number = standardizeUOARNumber(number, log);
     if(number == null){
       addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
@@ -624,40 +615,34 @@ function fromDecimal(number, base, standardized=false, log=true){
     return number;
   }
   
-  var res = getSign(number, true);
+  var whole = UOARNumberToDecimalInteger(number);
+  var fraction = "";
+
   var num_arr = [];
-
-  var radix = number.split(/[.,]/);
-
-  var whole = baseToDecimalInteger(radix[0], 10);
-  if(whole<0){
+  if(whole<0)
     whole = -whole;
-  }
   while(whole>0){
     num_arr.push(toValue(whole%base));
     whole = Math.floor(whole/base);
   }
   num_arr.reverse();
-  for(var i = 0; i<num_arr.length; i++){
-    res = res.concat(num_arr[i]);
-  }
+  whole = num_arr.join("");
   
-  if(radix.length==2){
-    radix[1] = addZeroesAfter(radix[1], PRECISION);
-    var frac = baseToDecimalInteger(radix[1], 10);
-    res = res.concat(".");
+  if(number.fraction!=""){
+    number = fractionToLength(number, PRECISION, log);
+    var frac = UOARNumberToDecimalInteger(new UOARNumber(number.sign, number.fraction, "", number.base, number.number_type), false, true);
     var limit = 0;
     var temp = 0;
     while(frac>0 && limit<PRECISION){
       frac = frac*base;
       temp = Math.floor(frac/PRECISION_NUMBER);
       frac -= temp*PRECISION_NUMBER;
-      res = res.concat(temp);
+      fraction = fraction.concat(temp);
       limit++;
     }
   }
 
-  return res;
+  return new UOARNumber(number.sign, whole, fraction, base, number.number_type);
 }
 
 /**
@@ -669,14 +654,14 @@ function fromDecimal(number, base, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted from base_from to base_to
  */
-function convertBases(number, base_to, log=true){
-  if(!isValidBase(base_from) || !isValidBase(base_to)){
+function convertBases(number, base_to, standardized=false, log=true){
+  if(!isValidBase(number.base) || !isValidBase(base_to)){
     addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
     return null;
   }
   var std_val;
   if(!standardized){
-    std_val = standardizeNumber(number, base_from, log);
+    std_val = standardizeUOARNumber(number, log);
     if(std_val==null){
       addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
       return null;
@@ -684,62 +669,52 @@ function convertBases(number, base_to, log=true){
   }else{
     std_val = number;
   }
-  if(base_from==base_to){
+  if(number.base==base_to){
     return std_val;
   }
-  var res = fromDecimal(toDecimal(std_val, base_from, true), base_to, true);
+  var res = fromDecimal(toDecimal(std_val, number.base, true), base_to, true);
   if(res==null){
     addToStackTrace("convertBases", "Conversion error, result null", log);
   }
   return res;
 }
 
-/**
- * Adds zeroes after the number to specified length
- * @param {string} number Number to add zeroes to
- * @param {number} length Length of the number to return
- * @param {boolean} [log=true] Should log
- * @returns {string} Number with the specified length with zeroes at the end
- */
-function addZeroesAfter(number, length, log=true){
-  if(number==null){
-    addToStackTrace("addZeroesAfter", "Number is null", log);
-    return null;
-  }
-  var offset = getSignEnd(number);
-  var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
-  var res = number;
-  if(toAdd>0){
-    for(let i=0; i<toAdd; i++){
-      res = res.concat("0");
-    }
-  }
-  return res;
+function fractionToLength(number, length, log=true){
+  return toLength(number, number.whole.length+length, length, log);
 }
 
-/**
- * Adds zeroes before the number to specified length
- * @param {string} number Number to add zeroes to
- * @param {number} length Length of the number to return
- * @param {boolean} [log=true] Should log
- * @returns {string} Number with the specified length with zeroes at the beginning
- */
-function addZeroesBefore(number, length, log=true){
-  if(number==null){
-    addToStackTrace("addZeroesBefore", "Number is null", log);
+function wholeToLength(number, length, log=true){
+  return toLength(number, length+number.fracton.length, number.fraction.length, log);
+}
+
+function toLength(number, n, m, log=true){
+  if(number.whole.length>n-m){
+    addToStackTrace("toLength", "Too big number", log);
     return null;
   }
-  var offset = getSignEnd(number);
-  var toAdd = length - number.substr(offset).replace(/[.,]/, "").length;
-  var res = number;
-  if(toAdd>0){
-    res = number.substr(0, offset);
-    for(let i=0; i<toAdd; i++){
-      res = res.concat("0");
-    }
-    res = res.concat(number.substr(offset));
+  switch(number.number_type){
+    case NumberTypes.SIGNED:
+      let toAdd = n-m-number.whole.length;
+      let temp = "";
+      for(let i=0; i<toAdd; i++){
+        temp = temp.concat("0");
+      }
+      number.whole = temp.concat(number.whole);
+
+      
+      break;
   }
-  return res;
+
+  if(number.fraction.length>m){
+    number.fraction.length = number.fraction.substr(0, m);
+  }else if(number.fraction.length<m){
+    toAdd = m-number.fraction.length;
+    for(let i=0; i<toAdd; i++){
+      number.fraction = number.fraction.concat("0");
+    }
+  }
+
+  return number;
 }
 
 /**

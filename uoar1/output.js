@@ -18,3 +18,9 @@ function addToStackTrace(source, message, log=true){
 function clearStackTrace(){
   stackTrace = [];
 }
+
+function printStackTrace(){
+  for(item of stackTrace){
+    console.log(stackTrace.source + ": " + stackTrace.message);
+  }
+}
