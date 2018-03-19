@@ -20,46 +20,55 @@
  */
 function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
   if(!standardized){
-    let std_significand = standardizeNumber(significand, 10, log);
+    let std_significand = standardizeUOARNumber(significand, log);
     if(std_significand==null){
       addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_significand + "\" for base 2", log);
       return null;
     }
     significand = std_significand;
   }
-  significand = convertBases(significand, 10, 2, true, log);
-  if(significand.split(/[.,]/)[0].length>2+23){
-    addToStackTrace("convertToIEEE754Binary32", "Significand out of bounds \"" + significand + "\"", log);
-    return null;
-  }else{
-    significand = significand.substr(0, 3+23);
-  }
+  significand = convertBases(significand, 2, true, log); //TODO Switch to fromDecimal
+  console.log(significand);
 
-  let std_exponent = baseToDecimalInteger(exponent, 10, false, log);
+
+  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
   if(std_exponent==null){
     addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_exponent + "\" for base 10", log);
     return null;
   }
+  console.log(std_exponent);
+  console.log(exponent + " " + getNormalizeExponentBinary(significand, true, log));
   exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
   if(exponent>127 || exponent<-126){
     addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
+  console.log(exponent);
   
   significand = normalizeBinary(significand, true, log);
+  if(significand.whole.length>23){
+    addToStackTrace("convertToIEEE754Binary32", "Significand out of bounds \"" + significand.toSugned() + "\"", log);
+    return null;
+  }else{
+    significand = fractionToLength(significand, 23-significand.whole.length, log);
+    // significand = significand.substr(0, 3+23);
+  }
+  console.log(significand);
+
 
   var res = "";
-  if(significand.charAt(0)==MINUS){
+  if(significand.sign==MINUS){
     res = res.concat("1");
   }else{
     res = res.concat("0");
   }
 
   res = res.concat(SPACE);
-  res = res.concat(addZeroesBefore(fromDecimal(trimSign((127+exponent).toString()), 2, true, log), 8).substr(1));
+  res = res.concat(toLength(fromDecimal(trimSign(toUOARNumber((127+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), 8, 0, log).toUnsigned());
 
   res = res.concat(SPACE);
-  res = res.concat(addZeroesAfter(significand.split(/[.,]/)[1], 23));
+  res = res.concat(fractionToLength(significand, 23, log).fraction);
+  console.log(res);
 
   return res;
 }
@@ -300,7 +309,7 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
  */
 function normalizeBinary(number, standardized=false, log=true){
   if(!standardized){
-    let std_number = standardizeNumber(number, 2, log);
+    let std_number = standardizeUOARNumber(number, log);
     if(std_number == null){
       addToStackTrace("normalizeBinary", "Invalid number \"" + number + "\" for base 2", log);
       return null;
@@ -308,20 +317,24 @@ function normalizeBinary(number, standardized=false, log=true){
     number = std_number;
   }
 
-  var res = number.charAt(0)+"0";
-  var temp;
-  for(let i=1; i<number.length; i++){
-    temp = number.charAt(i);
-    if(temp!='0' && !isRadixPoint(temp)){
-      res = res.concat(temp);
-      if(number.length>i){
-        res = res.concat("." + number.substr(i+1).replace(/[.,]/, ""));
-      }
-      break;
-    }
-  }
-  res = trimNumber(res);
-  return res;
+  number.fraction = number.whole.substr(1) + number.fraction;
+  number.whole = "1";
+  return number;
+
+  // var res = number.charAt(0)+"0";
+  // var temp;
+  // for(let i=1; i<number.length; i++){
+  //   temp = number.charAt(i);
+  //   if(temp!='0' && !isRadixPoint(temp)){
+  //     res = res.concat(temp);
+  //     if(number.length>i){
+  //       res = res.concat("." + number.substr(i+1).replace(/[.,]/, ""));
+  //     }
+  //     break;
+  //   }
+  // }
+  // res = trimNumber(res);
+  // return res;
 }
 
 /**
@@ -333,35 +346,46 @@ function normalizeBinary(number, standardized=false, log=true){
  */
 function getNormalizeExponentBinary(number, standardized=false, log=true){
   if(!standardized){
-    let std_number = standardizeNumber(number, 2, log);
+    let std_number = standardizeUOARNumber(number, log);
+    
     if(std_number == null){
       addToStackTrace("getNormailzeExponentBinary", "Invalid number \"" + number + "\" for base 2", log);
       return null;
     }
     number = std_number;
   }
-  var foundRadix = false;
-  var foundNonZero = false;
-  var a, b;
-  for(let i=1; i<number.length; i++){
-    if(!foundRadix && isRadixPointAt(number, i)){
-      a = i;
-      if(foundNonZero){
-        a--;
-        break;
-      }else{
-        foundRadix = true;
-      }
-    }else if(!foundNonZero && number.charAt(i)!='0'){
-      b = i;
-      if(foundRadix){
-        break;
-      }else{
-        foundNonZero = true;
+  console.log(number.fraction);
+  if(number.whole=="0"){
+    for(let i=0; i<number.fraction.length; i++){
+      if(number.fraction.charAt(i)!='0'){
+        return -i-1;
       }
     }
+  }else{
+    return number.whole.length-1;
   }
-  return a-b;
+  // var foundRadix = false;
+  // var foundNonZero = false;
+  // var a, b;
+  // for(let i=1; i<number.length; i++){
+  //   if(!foundRadix && isRadixPointAt(number, i)){
+  //     a = i;
+  //     if(foundNonZero){
+  //       a--;
+  //       break;
+  //     }else{
+  //       foundRadix = true;
+  //     }
+  //   }else if(!foundNonZero && number.charAt(i)!='0'){
+  //     b = i;
+  //     if(foundRadix){
+  //       break;
+  //     }else{
+  //       foundNonZero = true;
+  //     }
+  //   }
+  // }
+  // return a-b;
 }
 
 /**

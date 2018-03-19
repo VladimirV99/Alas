@@ -138,7 +138,9 @@
       addToOutput("</tr>");
       addToOutput("</table>");
 
-      return new UOARNumber(number.sign, whole, fraction, base, number.number_type);
+      var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
+      addToOutput(res.toSigned());
+      return res;
     }
 
     function test(){

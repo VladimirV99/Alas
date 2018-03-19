@@ -10,7 +10,7 @@
   <script>
 
     function calculateBinary32(){
-      var significand = document.getElementById('significand').value;
+      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
       var exponent = document.getElementById('exponent').value;
       clearStackTrace();
       clearOutput();
@@ -54,64 +54,64 @@
       document.getElementById("text1").innerHTML=output;
     }
 
-    function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
-      var work1 = "";
-      var work2 = "";
-      if(!standardized){
-        let std_significand = standardizeNumber(significand, 10, log);
-        if(std_significand==null){
-          addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_significand + "\" for base 2", log);
-          return null;
-        }
-        significand = std_significand;
-      }
-      work1 = work1.concat(significand.charAt(0) + "(" + significand.substr(1) + ")10");
-      significand = convertBases(significand, 10, 2, true, log);
-      work2 = work2.concat(significand.charAt(0) + "(" + significand.substr(1) + ")2");
-      if(significand.split(/[.,]/)[0].length>2+23){
-        addToStackTrace("convertToIEEE754Binary32", "Significand out of bounds \"" + significand + "\"", log);
-        return null;
-      }else{
-        significand = significand.substr(0, 3+23);
-      }
+    // function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
+    //   var work1 = "";
+    //   var work2 = "";
+    //   if(!standardized){
+    //     let std_significand = standardizeNumber(significand, 10, log);
+    //     if(std_significand==null){
+    //       addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_significand + "\" for base 2", log);
+    //       return null;
+    //     }
+    //     significand = std_significand;
+    //   }
+    //   work1 = work1.concat(significand.charAt(0) + "(" + significand.substr(1) + ")10");
+    //   significand = convertBases(significand, 10, 2, true, log);
+    //   work2 = work2.concat(significand.charAt(0) + "(" + significand.substr(1) + ")2");
+    //   if(significand.split(/[.,]/)[0].length>2+23){
+    //     addToStackTrace("convertToIEEE754Binary32", "Significand out of bounds \"" + significand + "\"", log);
+    //     return null;
+    //   }else{
+    //     significand = significand.substr(0, 3+23);
+    //   }
 
-      let std_exponent = baseToDecimalInteger(exponent, 10, false, log);
-      if(std_exponent==null){
-        addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_exponent + "\" for base 10", log);
-        return null;
-      }
-      work1 = work1.concat(" * 2^" + std_exponent);
-      work2 = work2.concat(" * 2^" + std_exponent);
-      exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
-      if(exponent>127 || exponent<-126){
-        addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
-        return null;
-      }
+    //   let std_exponent = baseToDecimalInteger(exponent, 10, false, log);
+    //   if(std_exponent==null){
+    //     addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_exponent + "\" for base 10", log);
+    //     return null;
+    //   }
+    //   work1 = work1.concat(" * 2^" + std_exponent);
+    //   work2 = work2.concat(" * 2^" + std_exponent);
+    //   exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
+    //   if(exponent>127 || exponent<-126){
+    //     addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
+    //     return null;
+    //   }
       
-      significand = normalizeBinary(significand, true, log);
+    //   significand = normalizeBinary(significand, true, log);
  
-      addToOutput(work1 + " = ");
-      addToOutput(work2 + " = ");
-      addToOutput(significand.charAt(0) + "(" + significand.substr(1) + ")2 * 2^" + exponent + "<br>");
+    //   addToOutput(work1 + " = ");
+    //   addToOutput(work2 + " = ");
+    //   addToOutput(significand.charAt(0) + "(" + significand.substr(1) + ")2 * 2^" + exponent + "<br>");
 
-      var res = "";
-      if(significand.charAt(0)==MINUS){
-        res = res.concat("1");
-      }else{
-        res = res.concat("0");
-      }
+    //   var res = "";
+    //   if(significand.charAt(0)==MINUS){
+    //     res = res.concat("1");
+    //   }else{
+    //     res = res.concat("0");
+    //   }
 
-      res = res.concat(SPACE);
-      var temp = addZeroesBefore(fromDecimal(trimSign((127+exponent).toString()), 2, true, log), 8).substr(1);
-      addToOutput("eksp: " + exponent.toString() + " + 127 = " + (127+exponent) + " = (" + temp + ")2 <br>");
-      res = res.concat(addZeroesBefore(fromDecimal(trimSign((127+exponent).toString()), 2, true, log), 8).substr(1));
+    //   res = res.concat(SPACE);
+    //   var temp = addZeroesBefore(fromDecimal(trimSign((127+exponent).toString()), 2, true, log), 8).substr(1);
+    //   addToOutput("eksp: " + exponent.toString() + " + 127 = " + (127+exponent) + " = (" + temp + ")2 <br>");
+    //   res = res.concat(addZeroesBefore(fromDecimal(trimSign((127+exponent).toString()), 2, true, log), 8).substr(1));
 
-      res = res.concat(SPACE);
-      res = res.concat(addZeroesAfter(significand.split(/[.,]/)[1], 23));
+    //   res = res.concat(SPACE);
+    //   res = res.concat(addZeroesAfter(significand.split(/[.,]/)[1], 23));
       
-      addToOutput(res);
-      return res;
-    }
+    //   addToOutput(res);
+    //   return res;
+    // }
 
     function convertToIEEE754Binary64(significand, exponent, standardized=false, log=true){
       var work1 = "";
@@ -436,6 +436,9 @@
     }
 
     function test(){
+      var a1 = toUOARNumber("+17.21", 10, NumberTypes.SIGNED, true);
+      var a2 = toUOARNumber("-912.188", 10, NumberTypes.SIGNED, true);
+      console.log(add(a1, a2, NumberTypes.SIGNED, false, true));
     }
   </script>
 </head>
