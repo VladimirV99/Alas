@@ -184,7 +184,6 @@ function isSign(character, base, number_type){
  * @returns {number} First index after the sign
  */
 function getSignEnd(number, base, number_type){
-  console.log(number_type + " " + number);
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return 0;
@@ -300,7 +299,6 @@ function isValidNumber(number, base, number_type){
 
 function runTests(){
   clearStackTrace();
-  // tests.push({"test": toUOARNumber("+-+003.140", 5, true), "result": {"sign":"-","whole":"3","fraction":"14","number_type":NumberTypes.SIGNED,"base":5}});
   console.log(toDecimal(toUOARNumber("-10.1", 2, true)));
 }
 
@@ -409,13 +407,6 @@ function standardizeUOARNumber(number, log=true){
     return null;
   }
   if(isValidUOARNumber(number)){
-    // number.sign = number.sign.replace(SPACE, "");
-    // number.whole = number.whole.replace(SPACE, "");
-    // number.fraction = number.fraction.replace(SPACE, "");
-    // number = trimSign(number);
-    // number = trimNumber(number);
-    // return number;
-
     var res = new UOARNumber(number.sign.replace(SPACE, ""), number.whole.replace(SPACE, ""), number.fraction.replace(SPACE, ""), number.base, number.number_type);
     res = trimSign(res);
     res = trimNumber(res);
@@ -444,12 +435,10 @@ function hasSign(number){
  * @returns {number} 1 if positive, -1 if negative, 0 if invalid
  */
 function getSignMultiplierForNumber(number, standardized=false){
-  console.log(number);
   return getSignMultiplier(number.sign, number.base, number.number_type, standardized);
 }
 
 function getSignMultiplier(sign, base, number_type, standardized){
-  console.log(sign);
   if(standardized){
     switch(number_type){
       case NumberTypes.SIGNED:
@@ -545,7 +534,6 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
   return decimal;
 }
 
-
 /**
  * Converts a string to an integer
  * @param {string} number Number to convert 
@@ -554,21 +542,12 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {number} Number converted to an integer
  */
-function baseToDecimalInteger(number, base/*, standardized=false*/, number_type, log=true){
+function baseToDecimalInteger(number, base, number_type, log=true){
   if(!isValidBase(base)){
     addToStackTrace("baseToDecimalInteger", "Invalid base \"" + base + "\"");
     return null;
-  } 
-  // if(!standardized){
-  //   number = standardizeNumber(number, base, log);
-  //   if(number == null){
-  //     return null;
-  //   }
-  // }
-
-  console.log(number);
+  }
   var sign_end = getSignEnd(number, base, number_type);
-  console.log(sign_end);
   var whole = number.split(/[.,]/)[0].substr(sign_end);
   var num_length = whole.length-1;
   var decimal = 0;
@@ -576,7 +555,6 @@ function baseToDecimalInteger(number, base/*, standardized=false*/, number_type,
   var temp;
   while(num_length>=0){
     temp = getValueAt(whole, num_length, log);
-    console.log(temp);
     if(temp==null || temp>=base){
       addToStackTrace("baseToDecimalInteger", "Invalid number \"" + number + "\" for base " + base);
       return null;
@@ -591,12 +569,11 @@ function baseToDecimalInteger(number, base/*, standardized=false*/, number_type,
 }
 
 /**
- * Converts given nimber from given base to base 10
- * @param {string} number Standardized Signed Number to convert
- * @param {number} base Base to convert from
+ * Converts given nimber to base 10
+ * @param {UOARNumber} number Standardized Signed Number to convert
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} Number converted to base 10
+ * @returns {UOARNumber} Number converted to base 10
  */
 function toDecimal(number, standardized=false, log=true){
   if(!standardized){
@@ -609,7 +586,6 @@ function toDecimal(number, standardized=false, log=true){
   if(number.base==10){
     return number;
   }
-  console.log(number);
 
   var num_length = number.whole.length-1;
   var whole = 0;
@@ -634,14 +610,13 @@ function toDecimal(number, standardized=false, log=true){
 
 /**
  * Converts given standardized signed nimber from base 10 to the given base
- * @param {string} number Number to convert from decimal 
+ * @param {UOARNumber} number Number to convert from decimal 
  * @param {number} base Base to convert to
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns Number converted to specified base
+ * @returns {UOARNumber} Number converted to specified base
  */
 function fromDecimal(number, base, standardized=false, log=true){
-  console.log(number);
   if(!standardized){
     number = standardizeUOARNumber(number, log);
     if(number == null){
@@ -668,10 +643,7 @@ function fromDecimal(number, base, standardized=false, log=true){
   
   if(number.fraction!=""){
     number = fractionToLength(number, PRECISION, log);
-    console.log(number);
-    var frac = baseToDecimalInteger(number.fraction, number.base, number.number_type, log)
-    // var frac = UOARNumberToDecimalInteger(new UOARNumber(number.sign, number.fraction, "", number.base, number.number_type), false, true);
-    console.log(frac);
+    var frac = baseToDecimalInteger(number.fraction, number.base, number.number_type, log);
     var limit = 0;
     var temp = 0;
     while(frac>0 && limit<PRECISION){
@@ -682,19 +654,17 @@ function fromDecimal(number, base, standardized=false, log=true){
       limit++;
     }
   }
-  console.log(whole + " " + fraction);
 
   return new UOARNumber(number.sign, whole, fraction, base, number.number_type);
 }
 
 /**
- * Converts a number from base_from to base_to
- * @param {string} number Number to convert 
- * @param {number} base_from Base to convert from
+ * Converts a number to base base_to
+ * @param {UOARNumber} number Number to convert
  * @param {number} base_to Base to convert to
  * @param {boolean} [standardized=false] Treat as standardized 
  * @param {boolean} [log=true] Should log
- * @returns {string} Number converted from base_from to base_to
+ * @returns {UOARNumber} Number converted to base base_to
  */
 function convertBases(number, base_to, standardized=false, log=true){
   if(!isValidBase(number.base) || !isValidBase(base_to)){
@@ -730,33 +700,14 @@ function convertBases(number, base_to, standardized=false, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function toLength(number, n, m, log=true){
-  if(number.whole.length>n-m){
+  var new_number;
+  new_number = wholeToLength(number, n-m, log);
+  if(new_number==null){
     addToStackTrace("toLength", "Too big number", log);
     return null;
   }
-  switch(number.number_type){
-    case NumberTypes.SIGNED:
-      let toAdd = n-m-number.whole.length;
-      let temp = "";
-      for(let i=0; i<toAdd; i++){
-        temp = temp.concat("0");
-      }
-      number.whole = temp.concat(number.whole);
-
-      
-      break;
-  }
-
-  if(number.fraction.length>m){
-    number.fraction.length = number.fraction.substr(0, m);
-  }else if(number.fraction.length<m){
-    toAdd = m-number.fraction.length;
-    for(let i=0; i<toAdd; i++){
-      number.fraction = number.fraction.concat("0");
-    }
-  }
-
-  return number;
+  new_number = fractionToLength(new_number, m, log);
+  return new_number;
 }
 
 /**
@@ -767,7 +718,22 @@ function toLength(number, n, m, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function wholeToLength(number, length, log=true){
-  return toLength(number, length+number.fraction.length, number.fraction.length, log);
+  if(number.whole.length>length){
+    addToStackTrace("wholeToLength", "Too big number", log);
+    return null;
+  }
+  var whole = number.whole;
+  switch(number.number_type){
+    case NumberTypes.SIGNED:
+      let toAdd = length-whole.length;
+      let temp = "";
+      for(let i=0; i<toAdd; i++){
+        temp = temp.concat("0");
+      }
+      whole = temp.concat(whole);
+      break;
+  }
+  return new UOARNumber(number.sign, whole, number.fraction, number.base, number.number_type);
 }
 
 /**
@@ -778,7 +744,68 @@ function wholeToLength(number, length, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function fractionToLength(number, length, log=true){
-  return toLength(number, number.whole.length+length, length, log);
+  var fraction = number.fraction;;
+  if(fraction.length>length){
+    fraction = fraction.substr(0, length);
+  }else if(fraction.length<length){
+    toAdd = length-fraction.length;
+    for(let i=0; i<toAdd; i++){
+      fraction = fraction.concat("0");
+    }
+  }
+  return new UOARNumber(number.sign, number.whole, fraction, number.base, number.number_type);
+}
+
+/**
+ * Adds zeroes after the number to specified length
+ * @param {string} number Number to add zeroes to
+ * @param {number} base Base of the number
+ * @param {NumberTypes} number_type Type of the number
+ * @param {number} length Length of the number to return
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Number with the specified length with zeroes at the end
+ */
+function addZeroesAfter(number, base, number_type, length, log=true){
+  if(number==null){
+    addToStackTrace("addZeroesAfter", "Number is null", log);
+    return null;
+  }
+  var offset = getSignEnd(number, base, number_type);
+  var toAdd = length - number.replace(/[.,]/, "").length - offset;
+  var res = number;
+  if(toAdd>0){
+    for(let i=0; i<toAdd; i++){
+      res = res.concat("0");
+    }
+  }
+  return res;
+}
+
+/**
+ * Adds zeroes before the number to specified length
+ * @param {string} number Number to add zeroes to
+ * @param {number} base Base of the number
+ * @param {NumberTypes} number_type Type of the number
+ * @param {number} length Length of the number to return
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Number with the specified length with zeroes at the beginning
+ */
+function addZeroesBefore(number, base, number_type, length, log=true){
+  if(number==null){
+    addToStackTrace("addZeroesBefore", "Number is null", log);
+    return null;
+  }
+  var offset = getSignEnd(number, base, number_type);
+  var toAdd = length - number.replace(/[.,]/, "").length - offset;
+  var res = number;
+  if(toAdd>0){
+    res = number.substr(0, offset);
+    for(let i=0; i<toAdd; i++){
+      res = res.concat("0");
+    }
+    res = res.concat(number.substr(offset));
+  }
+  return res;
 }
 
 /**
@@ -863,17 +890,17 @@ function decimalTo8421(number, log=true){
   var res = "";
   var temp;
   for(let i=0; i<number.length; i++){
-    temp = getValueAt(number, i);
+    temp = getValueAt(number, i, log);
     if(temp>15){
       addToStackTrace("decimalTo8421", "Value out of bounds", log);
       return null;
     }
-    temp = digitToBinary(temp);
+    temp = numberToBinary(temp);
     if(temp==null){
       addToStackTrace("decimalTo8421", "Invalid digit \"" + number.charAt(i) + "\"", log);
       return null;
     }
-    temp = addZeroesBefore(temp, 4);
+    temp = addZeroesBefore(temp, 2, NumberTypes.UNSIGNED, 4, log);
     res += temp;
   }
   return res;
@@ -989,6 +1016,15 @@ function getAbsoluteValue(number){
   }
 }
 
+/**
+ * Adds two numbers together
+ * @param {UOARNumber} add1 First factor
+ * @param {UOARNumber} add2 Second factor
+ * @param {NumberTypes} number_type Type to return
+ * @param {boolean} [standardized=false] Treat as standardized
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Sum of the two numbers 
+ */
 function add(add1, add2, number_type, standardized=false, log=true){
   if(add1.base!=add2.base){
     addToStackTrace("add", "Can't add numbers. Bases are not equal");
