@@ -62,6 +62,17 @@ function UOARNumber(sign, whole, fraction, base, number_type){
 }
 
 /**
+ * Checks if a number is between min and max
+ * @param {number} number Number to check
+ * @param {number} min Minimum
+ * @param {number} max Maximum
+ * @returns {boolean} True if number is in bounds, false otherwise
+ */
+function isInBounds(number, min, max){
+  return number>=min && number<=max;
+}
+
+/**
  * Converts the character at the given index of the given string to its Decimal Value.
  * @param {string} number The Number
  * @param {number} index Characters index in the String
@@ -102,7 +113,7 @@ function getValue(number, log=true){
  * @param {boolean} [log=true] Should log errors
  * @returns {string} If value is valid returns appropriate string, null otherwise
  */
-function toValue(value, log = true){
+function toValue(value, log=true){
   if(value<0 || value>35){
     addToStackTrace("toValue", "Value Out of Bounds + \"" + value + "\"", log);
     return null;
@@ -441,6 +452,8 @@ function getSignMultiplierForNumber(number, standardized=false){
 function getSignMultiplier(sign, base, number_type, standardized){
   if(standardized){
     switch(number_type){
+      case NumberTypes.UNSIGNED:
+        return 1;
       case NumberTypes.SIGNED:
         if(sign==MINUS){
           return -1;
@@ -451,6 +464,8 @@ function getSignMultiplier(sign, base, number_type, standardized){
     }
   }else{
     switch(number_type){
+      case NumberTypes.UNSIGNED:
+        return 1;
       case NumberTypes.SIGNED:
         let num_len = sign.length;
         let index = 0;
@@ -602,7 +617,10 @@ function toDecimal(number, standardized=false, log=true){
   for(let i = 0; i<frac_len; i++){
     fraction += (Math.floor(getValueAt(number.fraction, i, log) * PRECISION_NUMBER / Math.pow(number.base, i+1)));
   }
-  fraction = fraction.toString();
+  if(fraction==0)
+    fraction = "";
+  else
+    fraction = fraction.toString();
   
   var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
   return trimNumber(res);
@@ -861,7 +879,7 @@ function numberToBinary(number, log=true){
  * @returns {number} Number converted from binary
  */
 function binaryToDigit(number, log=true){
-  if(!isNumberValid(number, 2)){
+  if(!isValidNumber(number, 2, NumberTypes.UNSIGNED)){
     addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
     return null;
   }
