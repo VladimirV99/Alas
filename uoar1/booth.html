@@ -7,11 +7,45 @@
   <script type="text/javascript" src="uoar_core.js"></script>
   <script type="text/javascript" src="output.js"></script>
   <script>
+
+    function convertToTC(number, standardized=false, log=true){
+      switch(number.number_type){
+        case NumberTypes.SIGNED:
+          if(number.sign = "-"){
+            number.sign = "0";
+            return complement(number);
+          }else{
+            number.sign = "0";
+            return number;
+          }
+      }
+    }
+
+    function converToType(number, type, standardized=false, log=true){
+      if(number.number_type==type)
+        return type;
+      switch(type){
+        case NumberTypes.TC:
+          return convertToTC(number);
+      }
+    }
+
     function calculate() {
-      document.getElementById("text1").innerHTML=
-      signedToTC(fromDecimal(document.getElementById('multiplicand').value, 2), 2)
-      +" * "+
-      signedToTC(fromDecimal(document.getElementById('multiplier').value, 2), 2);
+
+      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('multiplicand').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplier = fromDecimal(toUOARNumber(document.getElementById('multiplier').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      clearOutput();
+      clearStackTrace();
+      var res = booth(multiplicand, multiplier);
+      if(res!=null){
+        document.getElementById("text1").innerHTML = output;
+      }
+      
+
+      // document.getElementById("text1").innerHTML=
+      // signedToTC(fromDecimal(document.getElementById('multiplicand').value, 2), 2)
+      // +" * "+
+      // signedToTC(fromDecimal(document.getElementById('multiplier').value, 2), 2);
     }
 
     function signedToTC(number, base, standardized=false, log=true){
