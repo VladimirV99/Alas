@@ -173,6 +173,8 @@ function isSignAt(number, base, number_type, index){
       return false;
     case NumberTypes.SIGNED:
       return temp==PLUS || temp==MINUS;
+    case NumberTypes.TC:
+      return index==0 && (temp=='0'|| temp=='1');
   }
 }
 
@@ -351,7 +353,9 @@ function toUOARNumber(number, base, number_type, log=true){
     fraction = arr[1];
   }
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  console.log(res);
   res = trimSign(res);
+  console.log(res);
   res = trimNumber(res);
   return res;
 }
@@ -381,6 +385,15 @@ function trimSign(number){
       }
       return number;
       break;
+    case NumberTypes.TC:
+      if(number.sign==SPACE){
+        if(number.whole.length>0){
+          number.sign = number.whole.charAt(0);
+        }else{
+          number.sign = "0";
+        }
+      }
+      return number;
   }
   return null;
 }
@@ -741,17 +754,28 @@ function wholeToLength(number, length, log=true){
     return null;
   }
   var whole = number.whole;
+  let toAdd = length-whole.length;
+  let temp = "";
   switch(number.number_type){
     case NumberTypes.SIGNED:
-      let toAdd = length-whole.length;
-      let temp = "";
       for(let i=0; i<toAdd; i++){
         temp = temp.concat("0");
       }
       whole = temp.concat(whole);
       break;
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      for(let i=0; i<toAdd; i++){
+        temp = temp.concat(number.sign);
+      }
+      whole = temp.concat(whole);
+      break;
   }
-  return new UOARNumber(number.sign, whole, number.fraction, number.base, number.number_type);
+
+  number.whole = whole;
+  return number;
+
+  //return new UOARNumber(number.sign, whole, number.fraction, number.base, number.number_type);
 }
 
 /**
@@ -771,7 +795,11 @@ function fractionToLength(number, length, log=true){
       fraction = fraction.concat("0");
     }
   }
-  return new UOARNumber(number.sign, number.whole, fraction, number.base, number.number_type);
+
+  number.fraction = fraction;
+  return number;
+
+  //return new UOARNumber(number.sign, number.whole, fraction, number.base, number.number_type);
 }
 
 /**
@@ -1034,6 +1062,33 @@ function getAbsoluteValue(number){
   }
 }
 
+function equalizeLength(num1, num2, standardized=false, log=true){
+  if(!standardized){
+    num1 = standardizeUOARNumber(num1, log);
+    num2 = standardizeUOARNumber(num2, log);
+    if(num1==null || num2==null){
+      addToStackTrace("equalizeLength", "Numbers are invalid", log);
+      return null;
+    }
+  }
+  if(num1.number_type!=num2.number_type){
+    addToStackTrace("equalizeLength", "Numbers are not same type", log);
+    return null;
+  }
+  
+  if(num1.whole.length>num2.whole.length){
+    num2 = wholeToLength(num2, num1.whole.length, log);
+  }else if(num1.whole.length<num2.whole.length){
+    num1 = wholeToLength(num1, num2.whole.length, log);
+  }
+  if(num1.fraction.length>num2.fraction.length){
+    num2 = fractionToLength(num2, num1.fraction.length, log);
+  }else if(num1.fraction.length<num2.fraction.length){
+    num1 = fractionToLength(num1, num2.fraction.length, log);
+  }
+
+}
+
 /**
  * Adds two numbers together
  * @param {UOARNumber} add1 First factor
@@ -1044,10 +1099,7 @@ function getAbsoluteValue(number){
  * @returns {UOARNumber} Sum of the two numbers 
  */
 function add(add1, add2, number_type, standardized=false, log=true){
-  if(add1.base!=add2.base){
-    addToStackTrace("add", "Can't add numbers. Bases are not equal");
-    return null;
-  }
+  
   if(!standardized){
     add1 = standardizeUOARNumber(add1, log);
     add2 = standardizeUOARNumber(add2, log);
@@ -1056,46 +1108,34 @@ function add(add1, add2, number_type, standardized=false, log=true){
       return null;
     }
   }
+  if(add1.base!=add2.base){
+    addToStackTrace("add", "Can't add numbers. Bases are not equal");
+    return null;
+  }
   var base = add1.base;
   // if(add1.number_type!=number_type)
   //   convertType(add1, number_type);
   // if(add2.number_type!=number_type)
   //   convertType(add2, number_type);
 
+  equalizeLength(add1, add2, true, log);
+  var whole_len=add1.whole.length;
+  var fraction_len=add1.fraction.length;
+
+  console.log(add1);
+  console.log(add2);
+
+  let sign;
+  let whole = "";
+  let fraction = "";
+  var carry = 0;
+  var temp;
+  
+
   switch(number_type){
     case NumberTypes.SIGNED:
-      var whole_len=0;
-      var fraction_len=0;
-      if(add1.whole.length>add2.whole.length){
-        whole_len = add1.whole.length;
-        add2 = wholeToLength(add2, whole_len, log);
-      }else if(add1.whole.length<add2.whole.length){
-        whole_len = add2.whole.length;
-        add1 = wholeToLength(add1, whole_len, log);
-      }else{
-        whole_len = add1.whole.length;
-      }
-      if(add1.fraction.length>add2.fraction.length){
-        fraction_len = add1.fraction.length;
-        add2 = fractionToLength(add2, fraction_len, log);
-      }else if(add1.fraction.length<add2.fraction.length){
-        fraction_len = add2.fraction.length;
-        add1 = fractionToLength(add1, fraction_len, log);
-      }else{
-        fraction_len = add1.fraction.length;
-      }
-
-      console.log(add1);
-      console.log(add2);
-
-      let sign;
-      let whole = "";
-      let fraction = "";
-      var carry = 0;
-      var temp;
       let sign1 = add1.sign;
       let sign2 = add2.sign;
-
       if(sign1==sign2){
         sign = sign1;
         for(let i=fraction_len-1; i>=0; i--){
@@ -1149,9 +1189,45 @@ function add(add1, add2, number_type, standardized=false, log=true){
         }
       }
 
-      var res = new UOARNumber(sign, whole, fraction, base, number_type);
-      return res;
+      break;
+
+    case NumberTypes.TC:
+      carry = 1;
+    case NumberTypes.OC:
+      
+
+      for(let i=fraction_len-1; i>=0; i--){
+        temp = getValueAt(add1.fraction, i, log) + getValueAt(add2.fraction, i, log) + carry;
+        
+        fraction = toValue(temp%base) + fraction;
+        carry = Math.floor(temp/base);
+        console.log("f " + i + " " + temp + " " + fraction + " " + carry);
+      }
+      for(let i=whole_len-1; i>=0; i--){
+        temp = getValueAt(add1.whole, i, log) + getValueAt(add2.whole, i, log) + carry;
+        whole = toValue(temp%base) + whole;
+        carry = Math.floor(temp/base);
+      }
+      carry = getValue(add1.sign) + getValue(add2.sign) + carry; //TODO To binary
+      console.log(whole + "." + fraction);
+      let overflow = "";
+      do {
+        overflow = toValue(carry%base) + overflow;
+        carry = Math.floor(carry/base);
+      } while(carry>0);
+      if(overflow.length==1){
+        sign = overflow;
+      }else{
+        sign = overflow.charAt(0);
+        whole = overflow.substr(1) + whole;
+      }
+      console.log(overflow);
+      
+      break;
   }
+
+  var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  return res;
 
 
 }

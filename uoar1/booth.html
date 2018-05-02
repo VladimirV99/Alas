@@ -242,6 +242,10 @@
 
     }
 
+    function complement(number){
+      
+    }
+
     function complementTC(number, base){
       var compl = base-1;
       var carry = 1;  //TODO Change remove carry for OC
@@ -402,8 +406,9 @@
 
     function test(){
       //console.log("ToLenUns - " + toLenUnsigned("92.001", 8, 4));
-      console.log("ToLenS - " + toLenSigned("00092.0010", 10, 8, 4));
+      // console.log("ToLenS - " + toLenSigned("00092.0010", 10, 8, 4));
       // console.log("addSignedTC - " + addSignedTC("FF17", "0A4", 16));
+      console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
       //console.log("compTC  - " + complementTC("FA1E4", 16));
       // console.log("shiftRightA - " + shiftRightA("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
       //console.log("booth - " + booth("-91", "22") );
