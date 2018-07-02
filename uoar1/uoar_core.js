@@ -59,6 +59,9 @@ function UOARNumber(sign, whole, fraction, base, number_type){
     }
     return res;
   }
+  this.copy = function(){
+    return new UOARNumber(this.sign, this.whole, this.fraction, this.base, this.number_type);
+  }
 }
 
 /**
@@ -167,14 +170,16 @@ function isValidBase(base){
  */
 function isSignAt(number, base, number_type, index){
   //TODO for SMR index==0
+  //TODO trim
   var temp = number.charAt(index);
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return false;
     case NumberTypes.SIGNED:
       return temp==PLUS || temp==MINUS;
+    case NumberTypes.OC:
     case NumberTypes.TC:
-      return index==0 && (temp=='0'|| temp=='1');
+      return index==0 && (temp=='0' || temp==toValue(base-1, false)); //TODO use 0 and base-1
   }
 }
 
@@ -208,6 +213,14 @@ function getSignEnd(number, base, number_type){
         }
       }
       return i;
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      let first_char = getValue(number.charAt(0), false); //TODO Add log param
+      console.log(first_char);
+      if(first_char==0 || first_char==base-1){
+        return 1;
+      }
+      return 0;
   }
   return null;
 }
@@ -235,21 +248,33 @@ function removeSign(number, base, number_type){
   }
 }
 
+function isValidSign(sign, base, number_type){ //TODO Change to require UOARNumber
+  if(sign.length==0 && (number_type==NumberTypes.OC || number_type==NumberTypes.TC))
+    return false;
+  //TODO check are signs same
+  for(let i=0; i<sign.length; i++){
+    if(!isSign(sign.charAt(i), base, number_type) && sign.charAt(i)!=SPACE)
+      return false;
+  }
+  return true;
+}
+
 /**
  * Checks if a UOARNumber is valid
  * @param {UOARNumber} number Number to validate
  * @returns {boolean} true if valid, false otherwise.
  */
 function isValidUOARNumber(number){
-  if(number==null || !isValidBase(number.base)){
+  if(number==null || !isValidBase(number.base) || !isValidSign(number.sign, number.base, number.number_type)){
     return false;
   }
+  
   var temp = "";
-  for(let i=0; i<number.sign.length; i++){
-    temp = number.sign.charAt(i);
-    if(!isSign(temp, number.base, number.number_type) && temp!=SPACE)
-      return false;
-  }
+  // for(let i=0; i<number.sign.length; i++){
+  //   temp = number.sign.charAt(i);
+  //   if(!isSign(temp, number.base, number.number_type) && temp!=SPACE)
+  //     return false;
+  // }
   for(let i=0; i<number.whole.length; i++){
     temp = number.whole.charAt(i);
     if(temp==SPACE)
@@ -340,23 +365,27 @@ function toUOARNumber(number, base, number_type, log=true){
   var temp = "";
   number = number.replace(SPACE, "");
   var arr = number.split(/[.,]/);
-  var i;
-  for(i=0; i<number.length; i++){
-    if(!isSignAt(number, base, number_type, i)){
-      break;
-    }
-  }
-  var sign = number.substr(0, i);
-  var whole = number.substr(i, arr[0].length-i);
+
+
+  var sign_end;
+  sign_end = getSignEnd(arr[0], base, number_type);
+  //console.log(sign_end);
+  // for(sign_end=0; sign_end<number.length; sign_end++){
+  //   if(!isSignAt(number, base, number_type, sign_end)){
+  //     break;
+  //   }
+  // }
+
+  var sign = number.substr(0, sign_end);
+  var whole = number.substr(sign_end, arr[0].length-sign_end);
   var fraction = "";
   if(arr.length==2){
     fraction = arr[1];
   }
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
-  console.log(res);
   res = trimSign(res);
-  console.log(res);
   res = trimNumber(res);
+  //console.log(res);
   return res;
 }
 
@@ -463,23 +492,18 @@ function getSignMultiplierForNumber(number, standardized=false){
 }
 
 function getSignMultiplier(sign, base, number_type, standardized){
-  if(standardized){
-    switch(number_type){
-      case NumberTypes.UNSIGNED:
-        return 1;
-      case NumberTypes.SIGNED:
+  switch(number_type){
+    case NumberTypes.UNSIGNED:
+      return 1;
+    case NumberTypes.SIGNED:
+      if(standardized){
         if(sign==MINUS){
           return -1;
         } else if(sign==PLUS){
           return 1;
         }
         break;
-    }
-  }else{
-    switch(number_type){
-      case NumberTypes.UNSIGNED:
-        return 1;
-      case NumberTypes.SIGNED:
+      }else{
         let num_len = sign.length;
         let index = 0;
         let sign_dec = 1;
@@ -491,7 +515,17 @@ function getSignMultiplier(sign, base, number_type, standardized){
           }
         }
         return sign_dec;
-    }
+      }
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      if(isValidSign(sign, base, number_type)){
+        if(sign.charAt(0)=="1"){
+          return -1;
+        }else{
+          return 1;
+        }
+      }
+      break;
   }
   return 0;
 }
@@ -543,7 +577,7 @@ function getSign(number, standardized=false){
  */
 function UOARNumberToDecimalInteger(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number, number.base, log);
+    number = standardizeUOARNumber(number, log);
     if(number == null){
       return null;
     }
@@ -648,6 +682,8 @@ function toDecimal(number, standardized=false, log=true){
  * @returns {UOARNumber} Number converted to specified base
  */
 function fromDecimal(number, base, standardized=false, log=true){
+  //TODO At the beggining of every method use a copy of the number
+  // unless you're specifically changing it
   if(!standardized){
     number = standardizeUOARNumber(number, log);
     if(number == null){
@@ -658,8 +694,28 @@ function fromDecimal(number, base, standardized=false, log=true){
   if(base==10){
     return number;
   }
+
+  var sign = "";
+  var toComplement = false;
+  switch(number.number_type){
+    case NumberTypes.UNSIGNED:
+      break;
+    case NumberTypes.SIGNED:
+      sign = number.sign;
+      break;
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      sign = "0";
+      if(number.sign.charAt(0)==toValue(number.base-1, false)){ // TODO Could be raplace with '9'
+        number = complement(number, true, log);
+        toComplement = true;
+        console.log(number);
+      }
+      
+      break;
+  }
   
-  var whole = UOARNumberToDecimalInteger(number);
+  var whole = UOARNumberToDecimalInteger(number); //TODO Use baseToDecimalInteger like for the fraction
   var fraction = "";
 
   var num_arr = [];
@@ -674,7 +730,7 @@ function fromDecimal(number, base, standardized=false, log=true){
   
   if(number.fraction!=""){
     number = fractionToLength(number, PRECISION, log);
-    var frac = baseToDecimalInteger(number.fraction, number.base, number.number_type, log);
+    var frac = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
     var limit = 0;
     var temp = 0;
     while(frac>0 && limit<PRECISION){
@@ -686,7 +742,13 @@ function fromDecimal(number, base, standardized=false, log=true){
     }
   }
 
-  return new UOARNumber(number.sign, whole, fraction, base, number.number_type);
+  
+  res = new UOARNumber(sign, whole, fraction, base, number.number_type);
+  if(toComplement){
+    res = complement(res, true, log);
+  }
+  //console.log(res);
+  return res;
 }
 
 /**
@@ -1099,15 +1161,15 @@ function equalizeLength(num1, num2, standardized=false, log=true){
  * @returns {UOARNumber} Sum of the two numbers 
  */
 function add(add1, add2, number_type, standardized=false, log=true){
-  
-  if(!standardized){
-    add1 = standardizeUOARNumber(add1, log);
-    add2 = standardizeUOARNumber(add2, log);
-    if(add1==null || add2==null){
-      addToStackTrace("add", "Numbers are invalid", log);
-      return null;
-    }
-  }
+  //TODO Check valid uoarnumber dont standardize
+  // if(!standardized){
+  //   add1 = standardizeUOARNumber(add1, log);
+  //   add2 = standardizeUOARNumber(add2, log);
+  //   if(add1==null || add2==null){
+  //     addToStackTrace("add", "Numbers are invalid", log);
+  //     return null;
+  //   }
+  // }
   if(add1.base!=add2.base){
     addToStackTrace("add", "Can't add numbers. Bases are not equal");
     return null;
@@ -1191,43 +1253,221 @@ function add(add1, add2, number_type, standardized=false, log=true){
 
       break;
 
-    case NumberTypes.TC:
-      carry = 1;
     case NumberTypes.OC:
+    case NumberTypes.TC:
       
-
+      //TODO UAOR Standard sign 1 long always
       for(let i=fraction_len-1; i>=0; i--){
         temp = getValueAt(add1.fraction, i, log) + getValueAt(add2.fraction, i, log) + carry;
         
         fraction = toValue(temp%base) + fraction;
         carry = Math.floor(temp/base);
-        console.log("f " + i + " " + temp + " " + fraction + " " + carry);
       }
       for(let i=whole_len-1; i>=0; i--){
         temp = getValueAt(add1.whole, i, log) + getValueAt(add2.whole, i, log) + carry;
         whole = toValue(temp%base) + whole;
         carry = Math.floor(temp/base);
       }
-      carry = getValue(add1.sign) + getValue(add2.sign) + carry; //TODO To binary
-      console.log(whole + "." + fraction);
-      let overflow = "";
-      do {
-        overflow = toValue(carry%base) + overflow;
-        carry = Math.floor(carry/base);
-      } while(carry>0);
-      if(overflow.length==1){
-        sign = overflow;
-      }else{
-        sign = overflow.charAt(0);
-        whole = overflow.substr(1) + whole;
+      temp = getValue(add1.sign) + getValue(add2.sign) + carry;
+      sign =  toValue(temp%base);
+
+      if(add1.sign.charAt(0) == add2.sign.charAt(0)){
+        if(add1.sign.charAt(0)!=sign){
+          whole = sign + whole;
+          sign = add1.sign;
+        }
       }
-      console.log(overflow);
+
+      if(number_type == NumberTypes.OC){
+        carry = Math.floor(temp/base); //Move to OC case
+
+        if(carry==0)
+          break;
+        
+      }
+      
+
+      console.log(sign + "" + whole + "." + fraction);
+      // let overflow = "";
+      // do {
+      //   overflow = toValue(carry%base) + overflow;
+      //   carry = Math.floor(carry/base);
+      // } while(carry>0);
+      // if(overflow.length==1){
+      //   sign = overflow;
+      // }else{
+      //   sign = overflow.charAt(0);
+      //   whole = overflow.substr(1) + whole;
+      // }
+      // console.log(overflow);
       
       break;
+    
+      
+      //TODO Attemp to add 1 and check for overflow
+        
   }
 
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
   return res;
+}
 
+function complement(number, standardized=false, log=true){
+  // TODO Remove standardized to keep length
+  // if(!standardized){ //TODO Dont stadardize only trim sign for signed
+  //   number = standardizeUOARNumber(number, log);
+  //   if(number==null){
+  //     addToStackTrace("complement", "Number is invalid", log);
+  //     return null;
+  //   }
+  // }
+
+  var base_complement = number.base-1;
+  var complement_sign = "";
+  var complement_whole = "";
+  var complement_fraction = "";
+  var carry = 0;
+  switch(number.number_type){ //TODO standardize duplicate if length 1 to fill sign and whole
+    case NumberTypes.UNSIGNED:
+      addToStackTrace("complement", "Can't complement unsigned number", log);
+      return null;
+    case NumberTypes.SIGNED:
+      complement_sign = ""
+      complement_whole = number.whole;
+      complement_fraction = number.fraction;
+      break;
+    case NumberTypes.TC:
+      carry = 1;
+    case NumberTypes.OC:
+      for(let i=number.fraction.length-1; i>=0; i--){
+        temp = base_complement - getValueAt(number.fraction, i, log) + carry;
+        complement_fraction = toValue(temp%number.base) + complement_fraction;
+        carry = Math.floor(temp/number.base);
+      }
+      for(let i=number.whole.length-1; i>=0; i--){
+        temp = base_complement - getValueAt(number.whole, i, log) + carry;
+        complement_whole = toValue(temp%number.base) + complement_whole;
+        carry = Math.floor(temp/number.base);
+      }
+      temp = base_complement - getValue(number.sign) + carry;
+      complement_sign = toValue(temp%number.base);
+      break;
+  }
+
+  var res = new UOARNumber(complement_sign, complement_whole, complement_fraction, number.base, number.number_type);
+  return res;
+}
+
+function addToLowestPoint(number, toAdd, log=true){
+  let sign = "";
+  let whole = "";
+  let fraction = "";
+  var carry = toAdd;
+  var temp;
+  
+  for(let i=number.fraction.length-1; i>=0; i--){
+    temp = getValueAt(number.fraction, i, log) + carry;
+    fraction = toValue(temp%base) + fraction;
+    carry = Math.floor(temp/base);
+  }
+  for(let i=number.whole.length-1; i>=0; i--){
+    temp = getValueAt(number.whole, i, log) + carry;
+    whole = toValue(temp%base) + whole;
+    carry = Math.floor(temp/base);
+  }
+
+  if(carry!=0){
+    switch(number.number_type){
+      case NumberTypes.UNSIGNED:
+      case NumberTypes.SIGNED:
+        whole = toValue(carry, log) + whole;
+        break;
+      case NumberTypes.OC:
+      case NumberTypes.TC:
+        for(let i=number.sign.length-1; i>=0; i--){
+          temp = getValueAt(number.whole, i, log) + carry;
+          sign = toValue(temp%base) + sign;
+          carry = Math.floor(temp/base);
+        }
+        sign_end = getSignEnd(number.sign, number.base, number.number_type);
+        whole = sign.substr(sign_end) + whole;
+        sign = sign.substr(0, sign_end);
+        break;
+        
+    }
+  }
+  
+  return number;
+}
+
+function createConstantString(constant, length){
+  if(constant.length != 1)
+    return null;
+  var res = "";
+  for(let i = 0; i<length; i++){
+    res = res.concat(constant);
+  }
+  return res;
+}
+
+function createZeroString(length){
+  return createConstantString("0", length);
+}
+
+function shiftRightL(numbers, by){
+  var line = "";
+  var line_len = 0;
+  for(let i = 0; i<numbers.length; i++){
+    line = line.concat(numbers[i].sign).concat(numbers[i].whole).concat(numbers[i].fraction);
+  }
+  line = createZeroString(by).concat(line);
+  line_len = line.length;
+  var ptr = line_len-by;
+  console.log(line);
+
+  numbers.reverse();
+  var sign_len = 0;
+  var whole_len = 0;
+  var frac_len = 0;
+  for(let i = 0; i<numbers.length; i++){
+    sign_len = numbers[i].sign.length;
+    whole_len = numbers[i].whole.length;
+    frac_len = numbers[i].fraction.length;
+    ptr -= frac_len;
+    numbers[i].fraction = line.substr(ptr, frac_len);
+    ptr -= whole_len;
+    numbers[i].whole = line.substr(ptr, whole_len);
+    ptr -= sign_len;
+    numbers[i].sign = line.substr(ptr, sign_len);
+  }
+
+}
+
+function shiftRightA(numbers, by){
+  var line = "";
+  var line_len = 0;
+  for(let i = 0; i<numbers.length; i++){
+    line = line.concat(numbers[i].sign).concat(numbers[i].whole).concat(numbers[i].fraction);
+  }
+  line = createConstantString(numbers[0].sign.charAt(0), by).concat(line);
+  line_len = line.length;
+  var ptr = line_len-by;
+  console.log(line);
+
+  numbers.reverse();
+  var sign_len = 0;
+  var whole_len = 0;
+  var frac_len = 0;
+  for(let i = 0; i<numbers.length; i++){
+    sign_len = numbers[i].sign.length;
+    whole_len = numbers[i].whole.length;
+    frac_len = numbers[i].fraction.length;
+    ptr -= frac_len;
+    numbers[i].fraction = line.substr(ptr, frac_len);
+    ptr -= whole_len;
+    numbers[i].whole = line.substr(ptr, whole_len);
+    ptr -= sign_len;
+    numbers[i].sign = line.substr(ptr, sign_len);
+  }
 
 }

@@ -9,25 +9,41 @@
   <script>
 
     function convertToTC(number, standardized=false, log=true){
+      if(!standardized){ //TODO Dont stadardize only trim sign for signed on a copy
+        number = standardizeUOARNumber(number, log);
+        if(number==null){
+          addToStackTrace("complement", "Number is invalid", log);
+          return null;
+        }
+      }
+      
       switch(number.number_type){
         case NumberTypes.SIGNED:
-          if(number.sign = "-"){
+          number.number_type = NumberTypes.TC;
+          if(number.sign == "-"){
             number.sign = "0";
             return complement(number);
           }else{
             number.sign = "0";
             return number;
           }
+          break;
+        case NumberTypes.OC:
+          number = addToLowestPoint(number, 1, log);
+          return number;
+        case NumberTypes.TC:
+          return number;
       }
     }
 
-    function converToType(number, type, standardized=false, log=true){
+    function convertToType(number, type, standardized=false, log=true){
       if(number.number_type==type)
-        return type;
+        return number;
       switch(type){
         case NumberTypes.TC:
           return convertToTC(number);
       }
+      return null;
     }
 
     function calculate() {
@@ -46,17 +62,6 @@
       // signedToTC(fromDecimal(document.getElementById('multiplicand').value, 2), 2)
       // +" * "+
       // signedToTC(fromDecimal(document.getElementById('multiplier').value, 2), 2);
-    }
-
-    function signedToTC(number, base, standardized=false, log=true){
-      var res = "";
-      if(getSign(number, standardized)==MINUS){
-        res = res.concat("0");
-      }else{
-        res = res.concat(toValue(base-1));
-      }
-      res = res.concat(number.substr(getSignEnd(number)));
-      return res;
     }
 
     // function convertToBinary(x){
@@ -109,209 +114,9 @@
     // }
 
 
-    function toLenSigned(number, base, n, m, log=true){
-      //TODO trimSignedNumber(number);
-      // number = trimNumber(number);
-      var res = "";
-      var arr = number.split(/[.,]/);
-      if(arr.length>2){
-        addToStackTrace("toLenSigned", "Multiple radix points", log);
-        return null;
-      }
-      var whole = removeSign(arr[0]);
-      if(whole.length < n-m){
-        res = res.concat(addSignBefore(whole, base, n-m));
-      } else if(whole.length > n-m){
-        addToStackTrace("toLenSigned", "Can't trim. Number is too large", log);
-        return null;
-      }
-      if(m>0 && arr.length==2){
-        var frac = arr[1];
-        res = res.concat(".");
-        if(frac.length<m){
-          res = res.concat(addZeroesAfter(frac, m));
-        }else if(frac.length > m){
-          res = res.concat(frac.substr(0, m));
-        }
-      }
-      return res;
-    }
-
-    function toLenUnsigned(num, n, m){
-      // if(n+m+1<num.length){
-      //   return null;
-      // }
-      var res = "";
-      arr = num.split(/[.,]/);
-      whole = removeSign(arr[0]); //TODO add Standardize number (unsig, sig) to validate and trim sign and add 0 before radix
-      if(whole.length < n-m){
-        console.log("azb - " + whole.toString() + " " + (n-m).toString());
-        res += addZeroesBefore(whole, n-m);
-        console.log("azb2 - " + res);
-      } else if(whole.length > n-m){
-        console.log("Cant trim too big number");
-        return null;
-      }
-      if(m>0){
-        frac="";
-        if(arr.length>1)
-          frac = arr[1];
-        res += ".";
-        if(frac.length<m){
-          res  += addZeroesAfter(frac, m);
-        }else if(frac.length > m){
-          res += frac.substr(0, m);
-        }
-      }
-      return res;
-    }
-
-    function addSignBefore(number, base, total){
-      var val = toValue(base-1);
-      var offset = 0;
-      //if(hasSign(number)){
-        for(i=0; i<number.length; i++){ //TODO This shouldnt have a sign
-          if(number[i]=='-' || number[i]=='+')//TODO Make isSign(number, pos) and getSignEnd(number);
-            offset++;
-          else {
-
-            console.log("tt - " + number[i]);
-            if(number[i]=='0'){
-              val = "0";
-
-            }else if(number[i]!=val){
-              return null;
-            }
-            console.log("tt2 - " + val);
-
-            break;
-          }
-        }
-      //}
-
-
-      var res = "";
-      var toAdd = total - number.substr(offset).replace(/[.,]/, "").length;
-      console.log(total + " " + number.substr(offset).replace(/[.,]/, "") + " " + toAdd);
-
-      if(toAdd<0)
-        return number;
-
-      for(i = 0; i<number.length; i++){
-        if(number[i] != '+' && number[i]!='-'){
-          for(j=0; j<toAdd; j++){
-            res+=val;
-          }
-          res += number.substr(i);
-          break;
-        }else{
-          res += number[i];
-        }
-      }
-      return res;
-    }
-
-
-    function addSignedTC(add1, add2, base){
-      var max_len=0;
-      if(add1.length>add2.length){ //TODO Use ToLenSigned
-        max_len = add1.length;
-        add2 = addSignBefore(add2, base, max_len);
-      }else if(add1.length<add2.length){
-        max_len = add2.length;
-        add1 = addSignBefore(add1, base, max_len);
-      }else{
-        max_len = add1.length;
-      }
-      console.log("aa + " +add1 + "  " + add2 + " " + max_len);
-
-      var res = [];
-      var carry = 0;
-      for(i = max_len-1; i>=0; i--){
-        temp = getValueAt(add1, i) + getValueAt(add2, i) + carry;
-        //console.log(temp);
-        res.push(toValue(temp%base));
-        carry = Math.floor(temp/base);
-      }
-
-      if(res.length>max_len){
-        res.pop();
-      }
-      res = res.reverse().join("");
-      return res;
-
-    }
-
-    function complement(number){
-      
-    }
-
-    function complementTC(number, base){
-      var compl = base-1;
-      var carry = 1;  //TODO Change remove carry for OC
-      var res = [];
-      for(m = number.length-1; m>=0; m--){
-        if(number[m]=='.' || number[m]==','){
-          res.push(number[m]);
-          continue;
-        }
-        temp = getValueAt(number, m);
-        if(temp == null)
-          return null;
-          console.log("f - " + temp + " " + number[m] + " " + m + " " + compl);
-          toAdd = compl - temp + carry;
-        res.push(toValue(toAdd%base));
-
-        carry = Math.floor(toAdd/base);
-        console.log("ff " + toValue(toAdd%base) + " " + carry);
-
-      }
-      return res.reverse().join("");
-    }
-
-    function shiftRightA(number, times, base, prev){
-      s_prev = prev;
-      if(prev.length-times>0){
-        s_prev = prev.substr(prev.length-times, times);
-      }
-
-      s_num = "";
-      if(number.length-times>0){
-        s_num = number.substr(0, number.length-times);
-      }
-      console.log(s_prev + " " + s_num + " " + prev + " " + prev.length);
-      if(s_prev.length+s_num.length<number.length){
-      //  console.log(s_prev.length+s_num.length);
-        //console.log(number.length);
-        s_num = addSignBefore(s_num, base, number.length-s_prev.length); //TODO Decide where to put the extra sign
-      }
-      var res = s_prev + s_num;
-      return res;
-
-    }
-
-    function shiftRightL(number, times, base, prev){
-      s_prev = prev;
-      if(prev.length-times>0){
-        s_prev = prev.substr(prev.length-times, times);
-      }
-
-      s_num = "";
-      if(number.length-times>0){
-        s_num = number.substr(0, number.length-times);
-      }
-      console.log(s_prev + " " + s_num + " " + prev + " " + prev.length);
-      if(s_prev.length+s_num.length<number.length){
-      //  console.log(s_prev.length+s_num.length);
-        //console.log(number.length);
-        s_num = addZeroesBefore(s_num, number.length-s_prev.length);
-      }
-      var res = s_prev + s_num;
-      return res;
-
-    }
 
     function shiftLeft(number, times, prev){
+      //TODO Implement for UOARNumber
       s_num = "";
       if(number.length>times){
         s_num = number.substr(times);
@@ -336,89 +141,63 @@
     }
 
 
-    function booth(num1, num2){
-      n1 = fromDecimal(trimSign(num1), 2);
-      n2 = fromDecimal(trimSign(num2), 2);
-      //console.log(n1 + " " + n2);
-      if(n1[0]=='-'){
-        n1 = "0"+n1.substr(1);
-        n1 = complementTC(n1, 2);
-      }else{
-        n1 = "0"+n1.substr(1);
-      }
+    function booth(num1, num2, standardized=false, log=true){
+      n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
+      n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
 
-      if(n2[0]=='-'){
-        n2 = "0"+n2.substr(1);
-        n2 = complementTC(n2, 2);
-      }else{
-        n2 = "0"+n2.substr(1);
-      }
 
-      var len = 0;
-      if(n1.length<n2.length){
-        len = n2.length;
-        n1= addSignBefore(n1,2, len);
-      }else if(n1.length>n2.length){
-        len = n1.length;
-        n2= addSignBefore(n2, 2, len);
-      }
+      //TODO How fromDecimal treats negative numbers
 
-      console.log("A: 00000000 M:"+n1+" P:"+n2 );
-      var a = addSignBefore("0", 2, len);
+
+      equalizeLength(n1, n2, true, log);
+      console.log(n1);
+      console.log(n2);
+      var len = n1.toSigned().length;
+
+
+      var a = wholeToLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, log);
+      console.log(a);
       var m = n1;
-      neg_m = complementTC(n1, 2);
-      p = n2;
-      p1 = "0";
+      var neg_m = complement(n1);
+      console.log(neg_m);
+      var p = n2;
+      var p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
+      var registers = [a, p, p1];
 
-      console.log("A:" + a +" P:"+p + " P1:" + p1 + " M:" + m + " L: " + len);
-
-      for(im=0; im<len; im++){
-        op = p[len-1] + p1;
-
-        if(op=="00" || op=="11"){
-          //NOOP
-        }else if(op == "10"){
-          console.log(a + " " + neg_m);
-          a = addSignedTC(a, neg_m, 2);
-          console.log(a + " " + neg_m);
-        }else if(op == "01"){
-          console.log(a + " " + m);
-          a = addSignedTC(a, m, 2);
-          console.log(a + " " + m);
-
+      for(let im=0; im<len; im++){
+        op = p.toSigned().charAt(p.toSigned().length-1) + p1.toSigned();
+        console.log(a.toSigned() + " " + p.toSigned() + " " + p1.toSigned()+ " - " + op);
+        if(op=="10"){
+          a = add(a, neg_m, NumberTypes.TC, true, log);
+        }else if(op=="01"){
+          a = add(a, m, NumberTypes.TC, true, log);
         }
-
-        console.log("p1");
-        p1 = shiftRightA(p1, 1, 2, p);
-        console.log("p");
-        p = shiftRightA(p , 1, 2, a);
-        console.log("a");
-        a = shiftRightA(a, 1, 2, "");
-
-
-        console.log("A:" + a +" P:"+p + " P1:" + p1);
+        shiftRightA([a, p, p1], 1, log);
       }
-
-      return a+" "+p;
+      console.log(a.toSigned()+p.toSigned());
+      return a.toSigned() + p.toSigned();
 
 
     }
 
     function test(){
-      //console.log("ToLenUns - " + toLenUnsigned("92.001", 8, 4));
-      // console.log("ToLenS - " + toLenSigned("00092.0010", 10, 8, 4));
-      // console.log("addSignedTC - " + addSignedTC("FF17", "0A4", 16));
-      console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
-      //console.log("compTC  - " + complementTC("FA1E4", 16));
+      
+      
+      var number = toUOARNumber("110010.11", 2, NumberTypes.TC, true);
+      shiftRightA([number], 3);
+      //console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
+
+      //console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
+      
+      //console.log("fromDecimal - " + fromDecimal(toUOARNumber("964.5", 10, NumberTypes.TC, true), 2, false, true).toSigned());
+      console.log("shiftRightA - " + number.toSigned());
+      
+      
       // console.log("shiftRightA - " + shiftRightA("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
       //console.log("booth - " + booth("-91", "22") );
       // console.log("shiftRightA - " + shiftRightL("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
       // console.log("shiftLeft - " + shiftLeft("11011101", 3, "01")); //TODO Remove spaces when reading numbers
 
-
-      // console.log(isNumberValid("+-1233.33388", 9));
-      // console.log(isNumberValid("+-+--12333.33889F", 15));
-      // console.log(isRadixPoint(',') + " " + isRadixPoint('f') +" " +  isRadixPoint('.'));
     }
 
   </script>
