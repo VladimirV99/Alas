@@ -32,6 +32,21 @@ const number_type_description = [
 ];
 
 /**
+ * @typedef {number} ShiftType
+ */
+
+ /**
+  * Shift type enum
+  * @readonly
+  * @enum {ShiftType}
+  */
+ var ShiftTypes = {
+   RIGHT_A: 0,
+   RIGHT_L: 1,
+   LEFT: 2
+ };
+
+/**
  * @typedef {Object} UOARNumber
  * @property {string} sign
  * @property {string} whole
@@ -154,7 +169,8 @@ function isRadixPoint(character){
 
 /**
  * Checks if a base is valid
- * @param {number} base Base to validate 
+ * @param {number} base Base to validate
+ * @returns {boolean} is base inside bounds
  */
 function isValidBase(base){
   return base!=null && base>1 && base<36;
@@ -169,17 +185,21 @@ function isValidBase(base){
  * @returns {boolean} true if number has a sign at index, false otherwise
  */
 function isSignAt(number, base, number_type, index){
-  //TODO for SMR index==0
-  //TODO trim
+  number = number.replace(/ /g, '');
+  if(!isValidBase(base) || number.length<=index)
+    return null;
   var temp = number.charAt(index);
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return false;
     case NumberTypes.SIGNED:
       return temp==PLUS || temp==MINUS;
+    case NumberTypes.SMR:
     case NumberTypes.OC:
     case NumberTypes.TC:
-      return index==0 && (temp=='0' || temp==toValue(base-1, false)); //TODO use 0 and base-1
+      return index==0 && (temp==toValue(0, false) || temp==toValue(base-1, false));
+    default:
+      return null;
   }
 }
 
@@ -199,9 +219,10 @@ function isSign(character, base, number_type){
  * @param {string} number Number to operate on
  * @param {number} base Base of the number
  * @param {NumberType} number_type Type of the number
- * @returns {number} First index after the sign
+ * @param {boolean} [log=true] Should log
+ * @returns {number} Length of the sign
  */
-function getSignEnd(number, base, number_type){
+function getSignEnd(number, base, number_type, log=true){
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return 0;
@@ -213,16 +234,52 @@ function getSignEnd(number, base, number_type){
         }
       }
       return i;
+    case NumberTypes.SMR:
     case NumberTypes.OC:
     case NumberTypes.TC:
-      let first_char = getValue(number.charAt(0), false); //TODO Add log param
-      console.log(first_char);
-      if(first_char==0 || first_char==base-1){
-        return 1;
-      }
+      let j;
+      for(j=0; j<number.length; j++)
+        if(number.charAt(j)!=SPACE)
+          break;
+      let first_char = getValue(number.charAt(j), log);
+      if(first_char===null)
+        return null;
+      if(first_char==0 || first_char==base-1)
+        return j+1;
       return 0;
   }
   return null;
+}
+
+/**
+ * Gets sign from number
+ * @param {string} number Number to remove sign from
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Sign of the number
+ */
+function getSign(number, base, number_type, log=true){
+  var sign_end = getSignEnd(number, base, number_type, log);
+  if(sign_end===null)
+    return null;
+  if(sign_end==0){
+    switch(number_type){
+      case UNSIGNED:
+        return "";
+      case NumberTypes.SIGNED:
+        addToStackTrace("getSign", "Missing sign for signed number \"" + number + "\", assuming positive", log);
+        return PLUS;
+      case NumberTypes.SMR:
+      case NumberTypes.OC:
+      case NumberTypes.TC:
+        addToStackTrace("getSign", "Missing sign for signed number \"" + number + "\", assuming positive", log);
+        return "0";
+      default:
+        return null;
+    }
+  }
+  return number.substr(0, sign_end);
 }
 
 /**
@@ -230,37 +287,59 @@ function getSignEnd(number, base, number_type){
  * @param {string} number Number to remove sign from
  * @param {number} base Base of the number
  * @param {NumberType} number_type Type of the number
+ * @param {boolean} [log=true] Should log
  * @returns {string} Number without the sign
  */
-function removeSign(number, base, number_type){ 
-  //TODO For checks in IEEE/DPD
-  switch(number_type){
-    case NumberTypes.UNSIGNED:
-      return number;
-    case NumberTypes.SIGNED:
-      let i;
-      for(i=0; i<number.length; i++){
-        if(!isSignAt(number, base, number_type, i)){
-          break;
-        }
-      }
-      return number.substr(i);
+function removeSign(number, base, number_type, log=true){
+  var sign_end = getSignEnd(number, base, number_type, log);
+  if(sign_end===null)
+    return null;
+  if(sign_end==number.length){
+    addToStackTrace("removeSign", "Missing whole for number \"" + number + "\", assuming zero", log);
+    return "0";
   }
-}
-
-function isValidSign(sign, base, number_type){ //TODO Change to require UOARNumber
-  if(sign.length==0 && (number_type==NumberTypes.OC || number_type==NumberTypes.TC))
-    return false;
-  //TODO check are signs same
-  for(let i=0; i<sign.length; i++){
-    if(!isSign(sign.charAt(i), base, number_type) && sign.charAt(i)!=SPACE)
-      return false;
-  }
-  return true;
+  return number.substr(sign_end);
 }
 
 /**
- * Checks if a UOARNumber is valid
+ * Checks if sign is valid
+ * @param {string} sign Sign to check
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @returns {boolean} True if valid, false otherwise
+ */
+function isValidSign(sign, base, number_type){
+  sign = sign.replace(/ /g, '');
+  if(sign.length==0){
+    if(number_type==NumberTypes.UNSIGNED)
+      return true;
+    else
+      return false;
+  }
+  switch(number_type){
+    case NumberTypes.SIGNED:
+      for(let i=0; i<sign.length; i++){
+        if(!isSign(sign.charAt(i), base, number_type))
+          return false;
+      }
+      return true;
+    case NumberTypes.SMR:
+      return sign.length==1 && isSign(sign.charAt(0), base, number_type);
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      let temp = sign.charAt(0);
+      if(!isSign(temp, base, number_type))
+        return false;
+      for(let i=1; i<sign.length; i++){
+        if(sign.charAt(i) != temp)
+          return false;
+      }
+      return true;
+  }
+}
+  
+/**
+ * Checks if an UOARNumber is valid
  * @param {UOARNumber} number Number to validate
  * @returns {boolean} true if valid, false otherwise.
  */
@@ -335,11 +414,6 @@ function isValidNumber(number, base, number_type){
   return true;
 }
 
-function runTests(){
-  clearStackTrace();
-  console.log(toDecimal(toUOARNumber("-10.1", 2, true)));
-}
-
 /**
  * Converts a number string written as specified type to a UOARNumber of the same type
  * @param {string} number Number to convert to UOARNumber
@@ -368,7 +442,7 @@ function toUOARNumber(number, base, number_type, log=true){
 
 
   var sign_end;
-  sign_end = getSignEnd(arr[0], base, number_type);
+  sign_end = getSignEnd(arr[0], base, number_type, log);
   //console.log(sign_end);
   // for(sign_end=0; sign_end<number.length; sign_end++){
   //   if(!isSignAt(number, base, number_type, sign_end)){
@@ -377,7 +451,7 @@ function toUOARNumber(number, base, number_type, log=true){
   // }
 
   var sign = number.substr(0, sign_end);
-  var whole = number.substr(sign_end, arr[0].length-sign_end);
+  var whole = number.substr(sign_end, arr[0].length-sign_end); //TODO use removeSign
   var fraction = "";
   if(arr.length==2){
     fraction = arr[1];
@@ -471,17 +545,6 @@ function standardizeUOARNumber(number, log=true){
 }
 
 /**
- * Checks if the given string is a sign
- * @param {string} number String to check
- * @returns {boolean} true if string has a sign, false otherwise
- */
-function hasSign(number){
-  return number!=null && number.sign!=""
-  // var sign = number.trim().charAt(0);
-  // return sign==MINUS || sign==PLUS;
-}
-
-/**
  * Gets sign multiplier of a number
  * @param {UOARNumber} number Number to operate on
  * @param {boolean} [standardized=false] Treat as standardized 
@@ -531,44 +594,6 @@ function getSignMultiplier(sign, base, number_type, standardized){
 }
 
 /**
- * Gets sign of a signed number
- * @param {UOARNumber} number Number to operate on
- * @param {boolean} standardized Treat as standardized
- * @returns {string} minus if negative, plus otherwise
- */
-function getSign(number, standardized=false){
-  if(standardized){
-    var sign = number.charAt(0);
-    switch(number.number_type){
-      case SIGNED:
-        if(sign==MINUS || sign==PLUS)
-          return sign;
-        return null;
-    } 
-  }else{
-    switch(number.number_type){
-      case NumberTypes.SIGNED:
-        var num_len = number.length;
-        var index = 0;
-        var sign = 1;
-        for(; index<num_len; index++){
-          if(number.charAt(index)==MINUS){
-            sign *= -1;
-          }else if(number.charAt(index)!=PLUS && number.charAt(index)!=SPACE){
-            break;
-          }
-        }
-        if(sign==1){
-          return "+";
-        }else{
-          return "-";
-        }
-    }
-  }
-  return null;
-}
-
-/**
  * Converts a UOARNumber to an integer
  * @param {UOARNumber} number Number to convert
  * @param {boolean} [standardized=false] Treat as standardized
@@ -609,7 +634,7 @@ function baseToDecimalInteger(number, base, number_type, log=true){
     addToStackTrace("baseToDecimalInteger", "Invalid base \"" + base + "\"");
     return null;
   }
-  var sign_end = getSignEnd(number, base, number_type);
+  var sign_end = getSignEnd(number, base, number_type, log);
   var whole = number.split(/[.,]/)[0].substr(sign_end);
   var num_length = whole.length-1;
   var decimal = 0;
@@ -878,7 +903,7 @@ function addZeroesAfter(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesAfter", "Number is null", log);
     return null;
   }
-  var offset = getSignEnd(number, base, number_type);
+  var offset = getSignEnd(number, base, number_type, log);
   var toAdd = length - number.replace(/[.,]/, "").length - offset;
   var res = number;
   if(toAdd>0){
@@ -903,7 +928,7 @@ function addZeroesBefore(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesBefore", "Number is null", log);
     return null;
   }
-  var offset = getSignEnd(number, base, number_type);
+  var offset = getSignEnd(number, base, number_type, log);
   var toAdd = length - number.replace(/[.,]/, "").length - offset;
   var res = number;
   if(toAdd>0){
@@ -1389,7 +1414,7 @@ function addToLowestPoint(number, toAdd, log=true){
           sign = toValue(temp%base) + sign;
           carry = Math.floor(temp/base);
         }
-        sign_end = getSignEnd(number.sign, number.base, number.number_type);
+        sign_end = getSignEnd(number.sign, number.base, number.number_type, log);
         whole = sign.substr(sign_end) + whole;
         sign = sign.substr(0, sign_end);
         break;
@@ -1414,18 +1439,27 @@ function createZeroString(length){
   return createConstantString("0", length);
 }
 
-function shiftRightL(numbers, by){
+function shift(numbers, by, shift_type){
   var line = "";
-  var line_len = 0;
+  var ptr = 0;
   for(let i = 0; i<numbers.length; i++){
     line = line.concat(numbers[i].sign).concat(numbers[i].whole).concat(numbers[i].fraction);
   }
-  line = createZeroString(by).concat(line);
-  line_len = line.length;
-  var ptr = line_len-by;
-  console.log(line);
-
-  numbers.reverse();
+  switch(shift_type){
+    case ShiftTypes.RIGHT_A:
+      line = createConstantString(numbers[0].sign.charAt(0), by).concat(line);
+      break;
+    case ShiftTypes.RIGHT_L:
+      line = createZeroString(by).concat(line);
+      break;
+    case ShiftTypes.LEFT:
+      line = line.concat(createZeroString(by));
+      ptr = by;
+      break;
+    default:
+      return;
+  }
+  
   var sign_len = 0;
   var whole_len = 0;
   var frac_len = 0;
@@ -1433,41 +1467,11 @@ function shiftRightL(numbers, by){
     sign_len = numbers[i].sign.length;
     whole_len = numbers[i].whole.length;
     frac_len = numbers[i].fraction.length;
-    ptr -= frac_len;
-    numbers[i].fraction = line.substr(ptr, frac_len);
-    ptr -= whole_len;
-    numbers[i].whole = line.substr(ptr, whole_len);
-    ptr -= sign_len;
     numbers[i].sign = line.substr(ptr, sign_len);
-  }
-
-}
-
-function shiftRightA(numbers, by){
-  var line = "";
-  var line_len = 0;
-  for(let i = 0; i<numbers.length; i++){
-    line = line.concat(numbers[i].sign).concat(numbers[i].whole).concat(numbers[i].fraction);
-  }
-  line = createConstantString(numbers[0].sign.charAt(0), by).concat(line);
-  line_len = line.length;
-  var ptr = line_len-by;
-  console.log(line);
-
-  numbers.reverse();
-  var sign_len = 0;
-  var whole_len = 0;
-  var frac_len = 0;
-  for(let i = 0; i<numbers.length; i++){
-    sign_len = numbers[i].sign.length;
-    whole_len = numbers[i].whole.length;
-    frac_len = numbers[i].fraction.length;
-    ptr -= frac_len;
-    numbers[i].fraction = line.substr(ptr, frac_len);
-    ptr -= whole_len;
+    ptr += sign_len;
     numbers[i].whole = line.substr(ptr, whole_len);
-    ptr -= sign_len;
-    numbers[i].sign = line.substr(ptr, sign_len);
+    ptr += whole_len;
+    numbers[i].fraction = line.substr(ptr, frac_len);
+    ptr += frac_len;
   }
-
 }

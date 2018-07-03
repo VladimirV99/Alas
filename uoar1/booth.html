@@ -52,16 +52,10 @@
       var multiplier = fromDecimal(toUOARNumber(document.getElementById('multiplier').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       clearOutput();
       clearStackTrace();
-      var res = booth(multiplicand, multiplier);
+      var res = booth(multiplicand, multiplier, true, true);
       if(res!=null){
         document.getElementById("text1").innerHTML = output;
       }
-      
-
-      // document.getElementById("text1").innerHTML=
-      // signedToTC(fromDecimal(document.getElementById('multiplicand').value, 2), 2)
-      // +" * "+
-      // signedToTC(fromDecimal(document.getElementById('multiplier').value, 2), 2);
     }
 
     // function convertToBinary(x){
@@ -114,90 +108,74 @@
     // }
 
 
-
-    function shiftLeft(number, times, prev){
-      //TODO Implement for UOARNumber
-      s_num = "";
-      if(number.length>times){
-        s_num = number.substr(times);
-      }
-
-
-      s_prev = prev;
-      if(prev.length-times>0){
-        s_prev = prev.substr(0, times);
-      }
-
-
-      console.log(s_prev + " " + s_num + " " + prev + " " + prev.length);
-      if(s_prev.length+s_num.length<number.length){
-      //  console.log(s_prev.length+s_num.length);
-        //console.log(number.length);
-        s_prev = addZeroesAfter(s_prev, number.length-s_num.length);
-      }
-      var res = s_num +s_prev;
-      return res;
-
-    }
-
-
     function booth(num1, num2, standardized=false, log=true){
-      n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
-      n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
-
+      if(num1.base!=2 || num2.base!=2){ //TODO Convert to Binary
+        addToStackTrace("booth", "Operands are not binary", log);
+        return;
+      }
 
       //TODO How fromDecimal treats negative numbers
-
-
+      n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
+      n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
       equalizeLength(n1, n2, true, log);
-      console.log(n1);
-      console.log(n2);
       var len = n1.toSigned().length;
 
-
       var a = wholeToLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, log);
-      console.log(a);
       var m = n1;
       var neg_m = complement(n1);
-      console.log(neg_m);
       var p = n2;
       var p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
       var registers = [a, p, p1];
 
+      addToOutput("<table>");
+      addToOutput("<tr><td>" + registers[0].toSigned() + "</td><td>" + registers[1].toSigned() + "</td><td>" + registers[2].toSigned() + "</td><td>Init</td></tr>");
+      var work1 = "";
+      var work2 = "";
       for(let im=0; im<len; im++){
-        op = p.toSigned().charAt(p.toSigned().length-1) + p1.toSigned();
-        console.log(a.toSigned() + " " + p.toSigned() + " " + p1.toSigned()+ " - " + op);
-        if(op=="10"){
-          a = add(a, neg_m, NumberTypes.TC, true, log);
+        addToOutput("<tr>");
+        
+        op = registers[1].toSigned().charAt(registers[1].toSigned().length-1) + registers[2].toSigned();
+        work2 = op + " -> ";
+        if(op=="00" || op=="11"){
+          work1 = registers[0].toSigned();
+          work2 = work2.concat("NOOP");
+        }else if(op=="10"){
+          registers[0] = add(registers[0], neg_m, NumberTypes.TC, true, log);
+          work1 = "+" + neg_m.toSigned() + "<br>" + registers[0].toSigned();
+          work2 = work2.concat("A = A - M");
         }else if(op=="01"){
-          a = add(a, m, NumberTypes.TC, true, log);
+          registers[0] = add(registers[0], m, NumberTypes.TC, true, log);
+          work1 = "+" + m.toSigned() + "<br>" + registers[0].toSigned();
+          work2 = work2.concat("A = A + M"); 
         }
-        shiftRightA([a, p, p1], 1, log);
+        
+        shift(registers, 1, ShiftTypes.RIGHT_A);
+
+        addToOutput("<td>" + work1 + "</td>");
+        addToOutput("<td>" + registers[1].toSigned() + "</td>");
+        addToOutput("<td>" + registers[2].toSigned() + "</td>");
+        addToOutput("<td>" + work2 + "</td>");
+        addToOutput("</tr>");
       }
-      console.log(a.toSigned()+p.toSigned());
-      return a.toSigned() + p.toSigned();
-
-
+      addToOutput("</table>");
+      return registers[0].toSigned() + registers[1].toSigned();
     }
 
     function test(){
+      //console.log(removeSign("+--1-+123", 10, NumberTypes.SIGNED, true));
       
-      
-      var number = toUOARNumber("110010.11", 2, NumberTypes.TC, true);
-      shiftRightA([number], 3);
+      //var number = toUOARNumber("110010.11", 2, NumberTypes.TC, true);
+      //shift([number], 3, ShiftTypes.LEFT);
+      //console.log(number);
+
+
       //console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
-
       //console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
-      
-      //console.log("fromDecimal - " + fromDecimal(toUOARNumber("964.5", 10, NumberTypes.TC, true), 2, false, true).toSigned());
-      console.log("shiftRightA - " + number.toSigned());
-      
-      
-      // console.log("shiftRightA - " + shiftRightA("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
-      //console.log("booth - " + booth("-91", "22") );
-      // console.log("shiftRightA - " + shiftRightL("11011101", 2,2, "")); //TODO Remove spaces when reading numbers
-      // console.log("shiftLeft - " + shiftLeft("11011101", 3, "01")); //TODO Remove spaces when reading numbers
 
+      
+      var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
+      var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
+      console.log("booth - " + booth(n1, n2, false, true)); //TODO Error on empty fields
     }
 
   </script>
@@ -205,13 +183,13 @@
 <body>
   <input type="number" id="multiplicand"></input>
   <input type="number" id="multiplier"></input>
-  <input type="button" name="calc" id="calc" onclick="calculate()">Calculate</input>
+  <input type="button" name="calc" id="calc" value="Calculate" onclick="calculate()"></input>
 
   <p id="text1">
     text
   </p>
 
-  <input value="Test" type="button" name="test" id="test" onclick="test()"></input>
+  <input type="button" name="test" id="test" value="Test" onclick="test()"></input>
 
 
 </body>
