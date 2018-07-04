@@ -265,7 +265,7 @@ function getSign(number, base, number_type, log=true){
     return null;
   if(sign_end==0){
     switch(number_type){
-      case UNSIGNED:
+      case NumberTypes.UNSIGNED:
         return "";
       case NumberTypes.SIGNED:
         addToStackTrace("getSign", "Missing sign for signed number \"" + number + "\", assuming positive", log);
@@ -344,22 +344,16 @@ function isValidSign(sign, base, number_type){
  * @returns {boolean} true if valid, false otherwise.
  */
 function isValidUOARNumber(number){
-  if(number==null || !isValidBase(number.base) || !isValidSign(number.sign, number.base, number.number_type)){
+  if(number===null || !isValidBase(number.base) || !isValidSign(number.sign, number.base, number.number_type)){
     return false;
   }
-  
   var temp = "";
-  // for(let i=0; i<number.sign.length; i++){
-  //   temp = number.sign.charAt(i);
-  //   if(!isSign(temp, number.base, number.number_type) && temp!=SPACE)
-  //     return false;
-  // }
   for(let i=0; i<number.whole.length; i++){
     temp = number.whole.charAt(i);
     if(temp==SPACE)
       continue;
     temp = getValue(temp, false);
-    if(temp==null || temp>=number.base){
+    if(temp===null || temp>=number.base){
       return false;
     }
   }
@@ -368,7 +362,7 @@ function isValidUOARNumber(number){
     if(temp==SPACE)
       continue;
     temp = getValue(temp, false);
-    if(temp==null || temp>=number.base){
+    if(temp===null || temp>=number.base){
       return false;
     }
   }
@@ -383,7 +377,7 @@ function isValidUOARNumber(number){
  * @returns {boolean} true if valid, false otherwise.
  */
 function isValidNumber(number, base, number_type){
-  if(number==null || !isValidBase(base)){
+  if(number===null || !isValidBase(base)){
     return false;
   }
   var i;
@@ -400,7 +394,7 @@ function isValidNumber(number, base, number_type){
       if(temp==SPACE)
         continue;
       temp = getValue(temp, false);
-      if(temp==null || temp>=base){
+      if(temp===null || temp>=base){
         return false;
       }
     }else{
@@ -436,30 +430,16 @@ function toUOARNumber(number, base, number_type, log=true){
     return null;
   }
   
-  var temp = "";
-  number = number.replace(SPACE, "");
+  number = number.replace(/ /g, '');
   var arr = number.split(/[.,]/);
 
-
-  var sign_end;
-  sign_end = getSignEnd(arr[0], base, number_type, log);
-  //console.log(sign_end);
-  // for(sign_end=0; sign_end<number.length; sign_end++){
-  //   if(!isSignAt(number, base, number_type, sign_end)){
-  //     break;
-  //   }
-  // }
-
-  var sign = number.substr(0, sign_end);
-  var whole = number.substr(sign_end, arr[0].length-sign_end); //TODO use removeSign
+  var sign = getSign(arr[0], base, number_type, log);
+  var whole = removeSign(arr[0], base, number_type, log);
   var fraction = "";
   if(arr.length==2){
     fraction = arr[1];
   }
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
-  res = trimSign(res);
-  res = trimNumber(res);
-  //console.log(res);
   return res;
 }
 
@@ -469,33 +449,23 @@ function toUOARNumber(number, base, number_type, log=true){
  * @returns {UOARNumber} Trimmed number
  */
 function trimSign(number){
+  if(!isValidSign(number.sign, number.base, number.number_type)){
+    return null;
+  }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       return number;
     case NumberTypes.SIGNED:
-      var sign = 1;
-      for(let i=0; i<number.sign.length; i++){
-        if(number.sign.charAt(i)==MINUS){
-          sign *= -1;
-        }else if(number.sign.charAt(i)!=PLUS && number.sign.charAt(i)!=SPACE){
-          return null;
-        }
-      }
-      if(sign==1){
+      let sign_mult = getSignMultiplierForNumber(number, false);
+      if(sign_mult==1)
         number.sign = "+";
-      }else{
+      else
         number.sign = "-";
-      }
       return number;
-      break;
+    case NumberTypes.SMR:
+    case NumberTypes.OC:
     case NumberTypes.TC:
-      if(number.sign==SPACE){
-        if(number.whole.length>0){
-          number.sign = number.whole.charAt(0);
-        }else{
-          number.sign = "0";
-        }
-      }
+      number.sign = number.sign.charAt(0);
       return number;
   }
   return null;
@@ -507,17 +477,49 @@ function trimSign(number){
  * @returns {UOARNumber} Trimmed number 
  */
 function trimNumber(number){
-  for(let i=0; i<number.whole.length; i++){
-    if(number.whole.charAt(i)!='0' || (number.whole.charAt(i)=='0' && number.whole.length-1==i)){
-      number.whole = number.whole.substr(i);
+  number.whole = number.whole.replace(/ /g, '');
+  number.fraction = number.fraction.replace(/ /g, '');
+  switch(number.number_type){
+    case NumberTypes.UNSIGNED:
+    case NumberTypes.SIGNED:
+    case NumberTypes.SMR:
+      for(let i=0; i<number.whole.length; i++){
+        if(number.whole.charAt(i)!='0' || (number.whole.charAt(i)=='0' && number.whole.length-1==i)){
+          number.whole = number.whole.substr(i);
+          break;
+        }
+      }
+      for(let i=number.fraction.length-1; i>=0; i--){
+        if(number.fraction.charAt(i)!='0'){
+          number.fraction = number.fraction.substr(0, i+1);
+          break;
+        }
+      }
       break;
-    }
-  }
-  for(let i=number.fraction.length-1; i>=0; i--){
-    if(number.fraction.charAt(i)!='0'){
-      number.fraction = number.fraction.substr(0, i+1);
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      let sign;
+      let sign_mult = getSignMultiplierForNumber(number, false);
+      if(sign_mult==1){
+        sign = "0";
+      }else if(sign_mult==-1){
+        sign = toValue(number.base-1);
+      }else{
+        return null;
+      }
+      for(let i=0; i<number.whole.length; i++){
+        if(number.whole.charAt(i)!=sign || (number.whole.charAt(i)==sign && number.whole.length-1==i)){
+          number.whole = number.whole.substr(i);
+          break;
+        }
+      }
+      for(let i=number.fraction.length-1; i>=0; i--){
+        if(number.fraction.charAt(i)!='0'){
+          number.fraction = number.fraction.substr(0, i+1);
+          break;
+        }
+      }
       break;
-    }
   }
   return number;
 }
@@ -525,7 +527,7 @@ function trimNumber(number){
 /**
  * Modifies number to fit the standards
  * @param {UOARNumber} number Number to standardize
- * @param {boolean} log Should log
+ * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Standardized number
  */
 function standardizeUOARNumber(number, log=true){
@@ -534,9 +536,9 @@ function standardizeUOARNumber(number, log=true){
     return null;
   }
   if(isValidUOARNumber(number)){
-    var res = new UOARNumber(number.sign.replace(SPACE, ""), number.whole.replace(SPACE, ""), number.fraction.replace(SPACE, ""), number.base, number.number_type);
-    res = trimSign(res);
-    res = trimNumber(res);
+    var res = new UOARNumber(number.sign.replace(/ /g, ''), number.whole.replace(/ /g, ''), number.fraction.replace(/ /g, ''), number.base, number.number_type);
+    trimSign(res);
+    trimNumber(res);
     return res;
   }else{
     addToStackTrace("standardizeUOARNumber", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
@@ -554,7 +556,15 @@ function getSignMultiplierForNumber(number, standardized=false){
   return getSignMultiplier(number.sign, number.base, number.number_type, standardized);
 }
 
-function getSignMultiplier(sign, base, number_type, standardized){
+/**
+ * Gets sign multiplier of a number
+ * @param {string} sign Sign to operate on
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @param {boolean} [standardized=false] Treat as standardized 
+ * @returns {number} 1 if positive, -1 if negative, 0 if invalid
+ */
+function getSignMultiplier(sign, base, number_type, standardized=false){
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return 1;
@@ -581,11 +591,11 @@ function getSignMultiplier(sign, base, number_type, standardized){
       }
     case NumberTypes.OC:
     case NumberTypes.TC:
-      if(isValidSign(sign, base, number_type)){
-        if(sign.charAt(0)=="1"){
-          return -1;
-        }else{
+      if(standardized || isValidSign(sign, base, number_type)){
+        if(sign.charAt(0)=="0"){
           return 1;
+        }else{
+          return -1;
         }
       }
       break;
@@ -602,8 +612,8 @@ function getSignMultiplier(sign, base, number_type, standardized){
  */
 function UOARNumberToDecimalInteger(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number, log);
-    if(number == null){
+    number = standardizeUOARNumber(number.copy(), log);
+    if(number===null){
       return null;
     }
   }
