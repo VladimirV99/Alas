@@ -22,8 +22,8 @@
 
     function toDecimal(number, standardized=false, log=true){
       if(!standardized){
-        number = standardizeUOARNumber(number, log);
-        if(number == null){
+        number = standardizeUOARNumber(number.copy(), log);
+        if(number === null){
           addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
           return null;
         }
@@ -35,33 +35,33 @@
       var work2 = "";
       addToOutput("(" + number.toSigned() + ")" + number.base + " = ");
 
-      var temp;
-      var num_length = number.whole.length-1;
       var whole = 0;
-      let i = 0;
-      while(num_length>=0){
+      var num_length = number.whole.length-1;
+      var temp;
+      for(let i = 0; i<number.whole.length; i++){
         temp = getValueAt(number.whole, i, log);
-        work1 = work1.concat(temp + "*" + number.base + "^" + (num_length));
-        temp = temp * Math.pow(number.base, num_length);
-        work2 = work2.concat(temp);
-        whole += temp;
-        i++;
+        work1 = work1.concat(temp + "*" + number.base + "^" + num_length);
+        work2 = work2.concat(temp * Math.pow(number.base, num_length));
+        whole = whole * number.base + temp;
+
         num_length--;
-        if(num_length>0){
-          work1 = work1.concat("+");
-          work2 = work2.concat("+");
+        if(num_length>=0){
+          work1 = work1.concat(" + ");
+          work2 = work2.concat(" + ");
         }
       }
       whole = whole.toString();
 
       var fraction = 0;
-      var frac_len = number.fraction.length;
-      for(let i = 0; i<frac_len; i++){
+      var precision = PRECISION_NUMBER / number.base;
+      var base_deg = number.base;
+      for(let i = 0; i<number.fraction.length; i++){
         temp = getValueAt(number.fraction, i, log);
         work1 = work1.concat(" + " + temp + "*" + number.base + "^(-" + (i+1) + ")");
-        work2 = work2.concat(" + " + temp + "/" + Math.pow(number.base, i+1));
-  
-        fraction += (Math.floor(temp * PRECISION_NUMBER / Math.pow(number.base, i+1)));
+        work2 = work2.concat(" + " + temp + "/" + base_deg);
+        fraction += Math.floor(temp * precision);
+        precision = precision / number.base;
+        base_deg = base_deg * number.base;
       }
       fraction = fraction.toString();
       
@@ -75,8 +75,8 @@
 
     function fromDecimal(number, base, standardized=false, log=true){
       if(!standardized){
-        number = standardizeUOARNumber(number, log);
-        if(number == null){
+        number = standardizeUOARNumber(number.copy(), log);
+        if(number === null){
           addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
           return null;
         }
@@ -85,24 +85,17 @@
         return number;
       }
       
-      var whole = UOARNumberToDecimalInteger(number);
-      var fraction = "";
-
-      var work1 = "<td>" + whole + "</td>";
+      var whole = "";
+      var whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
+      var work1 = "<td>" + whole_dec + "</td>";
       var work2 = "";
-
-      var num_arr = [];
-      if(whole<0)
-        whole = -whole;
-      while(whole>0){
-        work1 = work1.concat("<td>" + Math.floor(whole/base) + "</td>");
-        work2 = work2.concat("<td>" + (whole%base) + "</td>");
-        num_arr.push(toValue(whole%base));
-        whole = Math.floor(whole/base);
+      while(whole_dec>0){
+        work1 = work1.concat("<td>" + Math.floor(whole_dec/base) + "</td>");
+        work2 = work2.concat("<td>" + (whole_dec%base) + "</td>");
+        whole = toValue(whole_dec%base, false).concat(whole);
+        whole_dec = Math.floor(whole_dec/base);
       }
       work2 = work2.concat("<td></td>");
-      num_arr.reverse();
-      whole = num_arr.join("");
       addToOutput("<table>");
       addToOutput("<tr>");
       addToOutput(work1);
@@ -111,21 +104,22 @@
       addToOutput(work2);
       addToOutput("</tr>");
       addToOutput("</table>");
-      
+
+      var fraction = "";
       if(number.fraction!=""){
         number = fractionToLength(number, PRECISION, log);
-        var frac = UOARNumberToDecimalInteger(new UOARNumber(number.sign, number.fraction, "", number.base, number.number_type), false, true);
-        var limit = 0;
-        var temp = 0;
-        work1 = "<td>" + trimNumber(new UOARNumber(number.sign, "0", frac.toString(), number.base, number.number_type)).toUnsigned() + "</td>";
+        let fraction_dec = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
+        let limit = 0;
+        let temp = 0;
+        work1 = "<td>" + trimNumber(new UOARNumber(number.sign, "0", fraction_dec.toString(), number.base, number.number_type)).toUnsigned() + "</td>";
         work2 = "<td>" + temp + "</td>";
-        while(frac>0 && limit<PRECISION){
-          frac = frac*base;
-          temp = Math.floor(frac/PRECISION_NUMBER);
-          frac -= temp*PRECISION_NUMBER;
-          work1 = work1.concat("<td>" + trimNumber(new UOARNumber(number.sign, "0", frac.toString(), number.base, number.number_type)).toUnsigned() + "</td>");
-          work2 = work2.concat("<td>" + toValue(temp) + "</td>");
-          fraction = fraction.concat(temp);
+        while(fraction_dec>0 && limit<PRECISION){
+          fraction_dec = fraction_dec*base;
+          temp = Math.floor(fraction_dec/PRECISION_NUMBER);
+          fraction_dec -= temp*PRECISION_NUMBER;
+          work1 = work1.concat("<td>" + trimNumber(new UOARNumber(number.sign, "0", fraction_dec.toString(), number.base, number.number_type)).toUnsigned() + "</td>");
+          work2 = work2.concat("<td>" + toValue(temp, false) + "</td>");
+          fraction = fraction.concat(toValue(temp, false));
           limit++;
         }
       }
@@ -141,10 +135,6 @@
       var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
       addToOutput(res.toSigned());
       return res;
-    }
-
-    function test(){
-      runTests();
     }
   </script>
 </head>
@@ -164,9 +154,6 @@
     <p id="text1">
       resenje
     </p>
-
-    <input value="Test" type="button" name="test" id="test" onclick="test()"></input>
-
 
   </div>
 

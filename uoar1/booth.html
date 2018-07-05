@@ -164,25 +164,26 @@
 
     function test(){
       //console.log(removeSign("+--1-+123", 10, NumberTypes.SIGNED, true));
-      
+
+      // console.log(baseToDecimalInteger("---123", 10, NumberTypes.SIGNED, true));
+      // var number = toUOARNumber("99123.110", 10, NumberTypes.TC, true);
+      // console.log(UOARNumberToDecimalInteger(number, false, true));
+
       //var number = toUOARNumber("110010.110", 2, NumberTypes.TC, true);
       //shift([number], 3, ShiftTypes.LEFT);
       //console.log(number);
 
-
-      var number = new UOARNumber("111", "110101", "0100", 2, NumberTypes.TC);
-      trimSign(number);
-      trimNumber(number);
-      console.log(number);
-
+      // var number = new UOARNumber("111", "110101", "0100", 2, NumberTypes.TC);
+      // trimSign(number);
+      // trimNumber(number);
+      // console.log(number);
 
       //console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
       //console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
-
       
-      //var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
-      //var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
-      //console.log("booth - " + booth(n1, n2, false, true)); //TODO Error on empty fields
+      var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
+      var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
+      console.log("booth - " + booth(n1, n2, false, true)); //TODO Error on empty fields
     }
 
   </script>

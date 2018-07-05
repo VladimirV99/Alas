@@ -611,24 +611,33 @@ function getSignMultiplier(sign, base, number_type, standardized=false){
  * @returns {number} Number converted to an integer
  */
 function UOARNumberToDecimalInteger(number, standardized=false, log=true){
-  if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      return null;
+  number = number.copy();
+  number.fraction = "";
+  if(!isValidUOARNumber(number)){
+    addToStackTrace("UOARNumberToDecimalInteger", "Invalid number \"" + number.toSigned() + "\"", log);
+    return null;
+  }
+  var sign_mult = getSignMultiplierForNumber(number, standardized);
+  if(sign_mult==0){
+    return null;
+  }else if(sign_mult==-1){
+    switch(number.number_type){
+      case NumberTypes.UNSIGNED:
+      case NumberTypes.SIGNED:
+      case NumberTypes.SMR:
+        break;
+      case NumberTypes.OC:
+      case NumberTypes.TC:
+        number = complement(number);
+        break;
     }
   }
-
-  var num_length = number.whole.length-1;
-  var decimal = 0;
-  var i = 0;
-  while(num_length>=0){
-    decimal += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
-    i++;
-    num_length--;
+  var res = 0;
+  for(let i=0; i<number.whole.length; i++){
+    res = res * number.base + getValueAt(number.whole, i, log);
   }
-
-  decimal *= getSignMultiplierForNumber(number, standardized);
-  return decimal;
+  res *= sign_mult;
+  return res;
 }
 
 /**
@@ -640,29 +649,11 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
  * @returns {number} Number converted to an integer
  */
 function baseToDecimalInteger(number, base, number_type, log=true){
-  if(!isValidBase(base)){
-    addToStackTrace("baseToDecimalInteger", "Invalid base \"" + base + "\"");
-    return null;
-  }
-  var sign_end = getSignEnd(number, base, number_type, log);
-  var whole = number.split(/[.,]/)[0].substr(sign_end);
-  var num_length = whole.length-1;
-  var decimal = 0;
-  var i = 0;
-  var temp;
-  while(num_length>=0){
-    temp = getValueAt(whole, num_length, log);
-    if(temp==null || temp>=base){
-      addToStackTrace("baseToDecimalInteger", "Invalid number \"" + number + "\" for base " + base);
-      return null;
-    }
-    decimal += temp * Math.pow(base,i);
-    i++;
-    num_length--;
-  }
-
-  decimal *= getSignMultiplier(number.substr(0, sign_end), base, number_type, false);
-  return decimal;
+  number = number.split(/[.,]/)[0];
+  var sign = getSign(number, base, number_type, log);
+  var whole = removeSign(number, base, number_type, log);
+  var num = new UOARNumber(sign, whole, "", base, number_type);
+  return UOARNumberToDecimalInteger(num, false, log);
 }
 
 /**
@@ -674,8 +665,8 @@ function baseToDecimalInteger(number, base, number_type, log=true){
  */
 function toDecimal(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number, log);
-    if(number == null){
+    number = standardizeUOARNumber(number.copy(), log);
+    if(number === null){
       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
       return null;
     }
@@ -684,27 +675,42 @@ function toDecimal(number, standardized=false, log=true){
     return number;
   }
 
-  var num_length = number.whole.length-1;
+  var sign = "";
+  var toComplement = false;
+  switch(number.number_type){
+    case NumberTypes.UNSIGNED:
+      break;
+    case NumberTypes.SIGNED:
+      sign = number.sign;
+      break;
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      sign = "0";
+      if(number.sign.charAt(0)==toValue(number.base-1, false)){
+        number = complement(number, true, log);
+        toComplement = true;
+      }
+      break;
+  }
+
   var whole = 0;
-  let i = 0;
-  while(num_length>=0){
-    whole += getValueAt(number.whole, num_length, log) * Math.pow(number.base,i);
-    i++;
-    num_length--;
+  for(let i = 0; i<number.whole.length; i++){
+    whole = whole * number.base + getValueAt(number.whole, i, log);
   }
   whole = whole.toString();
 
   var fraction = 0;
-  var frac_len = number.fraction.length;
-  for(let i = 0; i<frac_len; i++){
-    fraction += (Math.floor(getValueAt(number.fraction, i, log) * PRECISION_NUMBER / Math.pow(number.base, i+1)));
+  var precision = PRECISION_NUMBER / number.base;
+  for(let i = 0; i<number.fraction.length; i++){
+    fraction += Math.floor(getValueAt(number.fraction, i, log) * precision);
+    precision = precision / number.base;
   }
-  if(fraction==0)
-    fraction = "";
-  else
-    fraction = fraction.toString();
+  fraction = fraction.toString();
   
-  var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
+  var res = new UOARNumber(sign, whole, fraction, 10, number.number_type);
+  if(toComplement){
+    res = complement(res, true, log);
+  }
   return trimNumber(res);
 }
 
@@ -717,14 +723,16 @@ function toDecimal(number, standardized=false, log=true){
  * @returns {UOARNumber} Number converted to specified base
  */
 function fromDecimal(number, base, standardized=false, log=true){
-  //TODO At the beggining of every method use a copy of the number
-  // unless you're specifically changing it
   if(!standardized){
-    number = standardizeUOARNumber(number, log);
-    if(number == null){
+    number = standardizeUOARNumber(number.copy(), log);
+    if(number === null){
       addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
     }
+  }
+  if(number.base!=10){
+    addToStackTrace("fromDecimal", "Number isn't decimal", log);
+    return null;
   }
   if(base==10){
     return number;
@@ -741,48 +749,39 @@ function fromDecimal(number, base, standardized=false, log=true){
     case NumberTypes.OC:
     case NumberTypes.TC:
       sign = "0";
-      if(number.sign.charAt(0)==toValue(number.base-1, false)){ // TODO Could be raplace with '9'
+      if(number.sign.charAt(0)==toValue(number.base-1, false)){
         number = complement(number, true, log);
         toComplement = true;
-        console.log(number);
       }
-      
       break;
   }
   
-  var whole = UOARNumberToDecimalInteger(number); //TODO Use baseToDecimalInteger like for the fraction
-  var fraction = "";
-
-  var num_arr = [];
-  if(whole<0)
-    whole = -whole;
-  while(whole>0){
-    num_arr.push(toValue(whole%base));
-    whole = Math.floor(whole/base);
+  var whole = "";
+  var whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
+  while(whole_dec>0){
+    whole = toValue(whole_dec%base, false).concat(whole);
+    whole_dec = Math.floor(whole_dec/base);
   }
-  num_arr.reverse();
-  whole = num_arr.join("");
-  
+
+  var fraction = "";
   if(number.fraction!=""){
     number = fractionToLength(number, PRECISION, log);
-    var frac = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
-    var limit = 0;
-    var temp = 0;
-    while(frac>0 && limit<PRECISION){
-      frac = frac*base;
-      temp = Math.floor(frac/PRECISION_NUMBER);
-      frac -= temp*PRECISION_NUMBER;
-      fraction = fraction.concat(temp);
+    let fraction_dec = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
+    let limit = 0;
+    let temp = 0;
+    while(fraction_dec>0 && limit<PRECISION){
+      fraction_dec = fraction_dec*base;
+      temp = Math.floor(fraction_dec/PRECISION_NUMBER);
+      fraction_dec -= temp*PRECISION_NUMBER;
+      fraction = fraction.concat(toValue(temp, false));
       limit++;
     }
   }
 
-  
   res = new UOARNumber(sign, whole, fraction, base, number.number_type);
   if(toComplement){
     res = complement(res, true, log);
   }
-  //console.log(res);
   return res;
 }
 
@@ -795,25 +794,23 @@ function fromDecimal(number, base, standardized=false, log=true){
  * @returns {UOARNumber} Number converted to base base_to
  */
 function convertBases(number, base_to, standardized=false, log=true){
-  if(!isValidBase(number.base) || !isValidBase(base_to)){
-    addToStackTrace("convertBases", "Invalid bases \"" + base_from + "\" and \"" + base_to + "\"", log);
+  if(!isValidBase(base_to)){
+    addToStackTrace("convertBases", "Invalid base \"" + base_to + "\"", log);
     return null;
   }
-  var std_val;
   if(!standardized){
-    std_val = standardizeUOARNumber(number, log);
-    if(std_val==null){
-      addToStackTrace("convertBases", "Invalid number \"" + number + "\" for base \"" + base_from + "\"", log);
+    number = standardizeUOARNumber(number.copy(), log);
+    if(number === null){
+      addToStackTrace("convertBases", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
       return null;
     }
-  }else{
-    std_val = number;
   }
+  
   if(number.base==base_to){
-    return std_val;
+    return number;
   }
-  var res = fromDecimal(toDecimal(std_val, true, log), base_to, true, log);
-  if(res==null){
+  var res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
+  if(res===null){
     addToStackTrace("convertBases", "Conversion error, result null", log);
   }
   return res;
@@ -824,14 +821,14 @@ function convertBases(number, base_to, standardized=false, log=true){
  * @param {UOARNumber} number Number to operate on
  * @param {number} n Total length
  * @param {number} m Fraction length
- * @param {boolean} log Should log
+ * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function toLength(number, n, m, log=true){
   var new_number;
   new_number = wholeToLength(number, n-m, log);
   if(new_number==null){
-    addToStackTrace("toLength", "Too big number", log);
+    addToStackTrace("toLength", "Number is too big", log);
     return null;
   }
   new_number = fractionToLength(new_number, m, log);
@@ -842,7 +839,7 @@ function toLength(number, n, m, log=true){
  * Trims whole part of the number to a specified length
  * @param {UOARNumber} number Number to operate on
  * @param {number} length Length of the whole
- * @param {boolean} log Should log
+ * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function wholeToLength(number, length, log=true){
@@ -879,7 +876,7 @@ function wholeToLength(number, length, log=true){
  * Trims fraction part of the number to a specified length
  * @param {UOARNumber} number Number to operate on
  * @param {number} length Length of the fraction
- * @param {boolean} log Should log
+ * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function fractionToLength(number, length, log=true){
