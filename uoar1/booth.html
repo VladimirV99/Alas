@@ -36,7 +36,7 @@
       }
     }
 
-    function convertToType(number, type, standardized=false, log=true){
+    function convertToType(number, type, standardized=false, log=true){ //TODO Move to UOARCore
       if(number.number_type==type)
         return number;
       switch(type){
@@ -178,12 +178,12 @@
       // trimNumber(number);
       // console.log(number);
 
-      //console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
-      //console.log("add - " + add(toUOARNumber("110.1", 2, NumberTypes.TC, true), toUOARNumber("11011.11", 2, NumberTypes.TC, true), NumberTypes.TC, false, true).toSigned());
+      // console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
+      // console.log("add - " + add(toUOARNumber("-17", 10, NumberTypes.SIGNED, true), toUOARNumber("+15", 10, NumberTypes.SIGNED, true), NumberTypes.SIGNED, false, true).toSigned());
       
-      var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
-      var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
-      console.log("booth - " + booth(n1, n2, false, true)); //TODO Error on empty fields
+      // var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
+      // var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
+      // console.log("booth - " + booth(n1, n2, false, true)); //TODO Error on empty fields
     }
 
   </script>
