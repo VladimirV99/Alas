@@ -85,26 +85,33 @@
         return number;
       }
       
+      var work1 = "";
+      var work2 = "";
+
       var whole = "";
       var whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
-      var work1 = "<td>" + whole_dec + "</td>";
-      var work2 = "";
-      while(whole_dec>0){
-        work1 = work1.concat("<td>" + Math.floor(whole_dec/base) + "</td>");
-        work2 = work2.concat("<td>" + (whole_dec%base) + "</td>");
-        whole = toValue(whole_dec%base, false).concat(whole);
-        whole_dec = Math.floor(whole_dec/base);
+      if(whole_dec==0){
+        whole = "0";
+      }else{
+        work1 = "<td>" + whole_dec + "</td>";
+        work2 = "";
+        do {
+          work1 = work1.concat("<td>" + Math.floor(whole_dec/base) + "</td>");
+          work2 = work2.concat("<td>" + (whole_dec%base) + "</td>");
+          whole = toValue(whole_dec%base, false).concat(whole);
+          whole_dec = Math.floor(whole_dec/base);
+        } while(whole_dec>0)
+        work2 = work2.concat("<td></td>");
+        addToOutput("<table>");
+        addToOutput("<tr>");
+        addToOutput(work1);
+        addToOutput("</tr>");
+        addToOutput("<tr>");
+        addToOutput(work2);
+        addToOutput("</tr>");
+        addToOutput("</table>");
       }
-      work2 = work2.concat("<td></td>");
-      addToOutput("<table>");
-      addToOutput("<tr>");
-      addToOutput(work1);
-      addToOutput("</tr>");
-      addToOutput("<tr>");
-      addToOutput(work2);
-      addToOutput("</tr>");
-      addToOutput("</table>");
-
+      
       var fraction = "";
       if(number.fraction!=""){
         number = fractionToLength(number, PRECISION, log);
@@ -122,15 +129,15 @@
           fraction = fraction.concat(toValue(temp, false));
           limit++;
         }
+        addToOutput("<table>");
+        addToOutput("<tr>");
+        addToOutput(work1);
+        addToOutput("</tr>");
+        addToOutput("<tr>");
+        addToOutput(work2);
+        addToOutput("</tr>");
+        addToOutput("</table>");
       }
-      addToOutput("<table>");
-      addToOutput("<tr>");
-      addToOutput(work1);
-      addToOutput("</tr>");
-      addToOutput("<tr>");
-      addToOutput(work2);
-      addToOutput("</tr>");
-      addToOutput("</table>");
 
       var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
       addToOutput(res.toSigned());

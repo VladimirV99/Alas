@@ -8,44 +8,6 @@
   <script type="text/javascript" src="output.js"></script>
   <script>
 
-    function convertToTC(number, standardized=false, log=true){
-      if(!standardized){ //TODO Dont stadardize only trim sign for signed on a copy
-        number = standardizeUOARNumber(number, log);
-        if(number==null){
-          addToStackTrace("complement", "Number is invalid", log);
-          return null;
-        }
-      }
-      
-      switch(number.number_type){
-        case NumberTypes.SIGNED:
-          number.number_type = NumberTypes.TC;
-          if(number.sign == "-"){
-            number.sign = "0";
-            return complement(number);
-          }else{
-            number.sign = "0";
-            return number;
-          }
-          break;
-        case NumberTypes.OC:
-          number = addToLowestPoint(number, 1, log);
-          return number;
-        case NumberTypes.TC:
-          return number;
-      }
-    }
-
-    function convertToType(number, type, standardized=false, log=true){ //TODO Move to UOARCore
-      if(number.number_type==type)
-        return number;
-      switch(type){
-        case NumberTypes.TC:
-          return convertToTC(number);
-      }
-      return null;
-    }
-
     function calculate() {
 
       var multiplicand = fromDecimal(toUOARNumber(document.getElementById('multiplicand').value, 10, NumberTypes.SIGNED, false), 2, false, true);
@@ -58,56 +20,6 @@
       }
     }
 
-    // function convertToBinary(x){
-    //   console.log(x);
-
-    //   var sign = "0";
-    //   var ret = "";
-    //   var num_length = 0;
-
-    //   if(x<0){
-    //     sign="1";
-    //     x = -x;
-    //   }
-
-    //   var deg = 1;
-    //   while(deg<=x){
-    //     deg = deg*2;
-    //   }
-    //   deg = deg/2;
-
-    //   while(deg>=1){
-
-    //     if(x>=deg){
-    //       ret = ret.concat("1");
-    //       x = x - deg;
-    //     } else {
-    //       ret = ret.concat("0");
-    //     }
-
-    //     num_length++;
-    //     deg = deg/2;
-    //   }
-    //     console.log("2 " + num_length + " " + ret);
-
-    //   var sign_c = 0;
-    //   var sign_counter = 8-((num_length+1)%8);
-    //   var new_sign = sign;
-    //   while(sign_c<sign_counter){
-    //     new_sign = new_sign.concat(sign);
-    //     sign_c++;
-    //   }
-    //     console.log("3 " + sign + " " + sign_counter);
-
-    //   ret = new_sign.concat(ret);
-    //   return ret;
-    // }
-
-    // function toBinary(number){
-    //   number = trimSign(number);
-    // }
-
-
     function booth(num1, num2, standardized=false, log=true){
       if(num1.base!=2 || num2.base!=2){ //TODO Convert to Binary
         addToStackTrace("booth", "Operands are not binary", log);
@@ -119,6 +31,8 @@
       n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
       n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
       equalizeLength(n1, n2, true, log);
+      console.log(n1);
+      console.log(n2);
       var len = n1.toSigned().length;
 
       var a = wholeToLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, log);
@@ -129,6 +43,7 @@
       var registers = [a, p, p1];
 
       addToOutput("<table>");
+      addToOutput("<tr><th>A</th><th>P</th><th>P0</th><th>Poruka</th></tr>");
       addToOutput("<tr><td>" + registers[0].toSigned() + "</td><td>" + registers[1].toSigned() + "</td><td>" + registers[2].toSigned() + "</td><td>Init</td></tr>");
       var work1 = "";
       var work2 = "";
@@ -136,21 +51,22 @@
         addToOutput("<tr>");
         
         op = registers[1].toSigned().charAt(registers[1].toSigned().length-1) + registers[2].toSigned();
+        work1 = "";
         work2 = op + " -> ";
         if(op=="00" || op=="11"){
-          work1 = registers[0].toSigned();
           work2 = work2.concat("NOOP");
         }else if(op=="10"){
           registers[0] = add(registers[0], neg_m, NumberTypes.TC, true, log);
-          work1 = "+" + neg_m.toSigned() + "<br>" + registers[0].toSigned();
+          work1 = "+" + neg_m.toSigned() + "<br>" + registers[0].toSigned() + "<br>";
           work2 = work2.concat("A = A - M");
         }else if(op=="01"){
           registers[0] = add(registers[0], m, NumberTypes.TC, true, log);
-          work1 = "+" + m.toSigned() + "<br>" + registers[0].toSigned();
+          work1 = "+" + m.toSigned() + "<br>" + registers[0].toSigned() + "<br>";
           work2 = work2.concat("A = A + M"); 
         }
         
         shift(registers, 1, ShiftTypes.RIGHT_A);
+        work1 = work1.concat(registers[0].toSigned());
 
         addToOutput("<td>" + work1 + "</td>");
         addToOutput("<td>" + registers[1].toSigned() + "</td>");
@@ -159,6 +75,7 @@
         addToOutput("</tr>");
       }
       addToOutput("</table>");
+      addToOutput("AP = (" + registers[0].toSigned() + " " + registers[1].toSigned() + ")2");
       return registers[0].toSigned() + registers[1].toSigned();
     }
 
