@@ -9,56 +9,29 @@
   <script type="text/javascript" src="ieee754.js"></script>
   <script>
 
-    function calculateBinary32(){
+    function convertToIEEE754(format){
       var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
       var exponent = document.getElementById('exponent').value;
       clearStackTrace();
       clearOutput();
-      var res = convertToIEEE754Binary32(significand, exponent);
-      if(res!=null){
-        document.getElementById("text1").innerHTML=output;
+      var res;
+      switch(format){
+        case IEEE754Formats.BINARY32:
+          res = convertToIEEE754Binary32(significand, exponent);
+          break;
+        case IEEE754Formats.BINARY64:
+          res = convertToIEEE754Binary64(significand, exponent);
+          break;
+        case IEEE754Formats.DECIMAL32DPD:
+          res = convertToIEEE754Decimal32DPD(significand, exponent);
+          break;
+        case IEEE754Formats.DECIMAL32BID:
+          res = convertToIEEE754Decimal32BID(significand, exponent);
+          break;
+        case IEEE754Formats.HEXADECIMAL32:
+          res = convertToIEEE754Hexadecimal32(significand, exponent);
+          break;
       }
-    }
-
-    function calculateBinary64(){
-      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
-      var exponent = document.getElementById('exponent').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertToIEEE754Binary64(significand, exponent);
-      if(res!=null){
-        document.getElementById("text1").innerHTML=output;
-      }
-    }
-
-    function calculateDecimal32DPD(){
-      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
-      var exponent = document.getElementById('exponent').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertToIEEE754Decimal32DPD(significand, exponent);
-      if(res!=null){
-        document.getElementById("text1").innerHTML=output;
-      }
-    }
-
-    function calculateDecimal32BID(){
-      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
-      var exponent = document.getElementById('exponent').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertToIEEE754Decimal32BID(significand, exponent);
-      if(res!=null){
-        document.getElementById("text1").innerHTML=output;
-      }
-    }
-
-    function calculateHexadecimal32(){
-      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
-      var exponent = document.getElementById('exponent').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertToIEEE754Hexadecimal32(significand, exponent);
       if(res!=null){
         document.getElementById("text1").innerHTML=output;
       }
@@ -381,51 +354,28 @@
       return res;
     }
 
-    function calculateDecimalBinary32(){
+    function convertFromIEEE754(format){
       var ieee = document.getElementById('ieee').value;
       clearStackTrace();
       clearOutput();
-      var res = convertFromIEEE754Binary32(ieee);
-      if(res!=null){
-        document.getElementById("text2").innerHTML=output;
+      var res;
+      switch(format){
+        case IEEE754Formats.BINARY32:
+          res = convertFromIEEE754Binary32(ieee);
+          break;
+        case IEEE754Formats.BINARY64:
+          res = convertFromIEEE754Binary64(ieee);
+          break;
+        case IEEE754Formats.DECIMAL32DPD:
+          res = convertFromIEEE754Decimal32DPD(ieee);
+          break;
+        case IEEE754Formats.DECIMAL32BID:
+          res = convertFromIEEE754Decimal32BID(ieee);
+          break;
+        case IEEE754Formats.HEXADECIMAL32:
+          res = convertFromIEEE754Hexadecimal32(ieee);
+          break;
       }
-    }
-
-    function calculateDecimalBinary64(){
-      var ieee = document.getElementById('ieee').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertFromIEEE754Binary64(ieee);
-      if(res!=null){
-        document.getElementById("text2").innerHTML=output;
-      }
-    }
-
-    function calculateDecimalDecimal32DPD(){
-      var ieee = document.getElementById('ieee').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertFromIEEE754Decimal32DPD(ieee);
-      if(res!=null){
-        document.getElementById("text2").innerHTML=output;
-      }
-    }
-
-    function calculateDecimalDecimal32BID(){
-      var ieee = document.getElementById('ieee').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertFromIEEE754Decimal32BID(ieee);
-      if(res!=null){
-        document.getElementById("text2").innerHTML=output;
-      }
-    }
-
-    function calculateDecimalHexadecimal32(){
-      var ieee = document.getElementById('ieee').value;
-      clearStackTrace();
-      clearOutput();
-      var res = convertFromIEEE754Hexadecimal32(ieee);
       if(res!=null){
         document.getElementById("text2").innerHTML=output;
       }
@@ -758,11 +708,11 @@
     <p>exponent</p>
     <input type="number" id="exponent"></input>
     <br><br>
-    <input value="Izracunaj binary32" type="button" name="calc" id="calc" onclick="calculateBinary32()"></input>
-    <input value="Izracunaj binary64" type="button" name="calc2" id="calc2" onclick="calculateBinary64()"></input>
-    <input value="Izracunaj decimal32 DPD" type="button" name="calc3" id="calc3" onclick="calculateDecimal32DPD()"></input>
-    <input value="Izracunaj decimal32 BID" type="button" name="calc4" id="calc4" onclick="calculateDecimal32BID()"></input>
-    <input value="Izracunaj hexadecimal32" type="button" name="calc5" id="calc5" onclick="calculateHexadecimal32()"></input>
+    <input value="Izracunaj binary32" type="button" name="toBinary32" id="toBinary32" onclick="convertToIEEE754(IEEE754Formats.BINARY32)"></input>
+    <input value="Izracunaj binary64" type="button" name="toBinary64" id="toBinary64" onclick="convertToIEEE754(IEEE754Formats.BINARY64)"></input>
+    <input value="Izracunaj decimal32 DPD" type="button" name="toDecimal32DPD" id="toDecimal32DPD" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32DPD)"></input>
+    <input value="Izracunaj decimal32 BID" type="button" name="toDecimal32BID" id="toDecimal32BID" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
+    <input value="Izracunaj hexadecimal32" type="button" name="toHexadecimal32" id="toHexadecimal32" onclick="convertToIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
 
     <p id="text1">
       resenje
@@ -773,11 +723,11 @@
     <hr>
 
     <input type="text" name="ieee" id="ieee"></input>
-    <input type="button" name="calc6" id = "calc6" value="From binary32" onclick="calculateDecimalBinary32()"></input>
-    <input type="button" name="calc7" id = "calc7" value="From binary64" onclick="calculateDecimalBinary64()"></input>
-    <input type="button" name="calc8" id = "calc8" value="From decimal32 DPD" onclick="calculateDecimalDecimal32DPD()"></input>
-    <input type="button" name="calc9" id = "calc9" value="From decimal32 BID" onclick="calculateDecimalDecimal32BID()"></input>
-    <input type="button" name="calc10" id = "calc10" value="From hexadecimal32" onclick="calculateDecimalHexadecimal32()"></input>
+    <input type="button" name="fromBinary32" id="fromBinary32" value="From binary32" onclick="convertFromIEEE754(IEEE754Formats.BINARY32)"></input>
+    <input type="button" name="fromBinary64" id="fromBinary64" value="From binary64" onclick="convertFROMIEEE754(IEEE754Formats.BINARY64)"></input>
+    <input type="button" name="fromDecimal32DPD" id="fromDecimal32DPD" value="From decimal32 DPD" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32DPD)"></input>
+    <input type="button" name="fromDecimal32BID" id="fromDecimal32BID" value="From decimal32 BID" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
+    <input type="button" name="fromHexadecimal32" id="fromHexadecimal32" value="From hexadecimal32" onclick="convertFromIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
 
     <p id="text2">
       resenje

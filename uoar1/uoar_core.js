@@ -1,11 +1,9 @@
-var ASCII_0 = '0'.charCodeAt(0);
-var ASCII_A = 'A'.charCodeAt(0);
-var ASCII_PLUS = '+'.charCodeAt(0);
-var ASCII_MINUS = '-'.charCodeAt(0);
-var PLUS = '+';
-var MINUS = '-';
-var SPACE = ' ';
-var RADIX = ['.', ','];
+const ASCII_0 = '0'.charCodeAt(0);
+const ASCII_A = 'A'.charCodeAt(0);
+const PLUS = '+';
+const MINUS = '-';
+const SPACE = ' ';
+const RADIX = ['.', ','];
 
 var PRECISION = 8;
 var PRECISION_NUMBER = Math.pow(10, PRECISION);
@@ -19,14 +17,14 @@ var PRECISION_NUMBER = Math.pow(10, PRECISION);
  * @readonly
  * @enum {NumberType}
 */
-var NumberTypes = {
+const NumberTypes = Object.freeze({
   UNSIGNED: 0,
   SIGNED: 1,
   SMR: 2,
   OC: 3,
   TC: 4,
   EK: 5
-};
+});
 const number_type_description = [
   "unsigned", "signed", "SMR", "OC", "TC", "EK"
 ];
@@ -40,11 +38,11 @@ const number_type_description = [
   * @readonly
   * @enum {ShiftType}
   */
- var ShiftTypes = {
+ const ShiftTypes = Object.freeze({
    RIGHT_A: 0,
    RIGHT_L: 1,
    LEFT: 2
- };
+ });
 
 /**
  * @typedef {Object} UOARNumber
@@ -1121,7 +1119,7 @@ function getAbsoluteValue(number){
     case NumberTypes.TC:
       var res = number.copy();
       if(number.sign.charAt(0)=="1"){
-        complement(res);
+        res = complement(res);
       }
       return res;
   }

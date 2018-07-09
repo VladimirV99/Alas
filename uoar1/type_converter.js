@@ -59,7 +59,7 @@ function convertToUnsigned(number, standardized=false, log=true){
     case NumberTypes.OC:
     case NumberTypes.TC:
       if(number.sign!="0"){
-        complement(number, true, false);
+        number = complement(number, true, false);
         addToStackTrace("convertToUnsigned", "Warning! Converting negative number to unsigned", log);
       }
       number.sign = "";
@@ -104,7 +104,7 @@ function convertToSigned(number, standardized=false, log=true){
       if(number.sign=="0"){
         number.sign = PLUS;
       }else{
-        complement(number, true, false);
+        number = complement(number, true, false);
         number.sign = MINUS;
       }
       number.number_type = NumberTypes.SIGNED;
@@ -146,7 +146,7 @@ function convertToSMR(number, standardized=false, log=true){
     case NumberTypes.OC:
     case NumberTypes.TC:
       if(number.sign!="0"){
-        complement(number, true, false);
+        number = complement(number, true, false);
         number.sign = toValue(number.base, true, false);
       }
       number.number_type = NumberTypes.SMR;
@@ -179,7 +179,7 @@ function convertToOC(number, standardized=false, log=true){
       number.number_type = NumberTypes.OC;
       if(number.sign==MINUS){
         number.sign = "0";
-        complement(number, true, false);
+        number = complement(number, true, false);
       }else{
         number.sign = "0";
       }
@@ -188,7 +188,7 @@ function convertToOC(number, standardized=false, log=true){
       number.number_type = NumberTypes.OC;
       if(number.sign!="0"){
         number.sign = "0";
-        complement(number, true, false);
+        number = complement(number, true, false);
       }
       return number;
     case NumberTypes.OC:
@@ -227,7 +227,7 @@ function convertToTC(number, standardized=false, log=true){
       number.number_type = NumberTypes.TC;
       if(number.sign == MINUS){
         number.sign = "0";
-        complement(number, true, false);
+        number = complement(number, true, false);
       }else{
         number.sign = "0";
       }
@@ -236,7 +236,7 @@ function convertToTC(number, standardized=false, log=true){
       number.number_type = NumberTypes.TC;
       if(number.sign!="0"){
         number.sign = "0";
-        complement(number, true, false);
+        number = complement(number, true, false);
       }
       return number;
     case NumberTypes.OC:
@@ -259,24 +259,36 @@ function convertToTC(number, standardized=false, log=true){
  * @return {UOARNumber} Number with added toAdd
  */
 function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negative numbers
-  let sign = "";
-  let whole = "";
-  let fraction = "";
+  var sign = number.sign;
+  var whole = "";
+  var fraction = "";
   var carry = toAdd;
   var temp;
   
   for(let i=number.fraction.length-1; i>=0; i--){
     temp = getValueAt(number.fraction, i, log) + carry;
-    fraction = toValue(temp%base) + fraction;
-    carry = Math.floor(temp/base);
+    if(temp<0){
+      carry = -Math.ceil(-temp/number.base);
+      fraction = (temp-carry*number.base) + fraction;
+    }else{
+      fraction = toValue(temp%number.base) + fraction;
+      carry = Math.floor(temp/number.base);
+    }
   }
   for(let i=number.whole.length-1; i>=0; i--){
     temp = getValueAt(number.whole, i, log) + carry;
-    whole = toValue(temp%base) + whole;
-    carry = Math.floor(temp/base);
+    if(temp<0){
+      carry = -Math.ceil(-temp/number.base);
+      whole = (temp-carry*number.base) + whole;
+    }else{
+      whole = toValue(temp%number.base) + whole;
+      carry = Math.floor(temp/number.base);
+    }
   }
 
-  if(carry!=0){
+  if(carry<0){
+    return null;
+  }else if(carry>0){
     switch(number.number_type){
       case NumberTypes.UNSIGNED:
       case NumberTypes.SIGNED:
@@ -286,8 +298,8 @@ function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negati
       case NumberTypes.TC:
         for(let i=number.sign.length-1; i>=0; i--){
           temp = getValueAt(number.whole, i, log) + carry;
-          sign = toValue(temp%base) + sign;
-          carry = Math.floor(temp/base);
+          sign = toValue(temp%number.base) + sign;
+          carry = Math.floor(temp/number.base);
         }
         sign_end = getSignEnd(number.sign, number.base, number.number_type, log);
         whole = sign.substr(sign_end) + whole;
@@ -297,5 +309,5 @@ function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negati
     }
   }
   
-  return number;
+  return new UOARNumber(sign, whole, fraction, number.base, number.number_type);
 }

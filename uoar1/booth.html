@@ -5,6 +5,7 @@
   <title>Butov Algoritam</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="uoar_core.js"></script>
+  <script type="text/javascript" src="type_converter.js"></script>
   <script type="text/javascript" src="output.js"></script>
   <script>
 
@@ -27,7 +28,6 @@
       }
       //TODO Check for operand fractions and return
 
-      //TODO How fromDecimal treats negative numbers
       n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
       n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
       equalizeLength(n1, n2, true, log);
@@ -81,6 +81,7 @@
 
     function test(){
       //console.log(removeSign("+--1-+123", 10, NumberTypes.SIGNED, true));
+      // console.log(convertToTC(toUOARNumber("-C410", 16, NumberTypes.SIGNED, true), false, true));
 
       // console.log(baseToDecimalInteger("---123", 10, NumberTypes.SIGNED, true));
       // var number = toUOARNumber("99123.110", 10, NumberTypes.TC, true);

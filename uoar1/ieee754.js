@@ -13,6 +13,23 @@
  */
 
  /**
+ * @typedef {number} IEEE754Format
+ */
+
+/** 
+ * Number type enum
+ * @readonly
+ * @enum {IEEE754Format}
+*/
+const IEEE754Formats = Object.freeze({
+  BINARY32: 0,
+  BINARY64: 1,
+  DECIMAL32DPD: 2,
+  DECIMAL32BID: 3,
+  HEXADECIMAL32: 4 
+});
+
+ /**
   * @type {number}
   * @const
   */
