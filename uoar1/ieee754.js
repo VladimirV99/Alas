@@ -1,24 +1,7 @@
-/**
- * @typedef {Object} IEEE754Special
- * @property {string} value Special Value
- * @property {boolean} special Is Special Value
- * Special IEEE754 Value
- */
-/**
- * @typedef {Object} IEEE754Nonspecial
- * @property {string} significand Significand
- * @property {number} exponent Exponent
- * @property {boolean} special Is Special Value
- * Non Special IEEE753 Value
- */
-
- /**
- * @typedef {number} IEEE754Format
- */
-
 /** 
- * Number type enum
+ * IEEE754 Format
  * @readonly
+ * @typedef {number} IEEE754Format
  * @enum {IEEE754Format}
 */
 const IEEE754Formats = Object.freeze({
@@ -26,8 +9,25 @@ const IEEE754Formats = Object.freeze({
   BINARY64: 1,
   DECIMAL32DPD: 2,
   DECIMAL32BID: 3,
-  HEXADECIMAL32: 4 
+  HEXADECIMAL32: 4
 });
+
+/**
+ * @typedef {Object} IEEE754Number
+ * @property {string} sign Significand
+ * @property {number} exponent Exponent
+ * @property {string} significand Significand
+ * @property {IEEE754Format} format Is Special Value
+ */
+function IEEE754Number(sign, exponent, significand, format){
+  this.sign = sign;
+  this.exponent = exponent;
+  this.significand = significand;
+  this.format = format;
+  this.toString = function(){
+    return this.sign + " " + this.exponent + " " + this.significand;
+  }
+}
 
  /**
   * @type {number}
@@ -56,6 +56,7 @@ var DECIMAL32_TRIPLET_LENGTH = 10;
 var HEXADECIMAL32_MAX_EXPONENT = 64;
 var HEXADECIMAL32_MIN_EXPONENT = -63;
 var HEXADECIMAL32_EXCESS = 64;
+var HEXADECIMAL32_DIGITS = 6;
 var HEXADECIMAL32_EXPONENT_LENGTH = 7;
 var HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
 
@@ -65,52 +66,46 @@ var HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
  * @param {string} exponent Exponent
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} significand*2^exponent as IEEE754 Binary32 
+ * @returns {IEEE754Number} significand*2^exponent as IEEE754 Binary32 
  */
 function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
-  if(!standardized){
-    let std_significand = standardizeUOARNumber(significand, log);
-    if(std_significand==null){
-      addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_significand.toSigned() + "\" for base 2", log);
-      return null;
-    }
-    significand = std_significand;
-  }
-  significand = fromDecimal(significand, 2, true, log);
-
-  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
-  if(std_exponent==null){
-    addToStackTrace("convertToIEEE754Binary32", "Invalid number \"" + std_exponent + "\" for base 10", log);
+  if(significand.number_type!=NumberTypes.SIGNED){
+    addToStackTrace("convertToIEEE754Binary32", "Significand isn't signed", log);
     return null;
   }
-  exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
+  if(!standardized){
+    significand = standardizeUOARNumber(significand.copy(), false);
+    if(significand===null){
+      addToStackTrace("convertToIEEE754Binary32", "Invalid significand \"" + significand.toSigned() + "\"", log);
+      return null;
+    }
+  }
+  significand = fromDecimal(significand, 2, true, false);
+  if(significand.whole.length>BINARY32_SIGNIFICAND_LENGTH){
+    if(significand.sign==PLUS)
+      return new IEEE754Number("0", "11111111", "00000000000000000000000");
+    else
+      return new IEEE754Number("1", "11111111", "00000000000000000000000");
+  }else{
+    significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH-significand.whole.length, log);
+  }
+  exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
+  if(exponent===null){
+    addToStackTrace("convertToIEEE754Binary32", "Invalid exponent \"" + exponent + "\" for base 10", log);
+    return null;
+  }
+
+  var normalize_exponent = normalizeBinary(significand, true, log);
+  exponent = exponent + normalize_exponent;
   if(!isInBounds(exponent, BINARY32_MIN_EXPONENT, BINARY32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
-  
-  significand = normalizeBinary(significand, true, log);
-  if(significand.whole.length>BINARY32_SIGNIFICAND_LENGTH){
-    addToStackTrace("convertToIEEE754Binary32", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
-    return null;
-  }else{
-    significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH-significand.whole.length, log);
-  }
 
-  var res = "";
-  if(significand.sign==MINUS){
-    res = res.concat("1");
-  }else{
-    res = res.concat("0");
-  }
-
-  res = res.concat(SPACE);
-  res = res.concat(toLength(fromDecimal(trimSign(toUOARNumber((BINARY32_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned());
-
-  res = res.concat(SPACE);
-  res = res.concat(fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, log).fraction);
-
-  return res;
+  var res_sign = significand.sign==PLUS ? "0" : "1";
+  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY32_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
+  var res_significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, log).fraction;
+  return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY32);
 }
 
 /**
@@ -119,52 +114,46 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
  * @param {string} exponent Exponent
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} significand*2^exponent as IEEE754 Binary64 
+ * @returns {IEEE754Number} significand*2^exponent as IEEE754 Binary64 
  */
 function convertToIEEE754Binary64(significand, exponent, standardized=false, log=true){
+  if(significand.number_type!=NumberTypes.SIGNED){
+    addToStackTrace("convertToIEEE754Binary64", "Significand isn't signed", log);
+    return null;
+  }
   if(!standardized){
-    let std_significand = standardizeUOARNumber(significand, log);
-    if(std_significand==null){
-      addToStackTrace("convertToIEEE754Binary64", "Invalid number \"" + std_significand.toSigned() + "\" for base 2", log);
+    significand = standardizeUOARNumber(significand.copy(), false);
+    if(significand===null){
+      addToStackTrace("convertToIEEE754Binary64", "Invalid significand \"" + significand.toSigned() + "\"", log);
       return null;
     }
-    significand = std_significand;
   }
-  significand = fromDecimal(significand, 2, true, log);
+  significand = fromDecimal(significand, 2, true, false);
   if(significand.whole.length>BINARY64_SIGNIFICAND_LENGTH){
-    addToStackTrace("convertToIEEE754Binary64", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
-    return null;
+    if(significand.sign==PLUS)
+      return new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000");
+    else
+      return new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000");
   }else{
     significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH-significand.whole.length, log);
   }
-
-  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
-  if(std_exponent==null){
-    addToStackTrace("convertToIEEE754Binary64", "Invalid number \"" + std_exponent + "\" for base 10", log);
+  exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
+  if(exponent===null){
+    addToStackTrace("convertToIEEE754Binary64", "Invalid number \"" + exponent + "\" for base 10", log);
     return null;
   }
-  exponent = std_exponent + getNormalizeExponentBinary(significand, true, log); 
+
+  var normalize_exponent = normalizeBinary(significand, true, log);
+  exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, BINARY64_MIN_EXPONENT, BINARY64_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Binary64", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
-  significand = normalizeBinary(significand, true, log);
-
-  var res = "";
-  if(significand.sign==MINUS){
-    res = res.concat("1");
-  }else{
-    res = res.concat("0");
-  }
-
-  res = res.concat(SPACE);
-  res = res.concat(toLength(fromDecimal(trimSign(toUOARNumber((BINARY64_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64_EXPONENT_LENGTH, 0, log).toUnsigned());
-
-  res = res.concat(SPACE);
-  res = res.concat(fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH, log).fraction);
-
-  return res;
+  var res_sign = significand.sign==PLUS ? "0" : "1";
+  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY64_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64_EXPONENT_LENGTH, 0, log).toUnsigned();
+  var res_significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH, log).fraction;
+  return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY64);
 }
 
 /**
@@ -173,58 +162,59 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
  * @param {string} exponent Exponent
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} significand*10^exponent as IEEE754 Decimal32 DPD
+ * @returns {IEEE754Number} significand*10^exponent as IEEE754 Decimal32 DPD
  */
 function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false, log=true){
+  if(significand.number_type!=NumberTypes.SIGNED){
+    addToStackTrace("convertToIEEE754Decimal32DPD", "Significand isn't signed", log);
+    return null;
+  }
   if(!standardized){
-    let std_significand = standardizeUOARNumber(significand, log);
-    if(std_significand==null){
-      addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_significand.toSigned() + "\" for base 10", log);
+    significand = standardizeUOARNumber(significand.copy(), false);
+    if(significand===null){
+      addToStackTrace("convertToIEEE754Decimal32DPD", "Invalid significand \"" + significand.toSigned() + "\"", log);
       return null;
     }
-    significand = std_significand;
   }
-
-  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
-  if(std_exponent==null){
-    addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_exponent + "\" for base 10", log);
+  if(significand.whole.length>DECIMAL32_SIGNIFICAND_LENGTH){
+    if(significand.sign==PLUS)
+      return new IEEE754Number("0", "11110000000", "00000000000000000000");
+    else
+      return new IEEE754Number("1", "11110000000", "00000000000000000000");
+  }
+  exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
+  if(exponent===null){
+    addToStackTrace("convertToIEEE754Decimal32DPD", "Invalid number \"" + exponent + "\" for base 10", log);
     return null;
   }
-  exponent = std_exponent + getNormalizeExponentDecimal(significand, true, log); 
+
+  var normalize_exponent = normalizeDecimal(significand, true, log);
+  exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, DECIMAL32_MIN_EXPONENT, DECIMAL32_MAX_EXPONENT)){
-    addToStackTrace("convertToIEEE754Decimal32", "Exponent out of bounds \"" + exponent + "\"", log);
+    addToStackTrace("convertToIEEE754Decimal32DPD", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
-  significand = wholeToLength(normalizeDecimal(significand, true, log), DECIMAL_LENGTH, log);
-  if(significand==null){
-    addToStackTrace("convertToIEEE754Decimal32", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
+  significand = wholeToLength(significand, DECIMAL32_DIGITS, log);
+  if(significand===null){
+    addToStackTrace("convertToIEEE754Decimal32DPD", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
     return null;
   }
 
-  var res = "";
-  if(significand.sign==MINUS){
-    res = res.concat("1");
-  }else{
-    res = res.concat("0");
-  }
-
-  res = res.concat(SPACE);
+  var res_sign = significand.sign==PLUS ? "0" : "1";
+  var res_exponent;
   var na = addZeroesBefore(digitToBinary(significand.whole, 0), 10, NumberTypes.UNSIGNED, 4, log);
   var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
   if(na.charAt(0)=='0'){
-    res = res.concat(nb.substr(0,2)+na.substr(1,3)+nb.substr(2,6));
+    res_exponent = nb.substr(0,2)+na.substr(1,3)+nb.substr(2,6);
   }else{
-    res = res.concat("11"+nb.substr(0, 2)+na.charAt(3)+nb.substr(2, 6));
+    res_exponent = "11"+nb.substr(0, 2)+na.charAt(3)+nb.substr(2, 6);
   }
-
-  res = res.concat(SPACE);
+  var res_significand;
   var nc1 = decimalToDPD(decimalTo8421(significand.whole.substr(1, 3)));
   var nc2 = decimalToDPD(decimalTo8421(significand.whole.substr(4, 3)));
-  var nc = nc1 + nc2;
-  res = res.concat(nc);
-  
-  return res;
+  res_significand = nc1 + nc2;
+  return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32DPD);
 }
 
 /**
@@ -233,60 +223,56 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
  * @param {string} exponent Exponent
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} significand*10^exponent as IEEE754 Decimal32 BID 
+ * @returns {IEEE754Number} significand*10^exponent as IEEE754 Decimal32 BID 
  */
 function convertToIEEE754Decimal32BID(significand, exponent, standardized=false, log=true){
-  if(!standardized){
-    let std_significand = standardizeUOARNumber(significand, log);
-    if(std_significand==null){
-      addToStackTrace("convertToIEEE754Decimal32", "Invalid number \"" + std_significand.toSigned() + "\" for base 10", log);
-      return null;
-    }
-    significand = std_significand;
-  }
-
-  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
-  if(std_exponent==null){
-    addToStackTrace("convertToIEEE754Decimal32BID", "Invalid number \"" + std_exponent + "\" for base 10", log);
+  if(significand.number_type!=NumberTypes.SIGNED){
+    addToStackTrace("convertToIEEE754Decimal32BID", "Significand isn't signed", log);
     return null;
   }
-  exponent = std_exponent + getNormalizeExponentDecimal(significand, true, log); 
+  if(!standardized){
+    significand = standardizeUOARNumber(significand.copy(), false);
+    if(significand===null){
+      addToStackTrace("convertToIEEE754Decimal32BID", "Invalid significand \"" + significand.toSigned() + "\"", log);
+      return null;
+    }
+  }
+  if(significand.whole.length>DECIMAL32_SIGNIFICAND_LENGTH){
+    if(significand.sign==PLUS)
+      return new IEEE754Number("0", "11110000000", "00000000000000000000");
+    else
+      return new IEEE754Number("1", "11110000000", "00000000000000000000");
+  }
+  exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
+  if(exponent===null){
+    addToStackTrace("convertToIEEE754Decimal32BID", "Invalid number \"" + exponent + "\" for base 10", log);
+    return null;
+  }
+
+  var normalize_exponent = normalizeDecimal(significand, true, log);
+  exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, DECIMAL32_MIN_EXPONENT, DECIMAL32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Decimal32BID", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
-  significand = normalizeDecimal(significand, true, log);
-  if(significand==null){
-    addToStackTrace("convertToIEEE754Decimal32BID", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
-    return null;
-  }
   significand = wholeToLength(fromDecimal(significand, 2, true, log), 1+BINARY32_SIGNIFICAND_LENGTH, log);
-  if(significand.whole.length>1+BINARY32_SIGNIFICAND_LENGTH){
+  if(significand===null){
     addToStackTrace("convertToIEEE754Decimal32BID", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
     return null;
   }
 
-  var res = "";
-  if(significand.sign==MINUS){
-    res = res.concat("1");
-  }else{
-    res = res.concat("0");
-  }
-
-  res = res.concat(SPACE);
+  var res_sign = significand.sign==PLUS ? "0" : "1";
+  var res_exponent;
   var na = significand.whole.substr(0,4);
   var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
   if(na.charAt(0)=='0'){
-    res = res.concat(nb+na.substr(1,3));
+    res_exponent = nb+na.substr(1,3);
   }else{
-    res = res.concat("11"+nb+na.charAt(3));
+    res_exponent = "11"+nb+na.charAt(3);
   }
-
-  res = res.concat(SPACE);
-  res = res.concat(significand.whole.substr(4));
-  
-  return res;
+  var res_significand = significand.whole.substr(4);
+  return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32BID);
 }
 
 /**
@@ -295,101 +281,80 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
  * @param {string} exponent Exponent
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} significand*16^exponent as IEEE754 Hexadecimal32 
+ * @returns {IEEE754Number} significand*16^exponent as IEEE754 Hexadecimal32 
  */
 function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false, log=true){
+  if(significand.number_type!=NumberTypes.SIGNED){
+    addToStackTrace("convertToIEEE754Hexadecimal32", "Significand isn't signed", log);
+    return null;
+  }
   if(!standardized){
-    let std_significand = standardizeUOARNumber(significand, log);
-    if(std_significand==null){
-      addToStackTrace("convertToIEEE754Hexadecimal32", "Invalid number \"" + std_significand.toSigned() + "\" for base 10", log);
+    significand = standardizeUOARNumber(significand.copy(), false);
+    if(significand===null){
+      addToStackTrace("convertToIEEE754Hexadecimal32", "Invalid significand \"" + significand.toSigned() + "\"", log);
       return null;
     }
-    significand = std_significand;
+  }
+  if(significand.whole.length>HEXADECIMAL32_SIGNIFICAND_LENGTH){
+    if(significand.sign==PLUS)
+      return new IEEE754Number("0", "11111111", "00000000000000000000000");
+    else
+      return new IEEE754Number("1", "11111111", "00000000000000000000000");
   }
   significand = fromDecimal(significand, 16, true, log);
-  if(significand.whole.length>6){
-    addToStackTrace("convertToIEEE754Hexadecimal32", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
+  exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
+  if(exponent===null){
+    addToStackTrace("convertToIEEE754Hexadecimal32", "Invalid number \"" + exponent + "\" for base 10", log);
     return null;
-  }else{
-    significand = fractionToLength(significand, 6-significand.whole.length, log);
   }
 
-  let std_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
-  if(std_exponent==null){
-    addToStackTrace("convertToIEEE754Hexadecimal32", "Invalid number \"" + std_exponent + "\" for base 10", log);
-    return null;
-  }
-  exponent = std_exponent + getNormalizeExponentHexadecimal(significand, true, log); 
+  var normalize_exponent = normalizeHexadecimal(significand, true, log);
+  exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, HEXADECIMAL32_MIN_EXPONENT, HEXADECIMAL32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Hexadecimal32", "Exponent out of bounds \"" + exponent + "\"", log);
     return null;
   }
 
-  significand = normalizeHexadecimal(significand, true, log);
-
-  var res = "";
-  if(significand.sign==MINUS){
-    res = res.concat("1");
-  }else{
-    res = res.concat("0");
-  }
-
-  res = res.concat(SPACE);
-  res = res.concat(toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32_EXPONENT_LENGTH, 0, log).toUnsigned());
-
-  res = res.concat(SPACE);
-  res = res.concat(decimalTo8421(significand.fraction));
-
-  return res;
+  var res_sign = significand.sign==PLUS ? "0" : "1";
+  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32_EXPONENT_LENGTH, 0, log).toUnsigned();
+  var res_significand = decimalTo8421(significand.fraction);
+  return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.HEXADECIMAL32);
 }
 
 /**
  * Normalizes a number according to IEEE754 Binary
- * @param {string} number Number to normalize
+ * @param {UOARNumber} number Number to normalize
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {string} Normalized binary number
+ * @returns {number} Normalization exponent for number
  */
 function normalizeBinary(number, standardized=false, log=true){
   if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
+    standardizeUOARNumber(number, false);
+    if(number===null){
       addToStackTrace("normalizeBinary", "Invalid number \"" + number.toSigned() + "\" for base 2", log);
       return null;
     }
-    number = std_number;
   }
-
-  number.fraction = number.whole.substr(1) + number.fraction;
-  number.whole = "1";
-  return number;
-}
-
-/**
- * Gets normalize exponent of a number according to IEEE754 Binary
- * @param {UOARNumber} number Number to get normalize exponent from
- * @param {boolean} [standardized=false] Treat as standardized
- * @param {boolean} [log=true] Should log
- * @returns {number} Binary normalize exponent for number
- */
-function getNormalizeExponentBinary(number, standardized=false, log=true){
-  if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
-      addToStackTrace("getNormailzeExponentBinary", "Invalid number \"" + number.toSigned() + "\" for base 2", log);
-      return null;
-    }
-    number = std_number;
-  }
+  var normalize_exponent = 0;
   if(number.whole=="0"){
     for(let i=0; i<number.fraction.length; i++){
       if(number.fraction.charAt(i)!='0'){
-        return -i-1;
+        normalize_exponent = -i-1;
+        number.fraction = number.fraction.substr(i+1);
+        number.whole = "1";
+        break;
       }
     }
+    if(number.whole=="0"){
+      number.fraction = "0";
+    }
   }else{
-    return number.whole.length-1;
+    normalize_exponent = number.whole.length-1;
+    number.fraction = number.whole.substr(1) + number.fraction;
+    number.whole = "1";
   }
+  return normalize_exponent;
 }
 
 /**
@@ -397,91 +362,53 @@ function getNormalizeExponentBinary(number, standardized=false, log=true){
  * @param {UOARNumber} number Number to normalize
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {UOARNumber} Normalized decimal number
+ * @returns {number} Normalization exponent for number
  */
 function normalizeDecimal(number, standardized=false, log=true){
   if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
+    standardizeUOARNumber(number, false);
+    if(number===null){
       addToStackTrace("normalizeDecimal", "Invalid number \"" + number.toSigned() + "\" for base 10", log);
       return null;
     }
-    number = std_number;
   }
-
-  if(number.whole.length>DECIMAL_LENGTH){
-    addToStackTrace("normalizeDecimal", "Number is too large, must be less than " + DECIMAL_LENGTH + " digits", log);
+  if(number.whole.length>DECIMAL32_DIGITS){
+    addToStackTrace("normalizeDecimal", "Number is too large, must be less than " + DECIMAL32_DIGITS + " digits", log);
     return null;
   }
-
+  var normalize_exponent = 0;
   if(number.fraction!=""){
     let carry = 0;
-    if(number.fraction.length>DECIMAL_LENGTH-number.whole.length){
-      let round = number.fraction.charAt(DECIMAL_LENGTH-number.whole.length);
-      if(round>5 || (round==5 && number.fraction.charAt(DECIMAL_LENGTH-number.whole.length)%2==1)){
+    if(number.fraction.length>DECIMAL32_DIGITS-number.whole.length){
+      let round = number.fraction.charAt(DECIMAL32_DIGITS-number.whole.length);
+      if(round>5 || (round==5 && number.fraction.charAt(DECIMAL32_DIGITS-number.whole.length)%2==1)){
         carry = 1;
       }
     }
-    number.whole = number.whole + number.fraction.substr(0, DECIMAL_LENGTH-number.whole.length);
+    normalize_exponent = Math.max(-number.fraction.length, -DECIMAL32_DIGITS+number.whole.length);
+    number.whole = number.whole + number.fraction.substr(0, DECIMAL32_DIGITS-number.whole.length);
     number.fraction = "";
     if(carry>0){
       let new_number = add(number, new UOARNumber(number.sign, "1", "", 10, NumberTypes.SIGNED), NumberTypes.SIGNED, true, log);
-      if(new_number==null){
+      if(new_number===null){
         addToStackTrace("normalizeDecimal", "Rounding error");
         return null;
       }
-      if(new_number.whole.length<=DECIMAL_LENGTH){
-        number = new_number;
+      if(new_number.whole.length<=DECIMAL32_DIGITS){
+        number.whole = new_number.whole;
       }
     }
   }else{
     let i;
     for(i=number.whole.length-1; i>=0; i--){
       if(number.whole.charAt(i)!='0'){
+        normalize_exponent = number.whole.length-i-1;
         break;
       }
     }
     number.whole = number.whole.substr(0, i+1);
   }
-  return number;
-}
-
-/**
- * Gets normalize exponent of a number according to IEEE754 Decimal
- * @param {UOARNumber} number Number to get normalize exponent from
- * @param {boolean} [standardized=false] Treat as standardized
- * @param {boolean} [log=true] Should log
- * @returns {number} Decimal normalize exponent for number
- */
-function getNormalizeExponentDecimal(number, standardized=false, log=true){
-  if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
-      addToStackTrace("getNormalizeExponentDecimal", "Invalid number \"" + number.toSigned() + "\" for base 10", log);
-      return null;
-    }
-    number = std_number;
-  }
-  if(number.whole.length>DECIMAL_LENGTH){
-    addToStackTrace("getNormalizeExponentDecimal", "Number is too large, must be less than " + DECIMAL_LENGTH + " digits", log);
-    return null;
-  }
-
-  var res = 0;
-  if(number.fraction!=""){
-    res = -number.fraction.length;
-    var max = -DECIMAL_LENGTH+number.whole.length;
-    res = res<max ? max : res;
-  }else{
-    for(let i=number.whole.length-1; i>=0; i--){
-      if(number.whole.charAt(i)!='0'){
-        res = number.whole.length-i-1;
-        break;
-      }
-    }
-  }
-
-  return res;
+  return normalize_exponent;
 }
 
 /**
@@ -489,65 +416,37 @@ function getNormalizeExponentDecimal(number, standardized=false, log=true){
  * @param {UOARNumber} number Number to normalize
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
- * @returns {UOARNumber} Normalized hexadecimal number
+ * @returns {number} Normalization exponent for number
  */
 function normalizeHexadecimal(number, standardized=false, log=true){
   if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
+    standardizeUOARNumber(number, false);
+    if(number===null){
       addToStackTrace("normalizeHexadecimal", "Invalid number \"" + number.toSigned() + "\" for base 16", log);
       return null;
     }
-    number = std_number;
   }
-
-  var temp;
+  if(number.whole.length>HEXADECIMAL32_DIGITS){
+    addToStackTrace("normalizeDecimal", "Number is too large, must be less than " + HEXADECIMAL32_DIGITS + " digits", log);
+    return null;
+  }
+  var normalize_exponent = 0;
   for(let i=0; i<number.whole.length; i++){
-    temp = number.whole.charAt(i);
-    if(temp!='0'){
+    if(number.whole.charAt(i)!='0'){
+      normalize_exponent = number.whole.length-i;
       number.fraction = number.whole.substr(i) + number.fraction;
       number.whole="0";
-      return number;
+      fractionToLength(number, HEXADECIMAL32_DIGITS, log);
+      return normalize_exponent;
     }
   }
   for(let i=0; i<number.fraction.length; i++){
-    temp = number.fraction.charAt(i);
-    if(temp!='0'){
+    if(number.fraction.charAt(i)!='0'){
+      normalize_exponent = -i;
       number.fraction = number.fraction.substr(i);
       number.whole="0";
-      return number;
-    }
-  }
-}
-
-/**
- * Gets normalize exponent of a number according to IEEE754 Hexadecimal
- * @param {UOARNumber} number Number to get normalize exponent from
- * @param {boolean} [standardized=false] Treat as standardized
- * @param {boolean} [log=true] Should log
- * @returns {number} Hexadecimal normalize exponent for number
- */
-function getNormalizeExponentHexadecimal(number, standardized=false, log=true){
-  if(!standardized){
-    let std_number = standardizeUOARNumber(number, log);
-    if(std_number == null){
-      addToStackTrace("getNormalizeExponentHexadecimal", "Invalid number \"" + number.toSigned() + "\" for base 10", log);
-      return null;
-    }
-    number = std_number;
-  }
-
-  var temp;
-  for(let i=0; i<number.whole.length; i++){
-    temp = number.whole.charAt(i);
-    if(temp!='0'){
-      return number.whole.length-i;
-    }
-  }
-  for(let i=0; i<number.fraction.length; i++){
-    temp = number.fraction.charAt(i);
-    if(temp!='0'){
-      return -i;
+      fractionToLength(number, HEXADECIMAL32_DIGITS, log);
+      return normalize_exponent;
     }
   }
 }
@@ -651,9 +550,13 @@ function DPDtoDecimal(number, log=true){
  * @returns {boolean} True if number is valid IEEE754, false otherwise 
  */
 function isValidIEEE754(number, length){
-  if(number==null || number.length!=length){
+  if(number===null || number.length!=length){ //rm number.length!=length
     return false;
   }
+  //switch(number.format){
+    //Check format return number.sign.length!=1 && number.exponent.length!=FORMAT_LEN
+    //if(...){ return false; }
+  //}
   var temp;
   for(let i=0; i<number.length; i++){
     temp = number.charAt(i);
