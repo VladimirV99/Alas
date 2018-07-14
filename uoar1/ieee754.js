@@ -13,6 +13,36 @@ const IEEE754Formats = Object.freeze({
 });
 
 /**
+ * @typedef {Object} SignificandExponentPair
+ * @property {UOARNumber} significand Significand
+ * @property {number} exponent Exponent 
+ * @property {string} value Value
+ */
+class SignificandExponentPair {
+  constructor(significand, base, exponent, value=""){
+    this.significand = significand;
+    this.base = base;
+    this.exponent = exponent;
+    this.value = value;
+  }
+  isSpecialValue(){
+    return this.significand===null;
+  }
+  toString(){
+    if(this.significand===null)
+      return this.value;
+    return this.significand.toSigned();
+  }
+}
+
+const POS_ZERO = new SignificandExponentPair(null, 0, 0, "+0");
+const NEG_ZERO = new SignificandExponentPair(null, 0, 0, "-0");
+const POS_INF = new SignificandExponentPair(null, 0, 0, "+Inf");
+const NEG_INF = new SignificandExponentPair(null, 0, 0, "-Inf");
+const QNAN = new SignificandExponentPair(null, 0, 0, "qNaN");
+const SNAN = new SignificandExponentPair(null, 0, 0, "sNaN");
+
+/**
  * @typedef {Object} IEEE754Number
  * @property {string} sign Significand
  * @property {number} exponent Exponent
@@ -29,36 +59,32 @@ function IEEE754Number(sign, exponent, significand, format){
   }
 }
 
- /**
-  * @type {number}
-  * @const
-  */
-var BINARY32_MAX_EXPONENT = 127;
-var BINARY32_MIN_EXPONENT = -126;
-var BINARY32_EXCESS = 127;
-var BINARY32_EXPONENT_LENGTH = 8;
-var BINARY32_SIGNIFICAND_LENGTH = 23;
+const BINARY32_MAX_EXPONENT = 127;
+const BINARY32_MIN_EXPONENT = -126;
+const BINARY32_EXCESS = 127;
+const BINARY32_EXPONENT_LENGTH = 8;
+const BINARY32_SIGNIFICAND_LENGTH = 23;
 
-var BINARY64_MAX_EXPONENT = 1023;
-var BINARY64_MIN_EXPONENT = -1022;
-var BINARY64_EXCESS = 1023;
-var BINARY64_EXPONENT_LENGTH = 11;
-var BINARY64_SIGNIFICAND_LENGTH = 52;
+const BINARY64_MAX_EXPONENT = 1023;
+const BINARY64_MIN_EXPONENT = -1022;
+const BINARY64_EXCESS = 1023;
+const BINARY64_EXPONENT_LENGTH = 11;
+const BINARY64_SIGNIFICAND_LENGTH = 52;
 
-var DECIMAL32_MAX_EXPONENT = 96;
-var DECIMAL32_MIN_EXPONENT = -95;
-var DECIMAL32_EXCESS = 101;
-var DECIMAL32_DIGITS = 7;
-var DECIMAL32_EXPONENT_LENGTH = 11;
-var DECIMAL32_SIGNIFICAND_LENGTH = 20;
-var DECIMAL32_TRIPLET_LENGTH = 10;
+const DECIMAL32_MAX_EXPONENT = 96;
+const DECIMAL32_MIN_EXPONENT = -95;
+const DECIMAL32_EXCESS = 101;
+const DECIMAL32_DIGITS = 7;
+const DECIMAL32_EXPONENT_LENGTH = 11;
+const DECIMAL32_SIGNIFICAND_LENGTH = 20;
+const DECIMAL32_TRIPLET_LENGTH = 10;
 
-var HEXADECIMAL32_MAX_EXPONENT = 64;
-var HEXADECIMAL32_MIN_EXPONENT = -63;
-var HEXADECIMAL32_EXCESS = 64;
-var HEXADECIMAL32_DIGITS = 6;
-var HEXADECIMAL32_EXPONENT_LENGTH = 7;
-var HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
+const HEXADECIMAL32_MAX_EXPONENT = 64;
+const HEXADECIMAL32_MIN_EXPONENT = -63;
+const HEXADECIMAL32_EXCESS = 64;
+const HEXADECIMAL32_DIGITS = 6;
+const HEXADECIMAL32_EXPONENT_LENGTH = 7;
+const HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
 
 /**
  * Converts a significand and exponent to IEEE754 Binary32
@@ -545,150 +571,179 @@ function DPDtoDecimal(number, log=true){
 
 /**
  * Checks if number is a valid IEEE754 number
- * @param {string} number Number to check
- * @param {number} length Length of IEEE754 form
+ * @param {IEEE754Number} number Number to check
  * @returns {boolean} True if number is valid IEEE754, false otherwise 
  */
-function isValidIEEE754(number, length){
-  if(number===null || number.length!=length){ //rm number.length!=length
+function isValidIEEE754(number){
+  if(number===null)
     return false;
+  if(number.sign.length!=1 || (number.sign!="0" && number.sign!="1"))
+    return false;
+  switch(number.format){
+    case IEEE754Formats.BINARY32:
+      if(number.exponent.length!=BINARY32_EXPONENT_LENGTH || number.significand.length!=BINARY32_SIGNIFICAND_LENGTH)
+        return false;
+      break;
+    case IEEE754Formats.BINARY64:
+      if(number.exponent.length!=BINARY64_EXPONENT_LENGTH || number.significand.length!=BINARY64_SIGNIFICAND_LENGTH)
+        return false;
+      break;
+    case IEEE754Formats.DECIMAL32DPD:
+    case IEEE754Formats.DECIMAL32BID:
+      if(number.exponent.length!=DECIMAL32_EXPONENT_LENGTH || number.significand.length!=DECIMAL32_SIGNIFICAND_LENGTH)
+        return false;
+      break;
+    case IEEE754Formats.HEXADECIMAL32:
+      if(number.exponent.length!=HEXADECIMAL32_EXPONENT_LENGTH || number.significand.length!=HEXADECIMAL32_SIGNIFICAND_LENGTH)
+        return false;
+      break;
   }
-  //switch(number.format){
-    //Check format return number.sign.length!=1 && number.exponent.length!=FORMAT_LEN
-    //if(...){ return false; }
-  //}
   var temp;
-  for(let i=0; i<number.length; i++){
-    temp = number.charAt(i);
-    if(temp!="1" && temp!="0"){
+  for(let i=0; i<number.exponent.length; i++){
+    temp = number.exponent.charAt(i);
+    if(temp!="1" && temp!="0")
       return false;
-    }
+  }
+  for(let i=0; i<number.significand.length; i++){
+    temp = number.significand.charAt(i);
+    if(temp!="1" && temp!="0")
+      return false;
   }
   return true;
 }
 
 /**
- * Gets an IEEE754Binary32 special value of number
- * @param {string} number Number to operate on
+ * Converts string to IEEE754Number
+ * @param {string} number Number to convert
+ * @param {IEEE754Format} format Number format
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Special} Special value of number or null
+ * @returns {IEEE754Number} number converted to IEEE754Number
+ */
+function toIEEE754Number(number, format, log=true){
+  if(number==null){
+    addToStackTrace("toIEEE754Number", "Number is null", log);
+    return null;
+  }
+  number = number.replace(/ /g, '');
+  var res;
+  switch(format){
+    case IEEE754Formats.BINARY32:
+      if(number.length!=32)
+        return null;
+      res = new IEEE754Number(number.charAt(0), number.substr(1, BINARY32_EXPONENT_LENGTH), number.substr(1+BINARY32_EXPONENT_LENGTH, BINARY32_SIGNIFICAND_LENGTH), IEEE754Formats.BINARY32);
+      break;
+    case IEEE754Formats.BINARY64:
+      if(number.length!=64)
+        return null;
+      res = new IEEE754Number(number.charAt(0), number.substr(1, BINARY64_EXPONENT_LENGTH), number.substr(1+BINARY64_EXPONENT_LENGTH, BINARY64_SIGNIFICAND_LENGTH), IEEE754Formats.BINARY64);
+      break;
+    case IEEE754Formats.DECIMAL32DPD:
+    case IEEE754Formats.DECIMAL32BID:
+      if(number.length!=32)
+        return null;
+      res = new IEEE754Number(number.charAt(0), number.substr(1, DECIMAL32_EXPONENT_LENGTH), number.substr(1+DECIMAL32_EXPONENT_LENGTH, DECIMAL32_SIGNIFICAND_LENGTH), format);
+      break;
+    case IEEE754Formats.HEXADECIMAL32:
+      if(number.length!=32)
+        return null;
+      res = new IEEE754Number(number.charAt(0), number.substr(1, HEXADECIMAL32_EXPONENT_LENGTH), number.substr(1+HEXADECIMAL32_EXPONENT_LENGTH, HEXADECIMAL32_SIGNIFICAND_LENGTH), IEEE754Formats.HEXADECIMAL32);
+      break;
+  }
+  if(isValidIEEE754(res))
+    return res;
+  addToStackTrace("toIEEE754Number", "Number is invalid", log);
+  return null;
+}
+
+/**
+ * Gets an IEEE754Binary32 special value of number
+ * @param {IEEE754Number} number Number to operate on
+ * @param {boolean} [log=true] Should log
+ * @returns {SignificandExponentPair} Special value of the number or null
  */
 function getSpecialValueBinary32(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.BINARY32)){
     addToStackTrace("getSpecialValueBinary32", "Invalid IEEE754 Binary32 number \"" + number + "\"", log);
     return null;
   }
-
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = "-";
-  }else{
-    sign = "+";
-  }
-  var exponent = number.substr(1, 8);
-  var significand = number.substr(9, 23);
-
-  if(exponent=="00000000" && significand=="00000000000000000000000"){
-    return {"value": sign+"0", "special":true};
-  }else if(exponent=="11111111"){
-    if(significand=="00000000000000000000000"){
-      return {"value": sign+"inf", "special":true};
+  if(number.exponent=="00000000" && number.significand=="00000000000000000000000"){
+    return number.sign=="0" ? POS_ZERO : NEG_ZERO;
+  }else if(number.exponent=="11111111"){
+    if(number.significand=="00000000000000000000000"){
+      return number.sign=="0" ? POS_INF : NEG_INF;
     }else{
-      if(significand.charAt(0)=="0"){
-        return {"value": "sNan", "special": true};
+      if(number.significand.charAt(0)=="0"){
+        return SNAN;
       }else{
-        return {"value": "qNan", "special": true};
+        return QNAN;
       }
     }
   }
-
   return null;
 }
 
 /**
  * Gets an IEEE754Binary64 special value of number
- * @param {string} number Number to operate on
+ * @param {IEEE754Number} number Number to operate on
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Special} Special value of number or null
+ * @returns {SignificandExponentPair} Special value of number or null
  */
 function getSpecialValueBinary64(number, log=true){
-  if(!isValidIEEE754(number, 64)){
+  if(!isValidIEEE754(number, IEEE754Formats.BINARY64)){
     addToStackTrace("getSpecialValueBinary64", "Invalid IEEE754 Binary64 number \"" + number + "\"", log);
     return null;
   }
-
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = "-";
-  }else{
-    sign = "+";
-  }
-  var exponent = number.substr(1, 8);
-  var significand = number.substr(9, 23);
-
-  if(exponent=="00000000000" && significand=="0000000000000000000000000000000000000000000000000000"){
-    return {"value": sign+"0", "special":true};
-  }else if(exponent=="11111111111"){
-    if(significand=="0000000000000000000000000000000000000000000000000000"){
-      return {"value": sign+"inf", "special":true};
+  if(number.exponent=="00000000000" && number.significand=="0000000000000000000000000000000000000000000000000000"){
+    return number.sign=="0" ? POS_ZERO : NEG_ZERO;
+  }else if(number.exponent=="11111111111"){
+    if(number.significand=="0000000000000000000000000000000000000000000000000000"){
+      return number.sign=="0" ? POS_INF : NEG_INF;
     }else{
-      if(significand.charAt(0)=="0"){
-        return {"value": "sNan", "special": true};
+      if(number.significand.charAt(0)=="0"){
+        return SNAN;
       }else{
-        return {"value": "qNan", "special": true};
+        return QNAN;
       }
     }
   }
-
   return null;
 }
 
 /**
  * Gets an IEEE754Decimal32 special value of number
- * @param {string} number Number to operate on
+ * @param {IEEE754Number} number Number to operate on
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Special} Special value of number or null
+ * @returns {SignificandExponentPair} Special value of number or null
  */
 function getSpecialValueDecimal32(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32DPD)){
     addToStackTrace("getSpecialValueDecimal32", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
   }
-
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = "-";
-  }else{
-    sign = "+";
-  }
-  var exponent = number.substr(1, 8);
-  var significand = number.substr(9, 23);
-
-  if(exponent.substr(0, 2)!="11" && exponent.substr(2, 3)=="000" && significand=="00000000000000000000"){
-    return {"value": sign+"0", "special":true};
-  }else if(exponent.substr(0, 4)=="1111"){
-    if(exponent.charAt(4)=="0"){
-      return {"value": sign+"inf", "special":true};
+  if(number.exponent.substr(0, 2)!="11" && number.exponent.substr(2, 3)=="000" && number.significand=="00000000000000000000"){
+    return number.sign=="0" ? POS_ZERO : NEG_ZERO;
+  }else if(number.exponent.substr(0, 4)=="1111"){
+    if(number.exponent.charAt(4)=="0"){
+      return number.sign=="0" ? POS_INF : NEG_INF;
     }else{
-      if(exponent.charAt(5)=="0"){
-        return {"value": "qNan", "special": true};
+      if(number.exponent.charAt(5)=="0"){
+        return QNAN;
       }else{
-        return {"value": "sNan", "special": true};
+        return SNAN;
       }
     }
   }
-
   return null;
 }
 
 /**
  * Converts an IEEE754 Binary32 to a significand and exponent
- * @param {string} number Number to convert 
+ * @param {IEEE754Number} number Number to convert 
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Nonspecial} Object containing significand and exponent
+ * @returns {SignificandExponentPair} Object containing significand and exponent
  */
 function convertFromIEEE754Binary32(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.BINARY32)){
     addToStackTrace("convertFromIEEE754Binary32", "Invalid IEEE754 Binary32 number \"" + number + "\"", log);
     return null;
   }
@@ -698,26 +753,19 @@ function convertFromIEEE754Binary32(number, log=true){
     return res;
   }
 
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = MINUS;
-  }else{
-    sign = PLUS;
-  }
-
+  var sign = number.sign=="0" ? PLUS : MINUS;
   var significand;
-  var exponent = baseToDecimalInteger(number.substr(1, BINARY32_EXPONENT_LENGTH), 2, NumberTypes.UNSIGNED, log) - BINARY32_EXCESS;
+  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log) - BINARY32_EXCESS;
 
   if(exponent==-BINARY32_EXCESS){
-    let temp = trimNumber(new UOARNumber(sign, "0", number.substr(1+BINARY32_EXPONENT_LENGTH, BINARY32_SIGNIFICAND_LENGTH), 2, NumberTypes.SIGNED));
-    exponent += 1+getNormalizeExponentBinary(temp, true, log);
-    significand = normalizeBinary(temp);
+    significand = trimNumber(new UOARNumber(sign, "0", number.significand, 2, NumberTypes.SIGNED));
+    exponent += 1+normalizeBinary(significand, true, log);
   }else{
-    significand = trimNumber(new UOARNumber(sign, "1", number.substr(1+BINARY32_EXPONENT_LENGTH, BINARY32_SIGNIFICAND_LENGTH), 2, NumberTypes.SIGNED));
+    significand = trimNumber(new UOARNumber(sign, "1", number.significand, 2, NumberTypes.SIGNED));
   }
 
-  let whole = significand.whole!="0";
-  let len = (whole? 1 : 0) + significand.fraction.length;
+  var whole = significand.whole!="0";
+  var len = (whole? 1 : 0) + significand.fraction.length;
   if(len!=1){
     if(!whole)
       significand.whole="";
@@ -741,21 +789,18 @@ function convertFromIEEE754Binary32(number, log=true){
       }
     }
   }
-
   significand = toDecimal(significand, true, log);
-
-  res = {"significand": significand, "exponent": exponent, "special": false};
-  return res;
+  return new SignificandExponentPair(significand, 2, exponent);
 }
 
 /**
  * Converts an IEEE754 Binary64 to a significand and exponent
- * @param {string} number Number to convert 
+ * @param {IEEE754Number} number Number to convert 
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Nonspecial} Object containing significand and exponent
+ * @returns {SignificandExponentPair} Object containing significand and exponent
  */
 function convertFromIEEE754Binary64(number, log=true){
-  if(!isValidIEEE754(number, 64)){
+  if(!isValidIEEE754(number, IEEE754Formats.BINARY64)){
     addToStackTrace("convertFromIEEE754Binary64", "Invalid IEEE754 Binary64 number \"" + number + "\"", log);
     return null;
   }
@@ -765,22 +810,15 @@ function convertFromIEEE754Binary64(number, log=true){
     return res;
   }
 
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = MINUS;
-  }else{
-    sign = PLUS;
-  }
-
+  var sign = number.sign=="0" ? PLUS : MINUS;
   var significand;
-  var exponent = baseToDecimalInteger(number.substr(1, BINARY64_EXPONENT_LENGTH), 2, NumberTypes.UNSIGNED, log) - BINARY64_EXCESS;
+  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log) - BINARY64_EXCESS;
 
   if(exponent==-BINARY64_EXCESS){
-    let temp = trimNumber(new UOARNumber(sign, "0", number.substr(1+BINARY64_EXPONENT_LENGTH, BINARY64_SIGNIFICAND_LENGTH), 2, NumberTypes.SIGNED));
-    exponent += 1+getNormalizeExponentBinary(temp, true, log);
-    significand = normalizeBinary(temp);
+    significand = trimNumber(new UOARNumber(sign, "0", number.significand, 2, NumberTypes.SIGNED));
+    exponent += 1+normalizeBinary(significand, true, log);
   }else{
-    significand = trimNumber(new UOARNumber(sign, "1", number.substr(1+BINARY64_EXPONENT_LENGTH, BINARY64_SIGNIFICAND_LENGTH), 2, NumberTypes.SIGNED));
+    significand = trimNumber(new UOARNumber(sign, "1", number.significand, 2, NumberTypes.SIGNED));
   }
 
   let whole = significand.whole!="0";
@@ -808,21 +846,18 @@ function convertFromIEEE754Binary64(number, log=true){
       }
     }
   }
-
   significand = toDecimal(significand, true, log);
-
-  res = {"significand": significand, "exponent": exponent, "special": false};
-  return res;
+  return new SignificandExponentPair(significand, 2, exponent);
 }
 
 /**
  * Converts an IEEE754 Decimal32 DPD to a significand and exponent
- * @param {string} number Number to convert 
+ * @param {IEEE754Number} number Number to convert 
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Nonspecial} Object containing significand and exponent
+ * @returns {SignificandExponentPair} Object containing significand and exponent
  */
 function convertFromIEEE754Decimal32DPD(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32DPD)){
     addToStackTrace("convertFromIEEE754Decimal32DPD", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
   }
@@ -832,21 +867,15 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
     return res;
   }
 
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = MINUS;
-  }else{
-    sign = PLUS;
-  }
-
+  var sign = number.sign=="0" ? PLUS : MINUS;
   var significand;
   var comb = "";
-  if(number.substr(1, 2)=="11"){
-    significand = "100" + number.charAt(5);
-    comb = number.substr(3, 2) + number.substr(6, 6);
+  if(number.exponent.substr(0, 2)=="11"){
+    significand = "100" + number.exponent.charAt(4);
+    comb = number.exponent.substr(2, 2) + number.exponent.substr(5, 6);
   }else{
-    significand = "0" + number.substr(3, 3);
-    comb = number.substr(1,2) + number.substr(6, 6);
+    significand = "0" + number.exponent.substr(2, 3);
+    comb = number.exponent.substr(0,2) + number.exponent.substr(5, 6);
   }
 
   var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
@@ -856,27 +885,21 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
     exponent -= DECIMAL32_EXCESS;
   }
 
-  significand = significand + DPDtoDecimal(number.substr(1+DECIMAL32_EXPONENT_LENGTH, DECIMAL32_TRIPLET_LENGTH), log) + DPDtoDecimal(number.substr(1+DECIMAL32_EXPONENT_LENGTH+DECIMAL32_TRIPLET_LENGTH, DECIMAL32_TRIPLET_LENGTH, log));
+  significand = significand + DPDtoDecimal(number.significand.substr(0, DECIMAL32_TRIPLET_LENGTH), log) + DPDtoDecimal(number.significand.substr(DECIMAL32_TRIPLET_LENGTH, DECIMAL32_TRIPLET_LENGTH), log);
   significand = trimNumber(new UOARNumber(sign, decimalFrom8421(significand, log), "", 10, NumberTypes.SIGNED));
+  exponent += normalizeDecimal(significand, true, log);
 
-  let normalize_exponent = getNormalizeExponentDecimal(significand, true, log);
-  if(normalize_exponent>0){
-    exponent += normalize_exponent;
-    significand = normalizeDecimal(significand, true, log);
-  }
-
-  res = {"significand": significand, "exponent": exponent, "special": false};
-  return res;
+  return new SignificandExponentPair(significand, 10, exponent);
 }
 
 /**
  * Converts an IEEE754 Decimal32 BID to a significand and exponent
- * @param {string} number Number to convert 
+ * @param {IEEE754Number} number Number to convert 
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Nonspecial} Object containing significand and exponent
+ * @returns {SignificandExponentPair} Object containing significand and exponent
  */
 function convertFromIEEE754Decimal32BID(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32BID)){
     addToStackTrace("convertFromIEEE754Decimal32BID", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
   }
@@ -886,21 +909,15 @@ function convertFromIEEE754Decimal32BID(number, log=true){
     return res;
   }
 
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = MINUS;
-  }else{
-    sign = PLUS;
-  }
-
+  var sign = number.sign=="0" ? PLUS : MINUS;
   var significand;
   var comb = "";
-  if(number.substr(1, 2)=="11"){
-    significand = "100" + number.charAt(11);
-    comb = number.substr(3, 8);
+  if(number.exponent.substr(0, 2)=="11"){
+    significand = "100" + number.exponent.charAt(10);
+    comb = number.exponent.substr(2, 8);
   }else{
-    significand = "0" + number.substr(9, 3);
-    comb = number.substr(1, 8);
+    significand = "0" + number.exponent.substr(8, 3);
+    comb = number.exponent.substr(0,8);
   }
 
   var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
@@ -910,44 +927,29 @@ function convertFromIEEE754Decimal32BID(number, log=true){
     exponent -= DECIMAL32_EXCESS;
   }
 
-  significand = significand + number.substr(1+DECIMAL32_EXPONENT_LENGTH, DECIMAL32_SIGNIFICAND_LENGTH);
-  significand = trimNumber(toDecimal(new UOARNumber(sign, significand, "", 2, NumberTypes.SIGNED), false, log));
-
-  let normalize_exponent = getNormalizeExponentDecimal(significand, true, log);
-  if(normalize_exponent>0){
-    exponent += normalize_exponent;
-    significand = normalizeDecimal(significand, true, log);
-  }
-
-  res = {"significand": significand, "exponent": exponent, "special": false};
-  return res;
+  significand = significand + number.significand;
+  significand = toDecimal(new UOARNumber(sign, significand, "", 2, NumberTypes.SIGNED), false, log);
+  exponent += normalizeDecimal(significand, true, log);
+  return new SignificandExponentPair(significand, 10, exponent);
 }
 
 /**
  * Converts an IEEE754 Hexadecimal32 to a significand and exponent
- * @param {string} number Number to convert 
+ * @param {IEEE754Number} number Number to convert 
  * @param {boolean} [log=true] Should log
- * @returns {IEEE754Nonspecial} Object containing significand and exponent
+ * @returns {SignificandExponentPair} Object containing significand and exponent
  */
 function convertFromIEEE754Hexadecimal32(number, log=true){
-  if(!isValidIEEE754(number, 32)){
+  if(!isValidIEEE754(number, IEEE754Formats.HEXADECIMAL32)){
     addToStackTrace("convertFromIEEE754Hexadecimal32", "Invalid IEEE754 Hexadecimal32 number \"" + number + "\"", log);
     return null;
   }
 
-  var sign = "";
-  if(number.charAt(0)=="1"){
-    sign = MINUS;
-  }else{
-    sign = PLUS;
-  }
+  var sign = number.sign=="0" ? PLUS : MINUS;
+  var significand = trimNumber(new UOARNumber(sign, "0", decimalFrom8421(number.significand), 16, NumberTypes.SIGNED));
+  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log) - HEXADECIMAL32_EXCESS;
 
-  var exponent = baseToDecimalInteger(number.substr(1, HEXADECIMAL32_EXPONENT_LENGTH), 2, NumberTypes.UNSIGNED, log);
-  exponent -= HEXADECIMAL32_EXCESS;
-
-  significand = trimNumber(new UOARNumber(sign, "0", decimalFrom8421(number.substr(1+HEXADECIMAL32_EXPONENT_LENGTH, HEXADECIMAL32_SIGNIFICAND_LENGTH)), 16, NumberTypes.SIGNED));
-
-  let len = significand.fraction.length;
+  var len = significand.fraction.length;
   if(exponent>=0 && exponent<6){
     significand.whole = significand.fraction.substr(0, exponent);
     significand.fraction = significand.fraction.substr(exponent);
@@ -967,9 +969,6 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
       significand.fraction = significand.fraction.substr(len-3);
     }
   }
-
   significand = toDecimal(significand, false, log);
-
-  res = {"significand": significand, "exponent": exponent, "special": false};
-  return res;
+  return new SignificandExponentPair(significand, 16, exponent);
 }
