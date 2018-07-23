@@ -10,8 +10,15 @@
   <script>
 
     function convertToIEEE754(format){
-      var significand = toUOARNumber(document.getElementById('significand').value, 10, NumberTypes.SIGNED, false);
+      var significand = document.getElementById('significand').value;
       var exponent = document.getElementById('exponent').value;
+      if(significand=="")
+        return;
+      if(exponent = "")
+        exponent = "0"
+      significand = toUOARNumber(significand, 10, NumberTypes.SIGNED, false);
+      if(significand==null)
+        return;
       clearStackTrace();
       clearOutput();
       var res;

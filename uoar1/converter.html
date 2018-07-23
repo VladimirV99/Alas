@@ -5,13 +5,16 @@
   <title>Konverter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="uoar_core.js"></script>
+  <script type="text/javascript" src="type_converter.js"></script>
   <script type="text/javascript" src="output.js"></script>
   <script>
 
-    function calculate(){
+    function convertBase(){
       var val = document.getElementById('input').value;
       var base1 = document.getElementById('base_src').value;
       var base2 = document.getElementById('base_dest').value;
+      if(val=="" || base1=="" || base2=="")
+        return;
 
       clearStackTrace();
       clearOutput();
@@ -143,6 +146,24 @@
       addToOutput(res.toSigned());
       return res;
     }
+
+    function convertType(){
+      var val = document.getElementById('input').value;
+      var base = document.getElementById('base_src').value;
+      if(val=="" || base=="")
+        return;
+
+      clearStackTrace();
+      clearOutput();
+      var number = toUOARNumber(val, base, NumberTypes.SIGNED, true);
+      
+      addToOutput("(" + number.toSigned() + ")" + number.base + "<br>");
+      addToOutput("ZAV: (" + convertToSMR(number, false, true).toSigned() + ")" + number.base + "<br>");
+      addToOutput("NK: (" + convertToOC(number, true, true).toSigned() + ")" + number.base + "<br>");
+      addToOutput("PK: (" + convertToTC(number, true, true).toSigned() + ")" + number.base + "<br>");
+
+      document.getElementById("text1").innerHTML=output;
+    }
   </script>
 </head>
 <body>
@@ -156,7 +177,8 @@
     <p>U sistem: </p>
     <input type="number" id="base_dest"></input>
     <br><br>
-    <input value="Izracunaj" type="button" name="calc" id="calc" onclick="calculate()"></input>
+    <input value="Pretvori u osnovu" type="button" name="convertBase" id="convertBase" onclick="convertBase()"></input>
+    <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" onclick="convertType()"></input>
 
     <p id="text1">
       resenje

@@ -52,27 +52,29 @@ const number_type_description = [
  * @property {number} base
  * @property {NumberType} number_type
  */
-function UOARNumber(sign, whole, fraction, base, number_type){
-  this.sign = sign;
-  this.whole = whole;
-  this.fraction = fraction;
-  this.base = base;
-  this.number_type = number_type;
-  this.toSigned = function(){
+class UOARNumber{
+  constructor(sign, whole, fraction, base, number_type){
+    this.sign = sign;
+    this.whole = whole;
+    this.fraction = fraction;
+    this.base = base;
+    this.number_type = number_type;
+  }
+  toSigned(){
     var res = this.sign + this.whole;
     if(this.fraction!="" && this.fraction!="0"){
       res = res.concat("." + this.fraction);
     }
     return res;
-  };
-  this.toUnsigned = function(){
+  }
+  toUnsigned(){
     var res = this.whole;
     if(this.fraction!="" && this.fraction!="0"){
       res = res.concat("." + this.fraction);
     }
     return res;
   }
-  this.copy = function(){
+  copy(){
     return new UOARNumber(this.sign, this.whole, this.fraction, this.base, this.number_type);
   }
 }
@@ -670,6 +672,8 @@ function toDecimal(number, standardized=false, log=true){
       addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
       return null;
     }
+  } else {
+    number = number.copy();
   }
   if(number.base==10){
     return number;
@@ -729,6 +733,8 @@ function fromDecimal(number, base, standardized=false, log=true){
       addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
       return null;
     }
+  } else {
+    number = number.copy();
   }
   if(number.base!=10){
     addToStackTrace("fromDecimal", "Number isn't decimal", log);
@@ -804,6 +810,8 @@ function convertBases(number, base_to, standardized=false, log=true){
       addToStackTrace("convertBases", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
       return null;
     }
+  } else {
+    number = number.copy();
   }
   
   if(number.base==base_to){
@@ -1145,6 +1153,9 @@ function equalizeLength(num1, num2, standardized=false, log=true){
       addToStackTrace("equalizeLength", "Numbers are invalid", log);
       return null;
     }
+  } else {
+    num1 = num1.copy();
+    num2 = num2.copy();
   }
   
   if(num1.whole.length>num2.whole.length){
@@ -1180,17 +1191,14 @@ function add(add1, add2, number_type, standardized=false, log=true){
   add1 = trimSign(add1.copy());
   add2 = trimSign(add2.copy());
   var base = add1.base;
-  // if(add1.number_type!=number_type)
-  //   convertType(add1, number_type);
-  // if(add2.number_type!=number_type)
-  //   convertType(add2, number_type);
+  if(add1.number_type!=number_type)
+    convertToType(add1, number_type, false, log);
+  if(add2.number_type!=number_type)
+    convertToType(add2, number_type, false, log);
 
   equalizeLength(add1, add2, standardized, log);
   var whole_len=add1.whole.length;
   var fraction_len=add1.fraction.length;
-
-  console.log(add1);
-  console.log(add2);
 
   var sign;
   var whole = "";
@@ -1200,6 +1208,7 @@ function add(add1, add2, number_type, standardized=false, log=true){
   
   switch(number_type){
     case NumberTypes.SIGNED:
+    case NumberTypes.SMR:
       let sign1 = add1.sign;
       let sign2 = add2.sign;
       if(sign1==sign2){
@@ -1272,7 +1281,6 @@ function add(add1, add2, number_type, standardized=false, log=true){
         carry = Math.floor(temp/base);
         if(carry==0)
           break;
-        //TODO Add carry
       }else if(number_type == NumberTypes.TC){
         if(add1.sign.charAt(0) == add2.sign.charAt(0)){
           if(add1.sign.charAt(0)!=sign){
@@ -1284,6 +1292,9 @@ function add(add1, add2, number_type, standardized=false, log=true){
       break;
   }
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  if(number_type == NumberTypes.OC){
+    res = addToLowestPoint(res, carry, false);
+  }
   return res;
 }
 

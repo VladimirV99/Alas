@@ -38,6 +38,8 @@ function convertToUnsigned(number, standardized=false, log=true){
       addToStackTrace("convertToUnsigned", "Number is invalid", log);
       return null;
     }
+  }else{
+    number = number.copy();
   }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
@@ -83,6 +85,8 @@ function convertToSigned(number, standardized=false, log=true){
       addToStackTrace("convertToSigned", "Number is invalid", log);
       return null;
     }
+  }else{
+    number = number.copy();
   }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
@@ -127,6 +131,8 @@ function convertToSMR(number, standardized=false, log=true){
       addToStackTrace("convertToSMR", "Number is invalid", log);
       return null;
     }
+  }else{
+    number = number.copy();
   }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
@@ -169,6 +175,8 @@ function convertToOC(number, standardized=false, log=true){
       addToStackTrace("convertToOC", "Number is invalid", log);
       return null;
     }
+  }else{
+    number = number.copy();
   }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
@@ -217,6 +225,8 @@ function convertToTC(number, standardized=false, log=true){
       addToStackTrace("convertToTC", "Number is invalid", log);
       return null;
     }
+  }else{
+    number = number.copy();
   }
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
