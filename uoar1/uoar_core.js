@@ -74,6 +74,9 @@ class UOARNumber{
     }
     return res;
   }
+  toWhole(){
+    return this.sign + this.whole + this.fraction;
+  }
   copy(){
     return new UOARNumber(this.sign, this.whole, this.fraction, this.base, this.number_type);
   }
@@ -1063,8 +1066,8 @@ function isGreater(number1, number2, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number1 = standardizeUOARNumber(number1.copy());
-    number2 = standardizeUOARNumber(number2.copy());
+    number1 = standardizeUOARNumber(number1);
+    number2 = standardizeUOARNumber(number2);
     if(number1===null || number2===null){
       addToStackTrace("isGreater", "Invalid numbers", log);
       return null;
@@ -1153,9 +1156,6 @@ function equalizeLength(num1, num2, standardized=false, log=true){
       addToStackTrace("equalizeLength", "Numbers are invalid", log);
       return null;
     }
-  } else {
-    num1 = num1.copy();
-    num2 = num2.copy();
   }
   
   if(num1.whole.length>num2.whole.length){

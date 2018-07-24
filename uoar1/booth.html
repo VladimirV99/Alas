@@ -26,63 +26,66 @@
         addToStackTrace("booth", "Operands are not binary", log);
         return;
       }
-      //TODO Add fraction support
 
       n1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
       n2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
       equalizeLength(n1, n2, true, log);
-      console.log(n1);
-      console.log(n2);
-      var len = n1.toSigned().length;
+      var len = n1.sign.length + n1.whole.length + n1.fraction.length;
 
-      var a = wholeToLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, log);
+      var a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, n1.fraction.length);
       var m = n1;
       var neg_m = complement(n1);
       var p = n2;
       var p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
       var registers = [a, p, p1];
 
+      addToOutput("M: (" + m.toSigned() + ")2<br>");
+      addToOutput("P: (" + p.toSigned() + ")2<br>");
+      addToOutput("-M: (" + neg_m.toSigned() + ")2<br>");
+
       addToOutput("<table>");
       addToOutput("<tr><th>A</th><th>P</th><th>P0</th><th>Poruka</th></tr>");
-      addToOutput("<tr><td>" + registers[0].toSigned() + "</td><td>" + registers[1].toSigned() + "</td><td>" + registers[2].toSigned() + "</td><td>Init</td></tr>");
+      addToOutput("<tr><td>" + registers[0].toWhole() + "</td><td>" + registers[1].toWhole() + "</td><td>" + registers[2].toWhole() + "</td><td>Init</td></tr>");
       var work1 = "";
       var work2 = "";
       for(let im=0; im<len; im++){
         addToOutput("<tr>");
         
-        op = registers[1].toSigned().charAt(registers[1].toSigned().length-1) + registers[2].toSigned();
+        op = registers[1].toWhole().charAt(registers[1].toWhole().length-1) + registers[2].toWhole();
         work1 = "";
         work2 = op + " -> ";
         if(op=="00" || op=="11"){
           work2 = work2.concat("NOOP");
         }else if(op=="10"){
           registers[0] = add(registers[0], neg_m, NumberTypes.TC, true, log);
-          work1 = "+" + neg_m.toSigned() + "<br>" + registers[0].toSigned() + "<br>";
+          work1 = "+" + neg_m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
           work2 = work2.concat("A = A - M");
         }else if(op=="01"){
           registers[0] = add(registers[0], m, NumberTypes.TC, true, log);
-          work1 = "+" + m.toSigned() + "<br>" + registers[0].toSigned() + "<br>";
+          work1 = "+" + m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
           work2 = work2.concat("A = A + M"); 
         }
         
         shift(registers, 1, ShiftTypes.RIGHT_A);
-        work1 = work1.concat(registers[0].toSigned());
+        work1 = work1.concat(registers[0].toWhole());
 
         addToOutput("<td>" + work1 + "</td>");
-        addToOutput("<td>" + registers[1].toSigned() + "</td>");
-        addToOutput("<td>" + registers[2].toSigned() + "</td>");
+        addToOutput("<td>" + registers[1].toWhole() + "</td>");
+        addToOutput("<td>" + registers[2].toWhole() + "</td>");
         addToOutput("<td>" + work2 + "</td>");
         addToOutput("</tr>");
       }
       addToOutput("</table>");
-      addToOutput("AP = (" + registers[0].toSigned() + " " + registers[1].toSigned() + ")2");
-      return registers[0].toSigned() + registers[1].toSigned();
+      addToOutput("AP = (" + registers[0].toWhole() + " " + registers[1].toWhole() + ")2<br>");
+      var AP = registers[0].toWhole() + registers[1].toWhole();
+      var AP_frac_len = 2 * n1.fraction.length;
+      AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
+      var res = toUOARNumber(AP, 2, NumberTypes.TC, false);
+      addToOutput("Rezultat: (" + res.toSigned() + ")2");
+      return res;
     }
 
     function test(){
-      // console.log("complement - " + complement(toUOARNumber("00", 2, NumberTypes.TC, true), false, true).toSigned());
-      // console.log("add - " + add(toUOARNumber("-17", 10, NumberTypes.SIGNED, true), toUOARNumber("+15", 10, NumberTypes.SIGNED, true), NumberTypes.SIGNED, false, true).toSigned());
-      
       // var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
       // var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
       // console.log("booth - " + booth(n1, n2, false, true));
