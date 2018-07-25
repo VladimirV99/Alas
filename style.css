@@ -102,6 +102,10 @@ a{
   -moz-transition: background-color 100ms linear;
   -o-transition: background-color 100ms linear;
   transition: background-color 100ms linear;
+  -webkit-transition: color 100ms linear;
+  -moz-transition: color 100ms linear;
+  -o-transition: color 100ms linear;
+  transition: color 100ms linear;
 }
 
 .menu .item_hover_red:hover{

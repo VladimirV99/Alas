@@ -4,15 +4,19 @@
   <meta charset="utf-8"/>
   <title>Konverter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="uoar_core.js"></script>
   <script type="text/javascript" src="type_converter.js"></script>
   <script type="text/javascript" src="output.js"></script>
   <script>
 
     function convertBase(){
-      var val = document.getElementById('input').value;
-      var base1 = document.getElementById('base_src').value;
-      var base2 = document.getElementById('base_dest').value;
+      var container = document.getElementById('solution');
+      if(!container.classList.contains('hidden'))
+        container.classList.add('hidden');
+      var val = document.getElementById('input_number').value;
+      var base1 = document.getElementById('input_base_src').value;
+      var base2 = document.getElementById('input_base_dest').value;
       if(val=="" || base1=="" || base2=="")
         return;
 
@@ -20,7 +24,8 @@
       clearOutput();
       var res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
 
-      document.getElementById("text1").innerHTML=output;
+      document.getElementById("solution").innerHTML=output;
+      container.classList.remove('hidden');
     }
 
     function toDecimal(number, standardized=false, log=true){
@@ -73,6 +78,8 @@
       addToOutput(work1 + " = ");
       addToOutput(work2 + " = ");
       addToOutput("(" + res.toSigned() + ")10");
+      addToOutput("<hr>");
+
       return res;
     }
 
@@ -142,14 +149,19 @@
         addToOutput("</table>");
       }
 
+      addToOutput("<hr>");
+
       var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
       addToOutput(res.toSigned());
       return res;
     }
 
     function convertType(){
-      var val = document.getElementById('input').value;
-      var base = document.getElementById('base_src').value;
+      var container = document.getElementById('solution');
+      if(!container.classList.contains('hidden'))
+        container.classList.add('hidden');
+      var val = document.getElementById('input_number').value;
+      var base = document.getElementById('input_base_src').value;
       if(val=="" || base=="")
         return;
 
@@ -157,34 +169,55 @@
       clearOutput();
       var number = toUOARNumber(val, base, NumberTypes.SIGNED, true);
       
-      addToOutput("(" + number.toSigned() + ")" + number.base + "<br>");
-      addToOutput("ZAV: (" + convertToSMR(number, false, true).toSigned() + ")" + number.base + "<br>");
-      addToOutput("NK: (" + convertToOC(number, true, true).toSigned() + ")" + number.base + "<br>");
-      addToOutput("PK: (" + convertToTC(number, true, true).toSigned() + ")" + number.base + "<br>");
+      addToOutput("<table id=\"representations\">");
+      addToOutput("<tr><th colspan=\"2\">");
+      addToOutput("(" + number.toSigned() + ")" + number.base + "</th></tr>");
+      addToOutput("<tr><td>ZAV:</td>");
+      addToOutput("<td>(" + convertToSMR(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+      addToOutput("<tr><td>NK:</td>");
+      addToOutput("<td>(" + convertToOC(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+      addToOutput("<tr><td>PK:</td>");
+      addToOutput("<td>(" + convertToTC(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+      addToOutput("</table>");
 
-      document.getElementById("text1").innerHTML=output;
+      document.getElementById("solution").innerHTML=output;
+      container.classList.remove('hidden');
     }
   </script>
 </head>
 <body>
 
-  <div class="container" id="main">
-
-    <p>Pretvoriti broj: </p>
-    <input type="text" id="input"></input>
-    <p>Iz sistema: </p>
-    <input type="number" id="base_src"></input>
-    <p>U sistem: </p>
-    <input type="number" id="base_dest"></input>
-    <br><br>
-    <input value="Pretvori u osnovu" type="button" name="convertBase" id="convertBase" onclick="convertBase()"></input>
-    <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" onclick="convertType()"></input>
-
-    <p id="text1">
-      resenje
-    </p>
-
+  <div class="titlebar">
+    <h1 class="title">Konverter brojcanih sistema</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
   </div>
+
+  <div class="info">
+    <p>
+      Konverter brojcanih sistema prevodi broj izmedju razlicitih osnova.
+    </p>
+  </div>
+
+  <div class="container center" id="main">
+    <table>
+      <tr>
+        <td><label for="input_number">Pretvoriti broj:</label></td>
+        <td><input type="text" id="input_number"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_base_src">Iz osnove:</label></td>
+        <td><input type="text" id="input_base_src"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_base_dest">U osnovu:</label></td>
+        <td><input type="text" id="input_base_dest"></input></td>
+      </tr>
+    </table>
+    <input value="Pretvori u osnovu" type="button" name="convertBase" id="convertBase" class="button" onclick="convertBase()"></input>
+    <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" class="button" onclick="convertType()"></input>
+  </div>
+
+  <div class="container hidden" id="solution"></div>
 
 </body>
 </html>
