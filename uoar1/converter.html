@@ -10,27 +10,34 @@
   <script type="text/javascript" src="output.js"></script>
   <script>
 
-    function convertBase(){
-      var container = document.getElementById('solution');
-      if(!container.classList.contains('hidden'))
-        container.classList.add('hidden');
+    function convertBase(log=true){
+      var solution = document.getElementById('solution');
+      if(!solution.classList.contains('hidden'))
+        solution.classList.add('hidden');
       var val = document.getElementById('input_number').value;
       var base1 = document.getElementById('input_base_src').value;
       var base2 = document.getElementById('input_base_dest').value;
-      if(val=="" || base1=="" || base2=="")
-        return;
+      if(val=="" || base1=="" || base2==""){
+        addToStackTrace("convertBase", "Empty input", log);
+        return null;
+      }
 
       clearStackTrace();
       clearOutput();
       var res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
+      if(res===null){
+        addToStackTrace("convertBase", "Conversion Error", log);
+        return null;
+      }
 
-      document.getElementById("solution").innerHTML=output;
-      container.classList.remove('hidden');
+      solution.innerHTML=output;
+      solution.classList.remove('hidden');
+      return res;
     }
 
     function toDecimal(number, standardized=false, log=true){
       if(!standardized){
-        number = standardizeUOARNumber(number.copy(), log);
+        number = standardizeUOARNumber(number.copy(), false);
         if(number === null){
           addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
           return null;
@@ -156,10 +163,10 @@
       return res;
     }
 
-    function convertType(){
-      var container = document.getElementById('solution');
-      if(!container.classList.contains('hidden'))
-        container.classList.add('hidden');
+    function convertType(log=true){
+      var solution = document.getElementById('solution');
+      if(!solution.classList.contains('hidden'))
+        solution.classList.add('hidden');
       var val = document.getElementById('input_number').value;
       var base = document.getElementById('input_base_src').value;
       if(val=="" || base=="")
@@ -168,6 +175,10 @@
       clearStackTrace();
       clearOutput();
       var number = toUOARNumber(val, base, NumberTypes.SIGNED, true);
+      if(number===null){
+        addToStackTrace("convertType", "Invalid number", log);
+        return null;
+      }
       
       addToOutput("<table id=\"representations\">");
       addToOutput("<tr><th colspan=\"2\">");
@@ -180,8 +191,9 @@
       addToOutput("<td>(" + convertToTC(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
       addToOutput("</table>");
 
-      document.getElementById("solution").innerHTML=output;
-      container.classList.remove('hidden');
+      solution.innerHTML=output;
+      solution.classList.remove('hidden');
+      return number;
     }
   </script>
 </head>
@@ -217,7 +229,7 @@
     <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" class="button" onclick="convertType()"></input>
   </div>
 
-  <div class="container hidden" id="solution"></div>
+  <div class="container solution hidden" id="solution"></div>
 
 </body>
 </html>

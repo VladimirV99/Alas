@@ -8,13 +8,10 @@ const RADIX = ['.', ','];
 var PRECISION = 8;
 var PRECISION_NUMBER = Math.pow(10, PRECISION);
 
-/**
- * @typedef {number} NumberType
- */
-
 /** 
  * Number type enum
  * @readonly
+ * @typedef {number} NumberType
  * @enum {NumberType}
 */
 const NumberTypes = Object.freeze({
@@ -25,17 +22,24 @@ const NumberTypes = Object.freeze({
   TC: 4,
   EK: 5
 });
-const number_type_description = [
-  "unsigned", "signed", "SMR", "OC", "TC", "EK"
-];
 
-/**
- * @typedef {number} ShiftType
- */
+/** 
+ * Arithmetic operations
+ * @readonly
+ * @typedef {number} ArithmeticOperation
+ * @enum {ArithmeticOperation}
+*/
+const ArithmeticOperations = Object.freeze({
+  ADDITION: 0,
+  SUBTRACTION: 1,
+  MULTIPLICATION: 2,
+  DIVISION: 3
+});
 
  /**
   * Shift type enum
   * @readonly
+  * @typedef {number} ShiftType
   * @enum {ShiftType}
   */
  const ShiftTypes = Object.freeze({
@@ -1207,6 +1211,22 @@ function add(add1, add2, number_type, standardized=false, log=true){
   var temp;
   
   switch(number_type){
+    case NumberTypes.UNSIGNED:
+      sign = "";
+      for(let i=fraction_len-1; i>=0; i--){
+        temp = getValueAt(add1.fraction, i, false) + getValueAt(add2.fraction, i, false) + carry;
+        fraction = toValue(temp%base, false) + fraction;
+        carry = Math.floor(temp/base);
+      }
+      for(let i=whole_len-1; i>=0; i--){
+        temp = getValueAt(add1.whole, i, false) + getValueAt(add2.whole, i, false) + carry;
+        whole = toValue(temp%base, false) + whole;
+        carry = Math.floor(temp/base);
+      }
+      if(carry!=0){
+        whole = toValue(carry, false) + whole;
+      }
+      break;
     case NumberTypes.SIGNED:
     case NumberTypes.SMR:
       let sign1 = add1.sign;
@@ -1290,11 +1310,15 @@ function add(add1, add2, number_type, standardized=false, log=true){
         }
       }
       break;
+    default:
+      addToStackTrace("add", "Invalid number type", log);
+      return null;
   }
   var res = new UOARNumber(sign, whole, fraction, base, number_type);
   if(number_type == NumberTypes.OC){
     res = addToLowestPoint(res, carry, false);
   }
+  res = trimNumber(res);
   return res;
 }
 
@@ -1324,7 +1348,7 @@ function complement(number, standardized=false, log=true){
       addToStackTrace("complement", "Can't complement unsigned number", log);
       return null;
     case NumberTypes.SIGNED:
-      if(sign.charAt(0)==PLUS)
+      if(number.sign.charAt(0)==PLUS)
         complement_sign = MINUS;
       else
         complement_sign = PLUS;

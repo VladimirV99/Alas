@@ -86,6 +86,10 @@
     }
 
     function test(){
+      var n1 = new UOARNumber("1", "1", "1011011", 2, NumberTypes.SMR);
+      var n2 = new UOARNumber("0", "11", "101011", 2, NumberTypes.SMR);
+      console.log(add(n1, n2, NumberTypes.SMR, true, true));
+
       // var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
       // var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
       // console.log("booth - " + booth(n1, n2, false, true));

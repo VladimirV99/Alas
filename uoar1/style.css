@@ -98,14 +98,16 @@ input{
 }
 
 .hidden{
+    display: none;
     visibility: hidden;
 }
 
-#solution{
+.solution{
+    text-align: left;
     padding: 10px 20px;
 }
 
-#solution table{
+.solution table{
     overflow-x: auto;
     display: block;
     width: fit-content;
@@ -114,7 +116,7 @@ input{
     border-collapse: collapse;
 }
 
-#solution table td{
+.solution table td{
     min-width: 50px;
     border: 1px solid black;
 }
@@ -137,6 +139,29 @@ table#representations td{
 
 table#representations th{
     text-align: center;
+}
+
+table#calculation{
+    margin: 5px;
+    width: fit-content;
+    border: none;
+}
+
+table#calculation td{
+    min-width: unset;
+    border: none;
+}
+
+table#calculation td.whole, table#calculation td.sign{
+    text-align: right;
+}
+
+table#calculation tr.fraction{
+    text-align: left;
+}
+
+table#calculation tr:last-child{
+    border-top: 1px solid black;
 }
 
 @media screen and (min-width: 600px) and (max-width: 900px){
