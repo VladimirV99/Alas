@@ -769,11 +769,11 @@
       var significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
       var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
       addToOutput("<p>frakc:");
-      addToOutput("<table class=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
-      addToOutput("<tr><td class=\"sign\">"+significand2.sign+"</td><td class=\"whole\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"fraction\"></tr>");
+      addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
+      addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
       var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
-      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table></p>");
+      addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
       
       addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
@@ -859,11 +859,11 @@
       var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
       significand2.sign = significand2.sign==PLUS ? MINUS : PLUS;
       addToOutput("<p>frakc:");
-      addToOutput("<table class=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
-      addToOutput("<tr><td class=\"sign\">"+significand2.sign+"</td><td class=\"whole\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"fraction\"></tr>");
+      addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
+      addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
       var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
-      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table></p>");
+      addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
       
       addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
