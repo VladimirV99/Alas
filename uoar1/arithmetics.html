@@ -4,21 +4,27 @@
   <meta charset="utf-8"/>
   <title>Butov Algoritam</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="uoar_core.js"></script>
   <script type="text/javascript" src="type_converter.js"></script>
   <script type="text/javascript" src="output.js"></script>
   <script>
 
-    function calculate() {
-
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('multiplicand').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('multiplier').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+    function booth_wrapper(log=true) {
+      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var solution = document.getElementById('solution');
+      if(!solution.classList.contains('hidden'))
+        solution.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var res = booth(multiplicand, multiplier, true, true);
+      var res = booth(multiplicand, multiplier, false, log);
       if(res!=null){
-        document.getElementById("text1").innerHTML = output;
+        solution.innerHTML=output;
+        if(solution.classList.contains('hidden'))
+          solution.classList.remove('hidden');
       }
+      return res;
     }
 
     function booth(num1, num2, standardized=false, log=true){
@@ -39,12 +45,15 @@
       var p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
       var registers = [a, p, p1];
 
+      addToOutput("<p>");
       addToOutput("M: (" + m.toSigned() + ")2<br>");
-      addToOutput("P: (" + p.toSigned() + ")2<br>");
       addToOutput("-M: (" + neg_m.toSigned() + ")2<br>");
+      addToOutput("P: (" + p.toSigned() + ")2");
+      addToOutput("</p>");
 
-      addToOutput("<table>");
-      addToOutput("<tr><th>A</th><th>P</th><th>P0</th><th>Poruka</th></tr>");
+      addToOutput("<table style=\"border: none;\">");
+      addToOutput("<thead><tr><th>A</th><th>P</th><th>P0</th><th>Poruka</th></tr></thead>");
+      addToOutput("<tbody>");
       addToOutput("<tr><td>" + registers[0].toWhole() + "</td><td>" + registers[1].toWhole() + "</td><td>" + registers[2].toWhole() + "</td><td>Init</td></tr>");
       var work1 = "";
       var work2 = "";
@@ -75,39 +84,52 @@
         addToOutput("<td>" + work2 + "</td>");
         addToOutput("</tr>");
       }
+      addToOutput("</tbody>");
       addToOutput("</table>");
+
+      addToOutput("<p>");
       addToOutput("AP = (" + registers[0].toWhole() + " " + registers[1].toWhole() + ")2<br>");
       var AP = registers[0].toWhole() + registers[1].toWhole();
       var AP_frac_len = 2 * n1.fraction.length;
       AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
       var res = toUOARNumber(AP, 2, NumberTypes.TC, false);
       addToOutput("Rezultat: (" + res.toSigned() + ")2");
+      addToOutput("</p>");
       return res;
-    }
-
-    function test(){
-      var n1 = new UOARNumber("1", "1", "1011011", 2, NumberTypes.SMR);
-      var n2 = new UOARNumber("0", "11", "101011", 2, NumberTypes.SMR);
-      console.log(add(n1, n2, NumberTypes.SMR, true, true));
-
-      // var n1 = fromDecimal(toUOARNumber("-91", 10, NumberTypes.SIGNED, false), 2, false, true);
-      // var n2 = fromDecimal(toUOARNumber("22", 10, NumberTypes.SIGNED, false), 2, false, true);
-      // console.log("booth - " + booth(n1, n2, false, true));
     }
 
   </script>
 </head>
 <body>
-  <input type="number" id="multiplicand"></input>
-  <input type="number" id="multiplier"></input>
-  <input type="button" name="calc" id="calc" value="Calculate" onclick="calculate()"></input>
 
-  <p id="text1">
-    text
-  </p>
+  <div class="titlebar">
+    <h1 class="title">Aritmetika</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
+  </div>
 
-  <input type="button" name="test" id="test" value="Test" onclick="test()"></input>
+  <div class="info">
+    <p>
+      Skup algoritama za aritmeticke operacije. 
+      Ukljucuje algoritam za neoznaceno mnozenje, Butov algoritam, modifikovani Butov algoritam, 
+      algoritam za neoznaceno i oznaceno deljenje.
+    </p>
+  </div>
 
+  <div class="container center" id="main">
+    <table>
+      <tr>
+        <td><label for="input_operand1">1. operand:</label></td>
+        <td><input type="text" id="input_operand1"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_operand2">2. operand:</label></td>
+        <td><input type="text" id="input_operand2"></input></td>
+      </tr>
+    </table>
+    <input value="Butov Algoritam" type="button" name="booth" id="booth" class="button" onclick="booth_wrapper()"></input>
+  </div>
+  
+  <div class="container solution hidden" id="solution"></div>
 
 </body>
 </html>

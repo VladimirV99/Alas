@@ -61,6 +61,7 @@ input{
 
 .button{
     width: 200px;
+    max-width: 100%;
     padding: 10px 25px;
     margin: 5px 10px;
     background-color: green;
@@ -88,7 +89,7 @@ input{
 
 .container table{
     text-align: left;
-    margin: 5px 0px;
+    margin: 0px;
     width: 100%;
 }
 
@@ -108,17 +109,20 @@ input{
 
 .solution table{
     overflow-x: auto;
-    display: block;
-    width: fit-content;
+    display: inline-block;
+    white-space: nowrap;
     max-width: 100%;
+    box-sizing: border-box;
     border: 1px solid black;
     border-collapse: collapse;
     text-align: center;
 }
 
 .solution table td{
+    padding: 0px 5px;
     min-width: 50px;
     border: 1px solid black;
+    box-sizing: border-box;
 }
 
 table.calculation{
