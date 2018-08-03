@@ -24,7 +24,7 @@
         addToStackTrace("convertToIEEE754", "Significand is empty", log);
         return null;
       }
-      if(exponent = "")
+      if(exponent == "")
         exponent = "0";
       significand = toUOARNumber(significand, 10, NumberTypes.SIGNED, false);
       if(significand==null){
@@ -84,7 +84,7 @@
           res = new IEEE754Number("0", "11111111", "00000000000000000000000");
         else
           res = new IEEE754Number("1", "11111111", "00000000000000000000000");
-        addToOutput(res.toString());
+        addToOutput("<p>"+res.toString()+"</p>");
         return res;
       }
       exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
@@ -101,17 +101,15 @@
         addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
         return null;
       }
-      addToOutput(work1 + " = ");
-      addToOutput(work2 + " = ");
-      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "<br>");
+      addToOutput("<p>" + work1 + " = " + work2 + " = " + significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "</p>");
       significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH-significand.whole.length, log);
 
       var res_sign = significand.sign==PLUS ? "0" : "1";
       var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY32_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
-      addToOutput("eksp: " + exponent.toString() + " + " + BINARY32_EXCESS.toString() + " = " + (BINARY32_EXCESS+exponent) + " = (" + res_exponent + ")2 <br>");
+      addToOutput("<p>eksp: " + exponent.toString() + " + " + BINARY32_EXCESS.toString() + " = " + (BINARY32_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
       var res_significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, log).fraction;
       var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY32);
-      addToOutput(res.toString());
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -133,10 +131,14 @@
       significand = fromDecimal(significand, 2, true, false);
       work2 = work2.concat(significand.sign + "(" + significand.toUnsigned() + ")2");
       if(significand.whole.length>BINARY64_SIGNIFICAND_LENGTH){
-        if(significand.sign==PLUS)
-          return new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000");
-        else
-          return new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000");
+        let res;
+        if(significand.sign==PLUS){
+          res = new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000");
+        }else{
+          res = new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000");
+        }
+        addToOutput("<p>"+res.toString()+"</p>");
+        return res;
       }
       exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
       if(exponent===null){
@@ -152,17 +154,15 @@
         addToStackTrace("convertToIEEE754Binary64", "Exponent out of bounds \"" + exponent + "\"", log);
         return null;
       }
-      addToOutput(work1 + " = ");
-      addToOutput(work2 + " = ");
-      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "<br>");
+      addToOutput("<p>" + work1 + " = " + work2 + " = " + significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "</p>");
       significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH-significand.whole.length, log);
 
       var res_sign = significand.sign==PLUS ? "0" : "1";
       var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY64_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64_EXPONENT_LENGTH, 0, log).toUnsigned();
-      addToOutput("eksp: " + exponent.toString() + " + " + BINARY64_EXCESS.toString() + " = " + (BINARY64_EXCESS+exponent) + " = (" + res_exponent + ")2 <br>");
+      addToOutput("<p>eksp: " + exponent.toString() + " + " + BINARY64_EXCESS.toString() + " = " + (BINARY64_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
       var res_significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH, log).fraction;
       var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY64);
-      addToOutput(res.toString());
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -179,10 +179,13 @@
         }
       }
       if(significand.whole.length>DECIMAL32_SIGNIFICAND_LENGTH){
+        let res;
         if(significand.sign==PLUS)
-          return new IEEE754Number("0", "11110000000", "00000000000000000000");
+          res = new IEEE754Number("0", "11110000000", "00000000000000000000");
         else
-          return new IEEE754Number("1", "11110000000", "00000000000000000000");
+          res = new IEEE754Number("1", "11110000000", "00000000000000000000");
+        addToOutput("<p>"+res.toString()+"</p>");
+        return res;
       }
       exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
       if(exponent===null){
@@ -203,23 +206,23 @@
         addToStackTrace("convertToIEEE754Decimal32DPD", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
         return null;
       }
-      addToOutput(work1 + " = ");
-      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent + "<br>");
+      addToOutput("<p>" + work1 + " = " + significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent + "</p>");
 
       var res_sign = significand.sign==PLUS ? "0" : "1";
       var res_exponent;
       var na = addZeroesBefore(digitToBinary(significand.whole, 0), 10, NumberTypes.UNSIGNED, 4, log);
       var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
-      addToOutput("eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 <br>");
+      addToOutput("<p>eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 </p>");
       if(na.charAt(0)=='0'){
-        addToOutput("komb: " + nb.substr(0,2) + " " + na.substr(1,3) + " " + nb.substr(2,6) + "<br>");
+        addToOutput("<p>komb: " + nb.substr(0,2) + " " + na.substr(1,3) + " " + nb.substr(2,6) + "</p>");
         res_exponent = nb.substr(0,2)+na.substr(1,3)+nb.substr(2,6);
       }else{
-        addToOutput("komb: 11 " + nb.substr(0, 2) + na.charAt(3) + " " +nb.substr(2, 6));
+        addToOutput("<p>komb: 11 " + nb.substr(0, 2) + na.charAt(3) + " " +nb.substr(2, 6) + "</p>");
         res_exponent = "11"+nb.substr(0, 2)+na.charAt(3)+nb.substr(2, 6);
       }
       var res_significand;
       addToOutput("<table>");
+      addToOutput("<tbody>");
       addToOutput("<tr>");
       for(let i=1; i<=6; i++){
         addToOutput("<td>" + significand.whole.charAt(i) + "</td>");
@@ -233,10 +236,11 @@
       var nc1 = decimalToDPD(decimalTo8421(significand.whole.substr(1, 3)));
       var nc2 = decimalToDPD(decimalTo8421(significand.whole.substr(4, 3)));
       addToOutput("<tr><td colspan=\"3\">" + nc1 + "</td><td colspan=\"3\">" + nc2 + "</td></tr>");
-      addToOutput("</table><br>");
+      addToOutput("</tbody>");
+      addToOutput("</table>");
       res_significand = nc1 + nc2;
       var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32DPD);
-      addToOutput(res);
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -253,10 +257,13 @@
         }
       }
       if(significand.whole.length>DECIMAL32_SIGNIFICAND_LENGTH){
+        let res;
         if(significand.sign==PLUS)
           return new IEEE754Number("0", "11110000000", "00000000000000000000");
         else
           return new IEEE754Number("1", "11110000000", "00000000000000000000");
+        addToOutput("<p>"+res.toString()+"</p>");
+        return res;
       }
       exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, log);
       if(exponent===null){
@@ -271,7 +278,7 @@
         addToStackTrace("convertToIEEE754Decimal32BID", "Exponent out of bounds \"" + exponent + "\"", log);
         return null;
       }
-      addToOutput(work1 + " = ");
+      addToOutput("<p>" + work1 + " = ");
       addToOutput(significand.sign+ "(" + significand.toUnsigned() + ")10 * 10^" + exponent + " = ");
 
       significand = wholeToLength(fromDecimal(significand, 2, true, log), 1+BINARY32_SIGNIFICAND_LENGTH, log);
@@ -279,23 +286,23 @@
         addToStackTrace("convertToIEEE754Decimal32BID", "Significand out of bounds \"" + significand.toSigned() + "\"", log);
         return null;
       }
-      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")2 * 10^" + exponent + "<br>");
+      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")2 * 10^" + exponent + "</p>");
 
       var res_sign = significand.sign==PLUS ? "0" : "1";
       var res_exponent;
       var na = significand.whole.substr(0,4);
       var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
-      addToOutput("eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 <br>");
+      addToOutput("<p>eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 </p>");
       if(na.charAt(0)=='0'){
-        addToOutput("komb: " + nb + " " + na.substr(1,3) + "<br>");
+        addToOutput("<p>komb: " + nb + " " + na.substr(1,3) + "</p>");
         res_exponent = nb+na.substr(1,3);
       }else{
-        addToOutput("komb: 11 " + nb + " " + na.charAt(3));
+        addToOutput("<p>komb: 11 " + nb + " " + na.charAt(3) + "</p>");
         res_exponent = "11"+nb+na.charAt(3);
       }
       var res_significand = significand.whole.substr(4);
       var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32BID);
-      addToOutput(res);
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -312,10 +319,13 @@
         }
       }
       if(significand.whole.length>HEXADECIMAL32_SIGNIFICAND_LENGTH){
+        let res;
         if(significand.sign==PLUS)
-          return new IEEE754Number("0", "11111111", "00000000000000000000000");
+          res = new IEEE754Number("0", "11111111", "00000000000000000000000");
         else
-          return new IEEE754Number("1", "11111111", "00000000000000000000000");
+          res = new IEEE754Number("1", "11111111", "00000000000000000000000");
+        addToOutput("<p>"+res.toString()+"</p>");
+        return res;
       }
       var work1 = "";
       var work2 = "";
@@ -336,16 +346,16 @@
         addToStackTrace("convertToIEEE754Hexadecimal32", "Exponent out of bounds \"" + exponent + "\"", log);
         return null;
       }
-      addToOutput(work1 + " = ");
+      addToOutput("<p>" + work1 + " = ");
       addToOutput(work2 + " = ");
-      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")16 * 16^" + exponent + "<br>");
+      addToOutput(significand.sign + "(" + significand.toUnsigned() + ")16 * 16^" + exponent + "</p>");
 
       var res_sign = significand.sign==PLUS ? "0" : "1";
       var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32_EXPONENT_LENGTH, 0, log).toUnsigned();
-      addToOutput("eksp: " + exponent.toString() + " + " + HEXADECIMAL32_EXCESS + " = " + (HEXADECIMAL32_EXCESS+exponent) + " = (" + res_exponent + ")2 <br>");
+      addToOutput("<p>eksp: " + exponent.toString() + " + " + HEXADECIMAL32_EXCESS + " = " + (HEXADECIMAL32_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
       var res_significand = decimalTo8421(significand.fraction);
       var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.HEXADECIMAL32);
-      addToOutput(res);
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -414,25 +424,25 @@
 
       var res = getSpecialValueBinary32(number);
       if(res!=null){
-        addToOutput("specijalna vrednost: " + res.toString() + "<br>");
+        addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
         return res;
       }
 
       var sign = number.sign=="0" ? PLUS : MINUS;
       var significand;
       var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
-      addToOutput("eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
+      addToOutput("<p>eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
       exponent -= BINARY32_EXCESS;
-      addToOutput(exponent + "<br>");
+      addToOutput(exponent + "</p>");
 
       if(exponent==-BINARY32_EXCESS){
-        addToOutput("subnormalan broj<br>");
+        addToOutput("<p>subnormalan broj</p>");
         significand = trimNumber(new UOARNumber(sign, "0", number.significand, 2, NumberTypes.SIGNED));
-        addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent+1) + " = ");
+        addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent+1) + "</p>");
         exponent += 1+normalizeBinary(significand, true, log);
       }else{
         significand = trimNumber(new UOARNumber(sign, "1", number.significand, 2, NumberTypes.SIGNED));
-        addToOutput("frakc: (" + significand.toSigned() + ")2<br>");
+        addToOutput("<p>frakc: (" + significand.toSigned() + ")2</p>");
       }
 
       var whole = significand.whole!="0";
@@ -460,9 +470,9 @@
           }
         }
       }
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + " = ");
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + exponent + " = ");
       significand = toDecimal(significand, true, log);
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + "<br>");
+      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + "</p>");
       return new SignificandExponentPair(significand, 2, exponent);
     }
 
@@ -474,25 +484,25 @@
 
       var res = getSpecialValueBinary64(number);
       if(res!=null){
-        addToOutput("specijalna vrednost: " + res.toString() + "<br>");
+        addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
         return res;
       }
 
       var sign = number.sign=="0" ? PLUS : MINUS;
       var significand;
       var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
-      addToOutput("eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
+      addToOutput("<p>eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
       exponent -= BINARY64_EXCESS;
-      addToOutput(exponent + "<br>");
+      addToOutput(exponent + "</p>");
 
       if(exponent==-BINARY64_EXCESS){
-        addToOutput("subnormalan broj<br>");
+        addToOutput("<p>subnormalan broj</p>");
         significand = trimNumber(new UOARNumber(sign, "0", number.significand, 2, NumberTypes.SIGNED));
-        addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent+1) + " = ");
+        addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent+1) + "</p>");
         exponent += 1+normalizeBinary(significand, true, log);
       }else{
         significand = trimNumber(new UOARNumber(sign, "1", number.significand, 2, NumberTypes.SIGNED));
-        addToOutput("frakc: (" + significand.toSigned() + ")2<br>");
+        addToOutput("<p>frakc: (" + significand.toSigned() + ")2</p>");
       }
 
       var whole = significand.whole!="0";
@@ -520,9 +530,9 @@
           }
         }
       }
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + " = ");
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + exponent + " = ");
       significand = toDecimal(significand, true, log);
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + "<br>");
+      addToOutput("(" + significand.toSigned() + ")2 * 2^" + exponent + "</p>");
       return new SignificandExponentPair(significand, 2, exponent);
     }
 
@@ -534,7 +544,7 @@
 
       var res = getSpecialValueDecimal32(number);
       if(res!=null){
-        addToOutput("specijalna vrednost: " + res.toString() + "<br>");
+        addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
         return res;
       }
 
@@ -551,28 +561,29 @@
 
       var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
       if(exponent==0){
-        addToOutput("subnormalan broj<br>");
+        addToOutput("<p>subnormalan broj</p>");
         exponent = -DECIMAL32_EXCESS - DECIMAL32_DIGITS;
-        addToOutput("eksp: " + exponent + "<br>");
+        addToOutput("<p>eksp: " + exponent + "</p>");
       }else{
-        addToOutput("eksp: (" + comb + ")2 - " + DECIMAL32_EXCESS + " = " + exponent + " - " + DECIMAL32_EXCESS + " = ");
+        addToOutput("<p>eksp: (" + comb + ")2 - " + DECIMAL32_EXCESS + " = " + exponent + " - " + DECIMAL32_EXCESS + " = ");
         exponent -= DECIMAL32_EXCESS;
-        addToOutput(exponent + "<br>");
+        addToOutput(exponent + "</p>");
       }
 
       let dpd1 = DPDtoDecimal(number.significand.substr(0, DECIMAL32_TRIPLET_LENGTH), log);
       let dpd2 = DPDtoDecimal(number.significand.substr(DECIMAL32_TRIPLET_LENGTH, DECIMAL32_TRIPLET_LENGTH), log);
-      addToOutput("frakc: (" + significand + " " + dpd1 + " " + dpd2 + ")2 = ");
+      addToOutput("<p>frakc: (" + significand + " " + dpd1 + " " + dpd2 + ")2 = ");
       significand = significand + dpd1 + dpd2;
       significand = trimNumber(new UOARNumber(sign, decimalFrom8421(significand, log), "", 10, NumberTypes.SIGNED));
-      addToOutput("(" + significand.toUnsigned() + ")10 <br>");
+      addToOutput("(" + significand.toUnsigned() + ")10 </p>");
 
-      addToOutput("(" + significand.toSigned() + ")10 * 10^" + exponent);
+      addToOutput("<p>(" + significand.toSigned() + ")10 * 10^" + exponent);
       var normalize_exponent = normalizeDecimal(significand, true, log);
       if(normalize_exponent>0){
         exponent += normalize_exponent;
-        addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent + "<br>");
+        addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent);
       }
+      addToOutput("</p>");
 
       return new SignificandExponentPair(significand, 10, exponent);
     }
@@ -585,6 +596,7 @@
 
       var res = getSpecialValueDecimal32(number);
       if(res!=null){
+        addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
         return res;
       }
 
@@ -601,26 +613,27 @@
 
       var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
       if(exponent==0){
-        addToOutput("subnormalan broj<br>");
+        addToOutput("<p>subnormalan broj</p>");
         exponent = -DECIMAL32_EXCESS - DECIMAL32_DIGITS;
-        addToOutput("eksp: " + exponent + "<br>");
+        addToOutput("<p>eksp: " + exponent + "</p>");
       }else{
-        addToOutput("eksp: (" + comb + ")2 - " + DECIMAL32_EXCESS + " = " + exponent + " - " + DECIMAL32_EXCESS + " = ");
+        addToOutput("<p>eksp: (" + comb + ")2 - " + DECIMAL32_EXCESS + " = " + exponent + " - " + DECIMAL32_EXCESS + " = ");
         exponent -= DECIMAL32_EXCESS;
-        addToOutput(exponent + "<br>");
+        addToOutput(exponent + "</p>");
       }
 
-      addToOutput("frakc: (" + significand + " " + number.significand + ")2 = ");
+      addToOutput("<p>frakc: (" + significand + " " + number.significand + ")2 = ");
       significand = significand + number.significand;
       significand = toDecimal(new UOARNumber(sign, significand, "", 2, NumberTypes.SIGNED), false, log);
-      addToOutput("(" + significand.toUnsigned() + ")10 <br>");
+      addToOutput("(" + significand.toUnsigned() + ")10 </p>");
 
-      addToOutput("(" + significand.toSigned() + ")10 * 10^" + exponent);
+      addToOutput("<p>(" + significand.toSigned() + ")10 * 10^" + exponent);
       var normalize_exponent = normalizeDecimal(significand, true, log);
       if(normalize_exponent>0){
         exponent += normalize_exponent;
-        addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent + "<br>");
+        addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent);
       }
+      addToOutput("</p>");
 
       return new SignificandExponentPair(significand, 10, exponent);
     }
@@ -634,12 +647,12 @@
       var sign = number.sign=="0" ? PLUS : MINUS;
       var significand = trimNumber(new UOARNumber(sign, "0", decimalFrom8421(number.significand), 16, NumberTypes.SIGNED));
       var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
-      addToOutput("eksp: (" + number.exponent + ")2 - " + HEXADECIMAL32_EXCESS.toString() + " = " + exponent + " - " + HEXADECIMAL32_EXCESS + " = ");
+      addToOutput("<p>eksp: (" + number.exponent + ")2 - " + HEXADECIMAL32_EXCESS.toString() + " = " + exponent + " - " + HEXADECIMAL32_EXCESS + " = ");
       exponent -= HEXADECIMAL32_EXCESS;
-      addToOutput(exponent + "<br>");
+      addToOutput(exponent + "</p>");
 
-      addToOutput("frakc: (0." + number.significand + ")2 = (" + significand.toUnsigned() + ")16 <br>");
-      addToOutput("(" + significand.toUnsigned() + ")16 * 16^" + exponent + " = ");
+      addToOutput("<p>frakc: (0." + number.significand + ")2 = (" + significand.toUnsigned() + ")16 </p>");
+      addToOutput("<p>(" + significand.toUnsigned() + ")16 * 16^" + exponent + " = ");
 
       var len = significand.fraction.length;
       if(exponent>=0 && exponent<6){
@@ -663,7 +676,7 @@
       }
       addToOutput("(" + significand.toUnsigned() + ")16 * 16^" + exponent + " = ");
       significand = toDecimal(significand, false, log);
-      addToOutput("(" + significand.toUnsigned() + ")10 * 16^" + exponent);
+      addToOutput("(" + significand.toUnsigned() + ")10 * 16^" + exponent + "</p>");
       return new SignificandExponentPair(significand, 16, exponent);
     }
 
@@ -720,28 +733,28 @@
       var special2 = getSpecialValueBinary32(operand2);
       if(special1!=null || special2!=null){
         if(special1==QNAN || special2==QNAN){
-          addToOutput("x + "+QNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x + "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         } else if(special1==SNAN || special2==SNAN){
-          addToOutput("x + "+SNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x + "+SNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==POS_INF && special2==NEG_INF){
-          addToOutput(POS_INF.toString()+" + "+NEG_INF.toString()+" = "+QNAN.toString());
+          addToOutput("<p>"+POS_INF.toString()+" + "+NEG_INF.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==NEG_INF && special2==POS_INF){
-          addToOutput(NEG_INF.toString()+" + "+POS_INF.toString()+" = "+QNAN.toString());
+          addToOutput("<p>"+NEG_INF.toString()+" + "+POS_INF.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==POS_INF && special2==POS_INF){
-          addToOutput(POS_INF.toString()+" + "+POS_INF.toString()+" = "+POS_INF.toString());
+          addToOutput("<p>"+POS_INF.toString()+" + "+POS_INF.toString()+" = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if(special1==NEG_INF && special2==NEG_INF){
-          addToOutput(NEG_INF.toString()+" + "+NEG_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>"+NEG_INF.toString()+" + "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }else if((special1==POS_INF && special2!=NEG_INF) || (special2==POS_INF && special1!=NEG_INF)){
-          addToOutput("x + "+POS_INF.toString()+" = "+POS_INF.toString());
+          addToOutput("<p>x + "+POS_INF.toString()+" = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if((special1==NEG_INF && special2!=POS_INF) || (special2==NEG_INF && special1!=POS_INF)){
-          addToOutput("x + "+NEG_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>x + "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }
       }
@@ -749,47 +762,47 @@
       var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent = Math.min(exponent1, exponent2);
-      addToOutput("eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "<br>");
+      addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
       exponent1 -= exponent;
       exponent2 -= exponent;
 
       var significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
       var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
-      addToOutput("frakc:<br>");
-      addToOutput("<table id=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
+      addToOutput("<p>frakc:");
+      addToOutput("<table class=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
       addToOutput("<tr><td class=\"sign\">"+significand2.sign+"</td><td class=\"whole\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"fraction\"></tr>");
 
       var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
-      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table>");
+      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table></p>");
       
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
       exponent += normalize_exponent;
       if(normalize_exponent!=0)
         addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       if(exponent > BINARY32_MAX_EXPONENT+BINARY32_EXCESS){
         if(significand.sign==PLUS){
-          addToOutput("+Inf");
+          addToOutput(" = +Inf</p>");
           return POS_INF;
         }else{
-          addToOutput("-Inf");
+          addToOutput(" = -Inf</p>");
           return NEG_INF;
         }
       } else if(exponent <= 0){
         significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
         significand.whole = "0";
-        addToOutput("<br>");
-        addToOutput("subnormalan broj: " + significand.toSigned());
+        addToOutput("</p>");
+        addToOutput("<p>subnormalan broj: " + significand.toSigned());
       }
-      addToOutput("<br>");
+      addToOutput("</p>");
 
-      addToOutput("znak: " + (significand.sign==PLUS?"0":"1") + "<br>");
+      addToOutput("<p>znak: " + (significand.sign==PLUS?"0":"1") + "</p>");
 
       significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
       exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
       var res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
-      addToOutput(res.toString());
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
@@ -803,34 +816,34 @@
       var special2 = getSpecialValueBinary32(operand2);
       if(special1!=null || special2!=null){
         if(special1==QNAN || special2==QNAN){
-          addToOutput("x - "+QNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x - "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         } else if(special1==SNAN || special2==SNAN){
-          addToOutput("x - "+SNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x - "+SNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==POS_INF && special2==POS_INF){
-          addToOutput(POS_INF.toString()+" - "+POS_INF.toString()+" = "+QNAN.toString());
+          addToOutput("<p>"+POS_INF.toString()+" - "+POS_INF.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==NEG_INF && special2==NEG_INF){
-          addToOutput(NEG_INF.toString()+" - "+NEG_INF.toString()+" = "+QNAN.toString());
+          addToOutput("<p>"+NEG_INF.toString()+" - "+NEG_INF.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==POS_INF && special2==NEG_INF){
-          addToOutput(POS_INF.toString()+" - "+NEG_INF.toString()+" = "+POS_INF.toString());
+          addToOutput("<p>"+POS_INF.toString()+" - "+NEG_INF.toString()+" = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if(special1==NEG_INF && special2==POS_INF){
-          addToOutput(NEG_INF.toString()+" - "+POS_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>"+NEG_INF.toString()+" - "+POS_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }else if(special1==POS_INF && special2!=POS_INF){
-          addToOutput(POS_INF.toString()+" - x = "+POS_INF.toString());
+          addToOutput("<p>"+POS_INF.toString()+" - x = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if(special2==NEG_INF && special1!=NEG_INF){
-          addToOutput("x - "+NEG_INF.toString()+" = "+POS_INF.toString());
+          addToOutput("<p>x - "+NEG_INF.toString()+" = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if(special1==NEG_INF && special2!=NEG_INF){
-          addToOutput(NEG_INF.toString()+" - x = "+NEG_INF.toString());
+          addToOutput("<p>"+NEG_INF.toString()+" - x = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }else if(special2==POS_INF && special1!=POS_INF){
-          addToOutput("x - "+POS_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>x - "+POS_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }
       }
@@ -838,42 +851,42 @@
       var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent = Math.min(exponent1, exponent2);
-      addToOutput("eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "<br>");
+      addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
       exponent1 -= exponent;
       exponent2 -= exponent;
 
       var significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
       var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
       significand2.sign = significand2.sign==PLUS ? MINUS : PLUS;
-      addToOutput("frakc:<br>");
-      addToOutput("<table id=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
+      addToOutput("<p>frakc:");
+      addToOutput("<table class=\"calculation\"><tr><td class=\"sign\">"+significand1.sign+"</td><td class=\"whole\">"+significand1.whole+".</td><td class=\"fraction\">"+significand1.fraction+"</td></tr>");
       addToOutput("<tr><td class=\"sign\">"+significand2.sign+"</td><td class=\"whole\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"fraction\"></tr>");
 
       var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
-      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table>");
+      addToOutput("<tr><td class=\"sign\">"+significand.sign+"</td><td class=\"whole\">"+significand.whole+".</td><td class=\"fraction\">"+significand.fraction+"</td></table></p>");
       
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
       exponent += normalize_exponent;
       if(normalize_exponent!=0)
         addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       if(exponent > BINARY32_MAX_EXPONENT+BINARY32_EXCESS){
         if(significand.sign==PLUS){
-          addToOutput("+Inf");
+          addToOutput(" = +Inf</p>");
           return POS_INF;
         }else{
-          addToOutput("-Inf");
+          addToOutput(" = -Inf</p>");
           return NEG_INF;
         }
       } else if(exponent <= 0){
         significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
         significand.whole = "0";
-        addToOutput("<br>");
-        addToOutput("subnormalan broj: " + significand.toSigned());
+        addToOutput("</p>");
+        addToOutput("<p>subnormalan broj: " + significand.toSigned());
       }
-      addToOutput("<br>");
+      addToOutput("</p>");
 
-      addToOutput("znak: " + (significand.sign==PLUS?"0":"1") + "<br>");
+      addToOutput("<p>znak: " + (significand.sign==PLUS?"0":"1") + "</p>");
 
       significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
       exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
@@ -883,7 +896,7 @@
       return res;
     }
 
-    function multiplyIEEE754(log=true){
+    function multiplyIEEE754(operand1, operand2, log=true){
       if(operand1==null || operand2==null || operand1.format!=IEEE754Formats.BINARY32 || operand2.format!=IEEE754Formats.BINARY32 || !isValidIEEE754(operand1) || !isValidIEEE754(operand2)){
         addToStackTrace("multiplyIEEE754", "Invalid operands", log);
         return null;
@@ -893,37 +906,37 @@
       var special2 = getSpecialValueBinary32(operand2);
       if(special1!=null || special2!=null){
         if(special1==QNAN || special2==QNAN){
-          addToOutput("x * "+QNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x * "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         } else if(special1==SNAN || special2==SNAN){
-          addToOutput("x * "+SNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x * "+SNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_INF || special2==NEG_INF)) ||
                 ((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_INF || special2==NEG_INF))){
-          addToOutput(POS_ZERO.toString()+" * "+POS_INF.toString()+" = "+QNAN.toString());
+          addToOutput("<p>"+POS_ZERO.toString()+" * "+POS_INF.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special1==POS_ZERO || special2==POS_ZERO || special1==NEG_ZERO || special2==NEG_ZERO){
-          addToOutput("x * "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString());
+          addToOutput("<p>x * "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+"</p>");
           return operand1.sign==operand2.sign? BINARY_POS_ZERO : BINARY_NEG_ZERO;
         }else if((special1==POS_INF && special2==NEG_INF) || (special1==NEG_INF && special2==POS_INF)){
-          addToOutput(POS_INF.toString()+" * "+NEG_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>"+POS_INF.toString()+" * "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }else if(special1==POS_INF || special2==POS_INF){
-          addToOutput("x * "+POS_INF.toString()+" = "+POS_INF.toString());
+          addToOutput("<p>x * "+POS_INF.toString()+" = "+POS_INF.toString()+"</p>");
           return BINARY32_POS_INF;
         }else if(special1==NEG_INF || special2==NEG_INF){
-          addToOutput("x * "+NEG_INF.toString()+" = "+NEG_INF.toString());
+          addToOutput("<p>x * "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
           return BINARY32_NEG_INF;
         }
       }
 
       var sign = operand1.sign==operand2.sign ? "0" : "1";
-      addToOutput("znak: " + sign + "<br>");
+      addToOutput("<p>znak: " + sign + "</p>");
 
       var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent = exponent1 + exponent2 - BINARY32_EXCESS;
-      addToOutput("eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "<br>");
+      addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
 
       var significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
       var significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
@@ -941,38 +954,38 @@
       let significand_fraction_len = significand1.fraction.length+significand2.fraction.length;
       significand.fraction = significand.whole.substr(significand.whole.length-significand_fraction_len);
       significand.whole = significand.whole.substr(0, significand.whole.length-significand_fraction_len);
-      addToOutput("frakc: " + significand1.toUnsigned() + " * " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "<br>");
+      addToOutput("<p>frakc: " + significand1.toUnsigned() + " * " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "</p>");
 
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
       exponent += normalize_exponent;
       if(normalize_exponent!=0)
         addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       if(exponent > BINARY32_MAX_EXPONENT+BINARY32_EXCESS){
         if(significand.sign==PLUS){
-          addToOutput("+Inf");
+          addToOutput(" = +Inf</p>");
           return POS_INF;
         }else{
-          addToOutput("-Inf");
+          addToOutput(" = -Inf</p>");
           return NEG_INF;
         }
       } else if(exponent <= 0){
         significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
         significand.whole = "0";
-        addToOutput("<br>");
-        addToOutput("subnormalan broj: " + significand.toSigned());
+        addToOutput("</p>");
+        addToOutput("<p>subnormalan broj: " + significand.toSigned());
       }
-      addToOutput("<br>");
+      addToOutput("</p>");
 
       significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
       exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
       var res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
-      addToOutput(res.toString());
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
 
-    function divideIEEE754(log=true){
+    function divideIEEE754(operand1, operand2, log=true){
       if(operand1==null || operand2==null || operand1.format!=IEEE754Formats.BINARY32 || operand2.format!=IEEE754Formats.BINARY32 || !isValidIEEE754(operand1) || !isValidIEEE754(operand2)){
         addToStackTrace("divideIEEE754", "Invalid operands", log);
         return null;
@@ -982,33 +995,33 @@
       var special2 = getSpecialValueBinary32(operand2);
       if(special1!=null || special2!=null){
         if(special1==QNAN || special2==QNAN){
-          addToOutput("x / "+QNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x / "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         } else if(special1==SNAN || special2==SNAN){
-          addToOutput("x / "+SNAN.toString()+" = "+QNAN.toString());
+          addToOutput("<p>x / "+SNAN.toString()+" = "+QNAN.toString()+"</p>");
           return BINARY32_QNAN;
         }else if((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_ZERO || special2==NEG_ZERO)){
-          addToOutput(POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" / "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString());
+          addToOutput("<p>"+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" / "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+"</p>");
           return BINARY32_QNAN;
         }else if((special1==POS_INF || special1==NEG_INF) && (special2==POS_INF || special2==NEG_INF)){
-          addToOutput(POS_INF.toString()+"/"+NEG_INF.toString()+" / "+POS_INF.toString()+"/"+NEG_INF.toString()+" = "+POS_INF.toString()+"/"+NEG_INF.toString());
+          addToOutput("<p>"+POS_INF.toString()+"/"+NEG_INF.toString()+" / "+POS_INF.toString()+"/"+NEG_INF.toString()+" = "+POS_INF.toString()+"/"+NEG_INF.toString()+"</p>");
           return BINARY32_QNAN;
         }else if(special2==POS_INF || special2==NEG_INF){
-          addToOutput("x / "+POS_INF.toString()+"/"+NEG_INF.toString()+" = "+POS_INF.toString()+"/"+NEG_INF.toString());
+          addToOutput("<p>x / "+POS_INF.toString()+"/"+NEG_INF.toString()+" = "+POS_INF.toString()+"/"+NEG_INF.toString()+"</p>");
           return operand1.sign==operand2.sign? BINARY_POS_ZERO : BINARY_NEG_ZERO;
         }else if(special2==POS_ZERO || special2==NEG_ZERO){
-          addToOutput("x / "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString());
+          addToOutput("<p>x / "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+" = "+POS_ZERO.toString()+"/"+NEG_ZERO.toString()+"</p>");
           return operand1.sign==operand2.sign? BINARY_POS_INF : BINARY_NEG_INF;
         }
       }
 
       var sign = operand1.sign==operand2.sign ? "0" : "1";
-      addToOutput("znak: " + sign + "<br>");
+      addToOutput("<p>znak: " + sign + "</p>");
 
       var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
       var exponent = exponent1 - exponent2 + BINARY32_EXCESS;
-      addToOutput("eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "<br>");
+      addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
 
       var significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
       var significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
@@ -1048,34 +1061,34 @@
         dividend.whole = dividend.whole + "0";
       }
       trimNumber(significand);
-      addToOutput("frakc: " + significand1.toUnsigned() + " / " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "<br>");
+      addToOutput("<p>frakc: " + significand1.toUnsigned() + " / " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "</p>");
 
-      addToOutput("(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
+      addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       var normalize_exponent = normalizeBinary(significand, true, false);
       exponent += normalize_exponent;
       if(normalize_exponent!=0)
         addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
       if(exponent > BINARY32_MAX_EXPONENT+BINARY32_EXCESS){
         if(significand.sign==PLUS){
-          addToOutput("+Inf");
+          addToOutput(" = +Inf</p>");
           return POS_INF;
         }else{
-          addToOutput("-Inf");
+          addToOutput(" = -Inf</p>");
           return NEG_INF;
         }
       } else if(exponent <= 0){
         significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
         significand.whole = "0";
-        addToOutput("<br>");
-        addToOutput("subnormalan broj: " + significand.toSigned());
+        addToOutput("</p>");
+        addToOutput("<p>subnormalan broj: " + significand.toSigned());
       }
-      addToOutput("<br>");
+      addToOutput("</p>");
 
       significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
       exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
       var res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
-      addToOutput(res.toString());
+      addToOutput("<p>"+res.toString()+"</p>");
       return res;
     }
   </script>

@@ -1093,6 +1093,13 @@ function subtractIEEE754(operand1, operand2, log=true){
   return new IEEE754Number(significand.sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
 
+/**
+ * Multiplies two IEEE754 binary32 numbers
+ * @param {string} operand1 First operand
+ * @param {string} operand2 Second operand
+ * @param {boolean} [log=true] Should log
+ * @returns {IEEE754Number} Product of operands
+ */
 function multiplyIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("multiplyIEEE754", "Empty Operand", log)
@@ -1161,6 +1168,13 @@ function multiplyIEEE754(operand1, operand2, log=true){
   return new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
 
+/**
+ * Divides two IEEE754 binary32 numbers
+ * @param {string} operand1 First operand
+ * @param {string} operand2 Second operand
+ * @param {boolean} [log=true] Should log
+ * @returns {IEEE754Number} Division quotient
+ */
 function divideIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("divideIEEE754", "Empty Operand", log)

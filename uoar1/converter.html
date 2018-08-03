@@ -48,7 +48,7 @@
       }
       var work1 = "";
       var work2 = "";
-      addToOutput("(" + number.toSigned() + ")" + number.base + " = ");
+      
 
       var whole = 0;
       var num_length = number.whole.length-1;
@@ -82,9 +82,12 @@
       
       var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
       res = trimNumber(res);
+      addToOutput("<p>");
+      addToOutput("(" + number.toSigned() + ")" + number.base + " = ");
       addToOutput(work1 + " = ");
       addToOutput(work2 + " = ");
       addToOutput("(" + res.toSigned() + ")10");
+      addToOutput("</p>");
       addToOutput("<hr>");
 
       return res;
@@ -130,7 +133,7 @@
       }
       
       var fraction = "";
-      if(number.fraction!=""){
+      if(number.fraction!="0"){
         number = fractionToLength(number, PRECISION, log);
         let fraction_dec = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
         let limit = 0;
@@ -156,10 +159,8 @@
         addToOutput("</table>");
       }
 
-      addToOutput("<hr>");
-
       var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
-      addToOutput(res.toSigned());
+      addToOutput("<p>"+res.toSigned()+"</p>");
       return res;
     }
 
