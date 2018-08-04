@@ -153,11 +153,18 @@ hr{
     background-color: darkgray;
 }
 
+.error{
+    background-color: rgb(255, 43, 43);
+    color: white;
+    padding: 1px 20px;
+}
+
 table#representations{
     margin: 5px auto;
     border: none;
     border-collapse: unset;
     overflow-x: hidden;
+    text-align: left;
 }
 
 table#representations td{

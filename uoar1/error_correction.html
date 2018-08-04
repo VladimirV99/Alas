@@ -10,12 +10,20 @@
   <script>
     function encodeCRC(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
+      clearStackTrace();
+      clearOutput();
+
       var message = document.getElementById('input_message1').value;
       var generator = document.getElementById('input_generator').value;
       if(message=="" || generator==""){
         addToStackTrace("encodeCRC", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
       for(let i=0; i<generator.length; i++){
@@ -28,9 +36,6 @@
         generator = generator.substr(i);
         break;
       }
-
-      clearStackTrace();
-      clearOutput();
 
       var res = message + createZeroString(generator.length-1);
       addToOutput("<p>"+res+" % "+generator+" = ");
@@ -70,12 +75,20 @@
 
     function decodeCRC(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
+      clearStackTrace();
+      clearOutput();
+
       var message = document.getElementById('input_message1').value;
       var generator = document.getElementById('input_generator').value;
       if(message=="" || generator==""){
         addToStackTrace("decodeCRC", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
       for(let i=0; i<generator.length; i++){
@@ -88,9 +101,6 @@
         generator = generator.substr(i);
         break;
       }
-
-      clearStackTrace();
-      clearOutput();
 
       var res = message;
       while(res.length>=generator.length){
@@ -131,16 +141,21 @@
 
     function encodeHammingSEC(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
+      clearStackTrace();
+      clearOutput();
+
       var message = document.getElementById('input_message2').value;
       if(message.length!=8){
         addToStackTrace("encodeCRC", "Message must be 8 digits long", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
-
-      clearStackTrace();
-      clearOutput();
 
       var control_bits = 1;
       while(Math.pow(2, control_bits)<=message.length){
@@ -228,16 +243,21 @@
 
     function decodeHammingSEC(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
+      clearStackTrace();
+      clearOutput();
+
       var message = document.getElementById('input_message2').value;
       if(message.length!=12){
         addToStackTrace("encodeCRC", "Message must be 12 digits long", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
-
-      clearStackTrace();
-      clearOutput();
 
       var control_bits = 4;
 
@@ -385,6 +405,8 @@
     <input value="Kodiraj Hamming" type="button" name="encodeHammingSEC" id="encodeHammingSEC" class="button" onclick="encodeHammingSEC()"></input>
     <input value="Dekodiraj Hamming" type="button" name="decodeHammingSEC" id="decodeHammingSEC" class="button" onclick="decodeHammingSEC()"></input>
   </div>
+
+  <div class="container error hidden" id="error"></div>
 
   <div class="container solution hidden" id="solution"></div>
 

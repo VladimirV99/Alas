@@ -11,18 +11,24 @@
   <script>
 
     function unsigned_multiply_wrapper(log=true) {
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
+      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var res = unsigned_multiply(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -101,18 +107,24 @@
     }
 
     function booth_wrapper(log=true) {
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
+      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var res = booth(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -189,18 +201,24 @@
     }
 
     function modified_booth_wrapper(log=true) {
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
+      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var res = modified_booth(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -258,22 +276,18 @@
       for(let i = 0; i<coded_mults.length; i++){
         let temp = 1;
         let multiplier = registers[0].copy();
-        console.log(multiplier);
         if(coded_mults[i]<0){
           multiplier = complement(multiplier);
-          console.log(multiplier);
           temp = temp*-1;
         }
         if(coded_mults[i]==0){
           work1 = createZeroString(num1.whole.length);
         }else if(coded_mults[i]==temp){
           work1 = multiplier.toWhole();
-          console.log(multiplier);
           res = add(res, multiplier, NumberTypes.TC, false);
         }else if(coded_mults[i]==2*temp){
           multiplier.whole = multiplier.whole.substr(1) + "0";
           work1 = multiplier.toWhole();
-          console.log(multiplier);
           res = add(res, multiplier, NumberTypes.TC, false);
         }
 
@@ -294,18 +308,24 @@
     }
 
     function unsigned_divide_wrapper(log=true) {
-      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
+      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var res = unsigned_divide(dividend, divider, false, log);
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -313,7 +333,7 @@
     function unsigned_divide(num1, num2, standardized=false, log=true){
       if(num1===null || num2===null || num1.base!=2 || num2.base!=2){
         addToStackTrace("unsigned_divide", "Operands are not binary", log);
-        return;
+        return null;
       }
       if(getSignMultiplierForNumber(num1)!=1 || getSignMultiplierForNumber(num2)!=1){
         addToStackTrace("unsigned_divide", "Operands must be positive", log);
@@ -379,18 +399,24 @@
     }
 
     function signed_divide_wrapper(log=true) {
-      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
+      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
       var res = signed_divide(dividend, divider, false, log);
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -398,7 +424,7 @@
     function signed_divide(num1, num2, standardized=false, log=true){
       if(num1===null || num2===null || num1.base!=2 || num2.base!=2){
         addToStackTrace("signed_divide", "Operands are not binary", log);
-        return;
+        return null;
       }
 
       num1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
@@ -511,6 +537,8 @@
     <input value="Oznaceno deljenje" type="button" name="signed_divide" id="signed_divide" class="button" onclick="signed_divide_wrapper()"></input>
 
   </div>
+
+  <div class="container error hidden" id="error"></div>
   
   <div class="container solution hidden" id="solution"></div>
 

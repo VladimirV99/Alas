@@ -12,21 +12,46 @@
 
     function convertBase(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       var val = document.getElementById('input_number').value;
       var base1 = document.getElementById('input_base_src').value;
       var base2 = document.getElementById('input_base_dest').value;
+      clearStackTrace();
+      clearOutput();
       if(val=="" || base1=="" || base2==""){
         addToStackTrace("convertBase", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      if(!isValidBase(base1)){
+        addToStackTrace("convertBase", "Invalid base \"" + base1 + "\"", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      if(!isValidBase(base2)){
+        addToStackTrace("convertBase", "Invalid base \"" + base2 + "\"", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      if(!isValidNumber(val, base1, NumberTypes.SIGNED)){
+        addToStackTrace("convertBase", "Number is invalid", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
 
-      clearStackTrace();
-      clearOutput();
       var res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
       if(res===null){
         addToStackTrace("convertBase", "Conversion Error", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
 
@@ -166,18 +191,28 @@
 
     function convertType(log=true){
       var solution = document.getElementById('solution');
+      var error = document.getElementById('error');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       var val = document.getElementById('input_number').value;
       var base = document.getElementById('input_base_src').value;
-      if(val=="" || base=="")
-        return;
-
       clearStackTrace();
       clearOutput();
-      var number = toUOARNumber(val, base, NumberTypes.SIGNED, true);
+
+      if(val=="" || base==""){
+        addToStackTrace("convertBase", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+        
+      var number = toUOARNumber(val, base, NumberTypes.SIGNED, false);
       if(number===null){
         addToStackTrace("convertType", "Invalid number", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
       
@@ -229,6 +264,8 @@
     <input value="Pretvori u osnovu" type="button" name="convertBase" id="convertBase" class="button" onclick="convertBase()"></input>
     <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" class="button" onclick="convertType()"></input>
   </div>
+
+  <div class="container error hidden" id="error"></div>
 
   <div class="container solution hidden" id="solution"></div>
 

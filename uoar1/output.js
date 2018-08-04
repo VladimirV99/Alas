@@ -1,6 +1,12 @@
 var output = "";
 var stackTrace = [];
 
+if (!Array.prototype.last){
+  Array.prototype.last = function(){
+      return this[this.length - 1];
+  };
+};
+
 function addToOutput(text){
   output = output.concat(text + "\n");
 }

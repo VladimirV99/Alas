@@ -12,8 +12,11 @@
 
     function convertToIEEE754(format, log=true){
       var solution = document.getElementById('solution1');
+      var error = document.getElementById('error1');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearStackTrace();
       clearOutput();
       addToOutput("<hr>");
@@ -22,6 +25,8 @@
       var exponent = document.getElementById('input_exponent').value;
       if(significand==""){
         addToStackTrace("convertToIEEE754", "Significand is empty", log);
+        error.innerHTML=output;
+        error.classList.remove('hidden');
         return null;
       }
       if(exponent == "")
@@ -29,6 +34,8 @@
       significand = toUOARNumber(significand, 10, NumberTypes.SIGNED, false);
       if(significand==null){
         addToStackTrace("convertToIEEE754", "Significand is invalid", log);
+        error.innerHTML=output;
+        error.classList.remove('hidden');
         return null;
       }
       
@@ -57,6 +64,9 @@
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML=output;
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -361,8 +371,11 @@
 
     function convertFromIEEE754(format, log=true){
       var solution = document.getElementById('solution2');
+      var error = document.getElementById('error2');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearStackTrace();
       clearOutput();
       addToOutput("<hr>");
@@ -403,15 +416,21 @@
         default:
           addToStackTrace("convertFromIEEE754", "Invalid operation", log);
           res = null;
+          break;
       }
       if(ieee==null){
         addToStackTrace("convertFromIEEE754", "Invalid Number", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
       if(res!=null){
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -682,8 +701,11 @@
 
     function doOperation(operation, log=true){
       var solution = document.getElementById('solution3');
+      var error = document.getElementById('error3');
       if(!solution.classList.contains('hidden'))
         solution.classList.add('hidden');
+      if(!error.classList.contains('hidden'))
+        error.classList.add('hidden');
       clearStackTrace();
       clearOutput();
       addToOutput("<hr>");
@@ -719,6 +741,9 @@
         solution.innerHTML=output;
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
+      }else{
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
       }
       return res;
     }
@@ -1125,7 +1150,9 @@
     <input value="U decimal32 BID" type="button" name="toDecimal32BID" id="toDecimal32BID" class="button" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
     <input value="U hexadecimal32" type="button" name="toHexadecimal32" id="toHexadecimal32" class="button" onclick="convertToIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
   
-    <div class="solution hidden" id="solution1"></div>
+    <div class="container error hidden" id="error1"></div>
+
+    <div class="container solution hidden" id="solution1"></div>
   </div>
 
   <div class="container center" id="main2">
@@ -1141,7 +1168,9 @@
     <input value="Iz decimal32 BID" type="button" name="fromDecimal32BID" id="fromDecimal32BID" class="button" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
     <input value="Iz hexadecimal32" type="button" name="fromHexadecimal32" id="fromHexadecimal32" class="button" onclick="convertFromIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
 
-    <div class="solution hidden" id="solution2"></div>
+    <div class="container error hidden" id="error2"></div>
+
+    <div class="container solution hidden" id="solution2"></div>
   </div>
 
   <div class="container center" id="main3">
@@ -1160,7 +1189,9 @@
     <input value="Pomnozi" type="button" name="multiplyIEEE754" id="multiplyIEEE754" class="button" onclick="doOperation(ArithmeticOperations.MULTIPLICATION)"></input>
     <input value="Podeli" type="button" name="divideIEEE754" id="divideIEEE754" class="button" onclick="doOperation(ArithmeticOperations.DIVISION)"></input>
 
-    <div class="solution hidden" id="solution3"></div>
+    <div class="container error hidden" id="error3"></div>
+
+    <div class="container solution hidden" id="solution3"></div>
   </div>
 
 </body>
