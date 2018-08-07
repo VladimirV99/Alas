@@ -25,7 +25,7 @@
       var exponent = document.getElementById('input_exponent').value;
       if(significand==""){
         addToStackTrace("convertToIEEE754", "Significand is empty", log);
-        error.innerHTML=output;
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
         return null;
       }
@@ -34,7 +34,7 @@
       significand = toUOARNumber(significand, 10, NumberTypes.SIGNED, false);
       if(significand==null){
         addToStackTrace("convertToIEEE754", "Significand is invalid", log);
-        error.innerHTML=output;
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
         return null;
       }
@@ -65,7 +65,7 @@
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
       }else{
-        error.innerHTML=output;
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
       }
       return res;
@@ -420,7 +420,7 @@
       }
       if(ieee==null){
         addToStackTrace("convertFromIEEE754", "Invalid Number", log);
-        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
         return null;
       }
@@ -429,7 +429,7 @@
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
       }else{
-        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
       }
       return res;
@@ -713,11 +713,18 @@
       operand1 = document.getElementById("input_operand1").value;
       operand2 = document.getElementById("input_operand2").value;
       if(operand1=="" || operand2==""){
-        addToStackTrace("doOperation", "Empty Operand", log)
+        addToStackTrace("doOperation", "Empty Operand", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
         return null;
       }
       operand1 = toIEEE754Number(operand1, IEEE754Formats.BINARY32, false);
       operand2 = toIEEE754Number(operand2, IEEE754Formats.BINARY32, false);
+      if(operand1===null || operand2===null){
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
 
       var res;
       switch(operation){
@@ -742,7 +749,7 @@
         if(solution.classList.contains('hidden'))
           solution.classList.remove('hidden');
       }else{
-        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
         error.classList.remove('hidden');
       }
       return res;
@@ -1149,11 +1156,11 @@
     <input value="U decimal32 DPD" type="button" name="toDecimal32DPD" id="toDecimal32DPD" class="button" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32DPD)"></input>
     <input value="U decimal32 BID" type="button" name="toDecimal32BID" id="toDecimal32BID" class="button" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
     <input value="U hexadecimal32" type="button" name="toHexadecimal32" id="toHexadecimal32" class="button" onclick="convertToIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
-  
-    <div class="container error hidden" id="error1"></div>
 
     <div class="container solution hidden" id="solution1"></div>
   </div>
+
+  <div class="container error hidden" id="error1"></div>
 
   <div class="container center" id="main2">
     <table>
@@ -1168,10 +1175,10 @@
     <input value="Iz decimal32 BID" type="button" name="fromDecimal32BID" id="fromDecimal32BID" class="button" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
     <input value="Iz hexadecimal32" type="button" name="fromHexadecimal32" id="fromHexadecimal32" class="button" onclick="convertFromIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
 
-    <div class="container error hidden" id="error2"></div>
-
     <div class="container solution hidden" id="solution2"></div>
   </div>
+
+  <div class="container error hidden" id="error2"></div>
 
   <div class="container center" id="main3">
     <table>
@@ -1189,10 +1196,10 @@
     <input value="Pomnozi" type="button" name="multiplyIEEE754" id="multiplyIEEE754" class="button" onclick="doOperation(ArithmeticOperations.MULTIPLICATION)"></input>
     <input value="Podeli" type="button" name="divideIEEE754" id="divideIEEE754" class="button" onclick="doOperation(ArithmeticOperations.DIVISION)"></input>
 
-    <div class="container error hidden" id="error3"></div>
-
     <div class="container solution hidden" id="solution3"></div>
   </div>
+
+  <div class="container error hidden" id="error3"></div>
 
 </body>
 </html>

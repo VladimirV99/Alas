@@ -26,6 +26,13 @@
         error.classList.remove('hidden');
         return null;
       }
+      if(!isBinaryInteger(message) || !isBinaryInteger(generator)){
+        addToStackTrace("encodeCRC", "Input isn't binary", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+
       for(let i=0; i<generator.length; i++){
         if(generator.charAt(i)=="0"){
           if(i==generator.length-1){
@@ -91,6 +98,13 @@
         error.classList.remove('hidden');
         return null;
       }
+      if(!isBinaryInteger(message) || !isBinaryInteger(generator)){
+        addToStackTrace("encodeCRC", "Input isn't binary", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+
       for(let i=0; i<generator.length; i++){
         if(generator.charAt(i)=="0"){
           if(i==generator.length-1){
@@ -139,6 +153,15 @@
       return res;
     }
 
+    function isBinaryInteger(number){
+      for(let i = 0; i<number.length; i++){
+        if(number.charAt(i)!="0" && number.charAt(i)!="1"){
+          return false;
+        }
+      }
+      return true;
+    }
+
     function encodeHammingSEC(log=true){
       var solution = document.getElementById('solution');
       var error = document.getElementById('error');
@@ -152,6 +175,12 @@
       var message = document.getElementById('input_message2').value;
       if(message.length!=8){
         addToStackTrace("encodeCRC", "Message must be 8 digits long", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      if(!isBinaryInteger(message)){
+        addToStackTrace("encodeCRC", "Message isn't binary", log);
         error.innerHTML="<p>"+stackTrace[0].message+"</p>";
         error.classList.remove('hidden');
         return null;
@@ -254,6 +283,12 @@
       var message = document.getElementById('input_message2').value;
       if(message.length!=12){
         addToStackTrace("encodeCRC", "Message must be 12 digits long", log);
+        error.innerHTML="<p>"+stackTrace[0].message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      if(!isBinaryInteger(message)){
+        addToStackTrace("encodeCRC", "Message isn't binary", log);
         error.innerHTML="<p>"+stackTrace[0].message+"</p>";
         error.classList.remove('hidden');
         return null;
@@ -383,7 +418,7 @@
   <div class="container center" id="main1">
     <table>
       <tr>
-        <td><label for="input_message1">Porkua:</label></td>
+        <td><label for="input_message1">Poruka:</label></td>
         <td><input type="text" id="input_message1"></input></td>
       </tr>
       <tr>
@@ -398,7 +433,7 @@
   <div class="container center" id="main2">
     <table>
       <tr>
-        <td><label for="input_message2">Porkua:</label></td>
+        <td><label for="input_message2">Poruka:</label></td>
         <td><input type="text" id="input_message2"></input></td>
       </tr>
     </table>

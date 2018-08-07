@@ -620,6 +620,10 @@ function getSignMultiplier(sign, base, number_type, standardized=false){
  * @returns {number} Number converted to an integer
  */
 function UOARNumberToDecimalInteger(number, standardized=false, log=true){
+  if(number===null){
+    addToStackTrace("UOARNumberToDecimalInteger", "Number is null", log);
+    return null;
+  }
   number = number.copy();
   number.fraction = "";
   if(!isValidUOARNumber(number)){
@@ -673,6 +677,10 @@ function baseToDecimalInteger(number, base, number_type, log=true){
  * @returns {UOARNumber} Number converted to base 10
  */
 function toDecimal(number, standardized=false, log=true){
+  if(number===null){
+    addToStackTrace("toDecimal", "Number is null", log);
+    return null;
+  }
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number === null){
@@ -734,6 +742,10 @@ function toDecimal(number, standardized=false, log=true){
  * @returns {UOARNumber} Number converted to specified base
  */
 function fromDecimal(number, base, standardized=false, log=true){
+  if(number===null){
+    addToStackTrace("fromDecimal", "Number is null", log);
+    return null;
+  }
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number === null){
@@ -807,6 +819,10 @@ function fromDecimal(number, base, standardized=false, log=true){
  * @returns {UOARNumber} Number converted to base base_to
  */
 function convertBases(number, base_to, standardized=false, log=true){
+  if(number===null){
+    addToStackTrace("convertBases", "Number is null", log);
+    return null;
+  }
   if(!isValidBase(base_to)){
     addToStackTrace("convertBases", "Invalid base \"" + base_to + "\"", log);
     return null;
@@ -840,6 +856,10 @@ function convertBases(number, base_to, standardized=false, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function toLength(number, n, m, log=true){
+  if(number===null){
+    addToStackTrace("toLength", "Number is null", log);
+    return null;
+  }
   number = wholeToLength(number, n-m, false);
   if(number===null){
     addToStackTrace("toLength", "Number is too big", true);
@@ -857,6 +877,10 @@ function toLength(number, n, m, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function wholeToLength(number, length, log=true){
+  if(number===null){
+    addToStackTrace("wholeToLength", "Number is null", log);
+    return null;
+  }
   if(number.whole.length>length){
     addToStackTrace("wholeToLength", "Number is too big", log);
     return null;
@@ -886,6 +910,10 @@ function wholeToLength(number, length, log=true){
  * @returns {UOARNumber} Number trimmed to specified length
  */
 function fractionToLength(number, length, log=true){
+  if(number===null){
+    addToStackTrace("fractionToLength", "Number is null", log);
+    return null;
+  }
   var fraction = number.fraction;;
   if(fraction.length>length){
     fraction = fraction.substr(0, length);

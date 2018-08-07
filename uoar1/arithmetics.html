@@ -19,8 +19,29 @@
         error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplicand = document.getElementById('input_operand1').value.trim();
+      var multiplier = document.getElementById('input_operand2').value.trim();
+      if(multiplicand=="" || multiplier==""){
+        addToStackTrace("unsigned_multiply", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+      var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+      if(multiplicand===null || multiplier===null){
+        if(multiplicand===null){
+          addToStackTrace("unsigned_multiply", "Invalid multiplicand", log);
+        }else{
+          addToStackTrace("unsigned_multiply", "Invalid multiplier", log);
+        }
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = fromDecimal(multiplicand, 2, false, true);
+      var multiplier = fromDecimal(multiplier, 2, false, true);
+      
       var res = unsigned_multiply(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
@@ -115,8 +136,29 @@
         error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplicand = document.getElementById('input_operand1').value.trim();
+      var multiplier = document.getElementById('input_operand2').value.trim();
+      if(multiplicand=="" || multiplier==""){
+        addToStackTrace("booth", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+      var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+      if(multiplicand===null || multiplier===null){
+        if(multiplicand===null){
+          addToStackTrace("booth", "Invalid multiplicand", log);
+        }else{
+          addToStackTrace("booth", "Invalid multiplier", log);
+        }
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = fromDecimal(multiplicand, 2, false, true);
+      var multiplier = fromDecimal(multiplier, 2, false, true);
+      
       var res = booth(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
@@ -209,8 +251,29 @@
         error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var multiplicand = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var multiplier = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var multiplicand = document.getElementById('input_operand1').value.trim();
+      var multiplier = document.getElementById('input_operand2').value.trim();
+      if(multiplicand=="" || multiplier==""){
+        addToStackTrace("modified_booth", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+      var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+      if(multiplicand===null || multiplier===null){
+        if(multiplicand===null){
+          addToStackTrace("modified_booth", "Invalid multiplicand", log);
+        }else{
+          addToStackTrace("modified_booth", "Invalid multiplier", log);
+        }
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var multiplicand = fromDecimal(multiplicand, 2, false, true);
+      var multiplier = fromDecimal(multiplier, 2, false, true);
+
       var res = modified_booth(multiplicand, multiplier, false, log);
       if(res!=null){
         solution.innerHTML=output;
@@ -316,8 +379,29 @@
         error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var dividend = document.getElementById('input_operand1').value.trim();
+      var divider = document.getElementById('input_operand2').value.trim();
+      if(dividend=="" || divider==""){
+        addToStackTrace("unsigned_divide", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
+      var divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
+      if(dividend===null || divider===null){
+        if(dividend===null){
+          addToStackTrace("unsigned_divide", "Invalid dividend", log);
+        }else{
+          addToStackTrace("unsigned_divide", "Invalid divider", log);
+        }
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var dividend = fromDecimal(dividend, 2, false, true);
+      var divider = fromDecimal(divider, 2, false, true);
+
       var res = unsigned_divide(dividend, divider, false, log);
       if(res!=null){
         solution.innerHTML=output;
@@ -407,8 +491,29 @@
         error.classList.add('hidden');
       clearOutput();
       clearStackTrace();
-      var dividend = fromDecimal(toUOARNumber(document.getElementById('input_operand1').value, 10, NumberTypes.SIGNED, false), 2, false, true);
-      var divider = fromDecimal(toUOARNumber(document.getElementById('input_operand2').value, 10, NumberTypes.SIGNED, false), 2, false, true);
+      var dividend = document.getElementById('input_operand1').value.trim();
+      var divider = document.getElementById('input_operand2').value.trim();
+      if(dividend=="" || divider==""){
+        addToStackTrace("signed_divide", "Empty input", log);
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
+      var divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
+      if(dividend===null || divider===null){
+        if(dividend===null){
+          addToStackTrace("signed_divide", "Invalid dividend", log);
+        }else{
+          addToStackTrace("signed_divide", "Invalid divider", log);
+        }
+        error.innerHTML="<p>"+stackTrace.last().message+"</p>";
+        error.classList.remove('hidden');
+        return null;
+      }
+      var dividend = fromDecimal(dividend, 2, false, true);
+      var divider = fromDecimal(divider, 2, false, true);
+
       var res = signed_divide(dividend, divider, false, log);
       if(res!=null){
         solution.innerHTML=output;
