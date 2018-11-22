@@ -197,7 +197,7 @@ a{
   display: inline-block;
   border: 0px;
   vertical-align: top;
-  margin: 10px 3%;
+  margin: 10px 2%;
   border-collapse: collapse;
   background-color: #90e0e0;
 }
@@ -222,7 +222,7 @@ a{
 }
 
 hr{
-  width: 80%;
+  width: 85%;
   background-color: blue;
   height: 1px;
 }
