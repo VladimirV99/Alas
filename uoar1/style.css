@@ -61,7 +61,7 @@ input{
 }
 
 .button{
-    width: 200px;
+    width: 250px;
     max-width: 100%;
     padding: 10px 25px;
     margin: 5px 10px;
@@ -183,6 +183,13 @@ table#representations th{
     }
 }
 
+@media screen and (min-width: 600px) and (max-width: 720px){
+    .button{
+        width: 90%;
+        margin: 5px auto;
+    }
+}
+
 @media screen and (max-width: 600px){
     .titlebar{
         height: 40px;
@@ -206,7 +213,7 @@ table#representations th{
     }
 }
 
-@media screen and (max-width: 500px){
+@media screen and (max-width: 580px){
     .button{
         width: 90%;
         margin: 5px auto;
