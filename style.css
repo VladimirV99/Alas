@@ -188,16 +188,18 @@ a{
   border: 1px solid black;
 }
 
-#courses{
-  text-align: center;
+.courses{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
 }
 
 .course{
   width: 300px;
   display: inline-block;
   border: 0px;
-  vertical-align: top;
-  margin: 10px 2%;
+  margin: 10px 0px;
   border-collapse: collapse;
   background-color: #90e0e0;
 }
@@ -221,7 +223,7 @@ a{
   width: 10%;
 }
 
-hr{
+hr.separator{
   width: 85%;
   background-color: blue;
   height: 1px;
@@ -260,6 +262,12 @@ hr{
     width: 90%;
     margin: 10px auto;
     margin-bottom: 15px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .courses {
+    width: 90%;
   }
 }
 
