@@ -175,6 +175,10 @@ a{
   }
 }
 
+#matf, #tools {
+  text-align: center;
+}
+
 .clearfix{
   overflow: auto;
 }
