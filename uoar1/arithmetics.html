@@ -234,7 +234,7 @@
       addToOutput("<p>");
       addToOutput("AP = (" + registers[0].toWhole() + " " + registers[1].toWhole() + ")2<br>");
       var AP = registers[0].toWhole() + registers[1].toWhole();
-      var AP_frac_len = 2 * n1.fraction.length;
+      var AP_frac_len = 2 * num1.fraction.length;
       AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
       var res = toUOARNumber(AP, 2, NumberTypes.TC, false);
       addToOutput("Rezultat: (" + res.toSigned() + ")2");
