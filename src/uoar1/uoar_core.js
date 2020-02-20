@@ -1472,3 +1472,63 @@ function shift(numbers, by, shift_type){
     ptr += frac_len;
   }
 }
+
+window.ASCII_0 = ASCII_0;
+window.ASCII_A = ASCII_A;
+window.PLUS = PLUS;
+window.MINUS = MINUS;
+window.SPACE = SPACE;
+window.RADIX = RADIX;
+
+window.PRECISION = PRECISION;
+window.PRECISION_NUMBER = PRECISION_NUMBER;
+
+window.NumberTypes = NumberTypes;
+window.ArithmeticOperations = ArithmeticOperations;
+window.ShiftTypes = ShiftTypes;
+window.UOARNumber = UOARNumber;
+
+window.isInBounds = isInBounds;
+window.getValueAt = getValueAt;
+window.getValue = getValue;
+window.toValue = toValue;
+window.isRadixPointAt = isRadixPointAt;
+window.isRadixPoint = isRadixPoint;
+window.isValidBase = isValidBase;
+// window.isSignAt = isSignAt;
+// window.isSign = isSign;
+// window.getSignEnd = getSignEnd;
+// window.getSign = getSign;
+// window.removeSign = removeSign;
+// window.isValidSign = isValidSign;
+window.isValidUOARNumber = isValidUOARNumber;
+window.isValidNumber = isValidNumber;
+window.toUOARNumber = toUOARNumber;
+window.trimSign = trimSign;
+window.trimNumber = trimNumber;
+window.standardizeUOARNumber = standardizeUOARNumber;
+window.getSignMultiplierForNumber = getSignMultiplierForNumber;
+// window.getSignMultiplier = getSignMultiplier;
+window.UOARNumberToDecimalInteger = UOARNumberToDecimalInteger;
+window.baseToDecimalInteger = baseToDecimalInteger;
+window.toDecimal = toDecimal;
+window.fromDecimal = fromDecimal;
+window.convertBases = convertBases;
+window.toLength = toLength;
+window.wholeToLength = wholeToLength;
+window.fractionToLength = fractionToLength;
+window.addZeroesAfter = addZeroesAfter;
+window.addZeroesBefore = addZeroesBefore;
+window.digitToBinary = digitToBinary;
+window.numberToBinary = numberToBinary;
+window.binaryToDigit = binaryToDigit;
+window.decimalTo8421 = decimalTo8421;
+window.decimalFrom8421 = decimalFrom8421;
+// window.isGreater = isGreater;
+// window.getAbsoluteValue = getAbsoluteValue;
+window.equalizeLength = equalizeLength;
+window.add = add;
+window.complement = complement;
+window.shift = shift;
+window.createConstantString = createConstantString;
+window.createZeroString = createZeroString;

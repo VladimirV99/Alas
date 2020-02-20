@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>IEEE754 Konverter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="titlebar">
+    <h1 class="title">IEEE754 Konverter</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
+  </div>
+
+  <div class="info">
+    <p>
+      IEEE754 Konverter pretvara dati broj u skladu sa standardom za zapis brojeva sa pokretnim zarezom IEEE754 i obratno.
+      Podrzani formati zapisa su binary32, binary64, decimal32 DPD, decimal32 BID i hexadecimal 32.
+      Osim konverzije moguce je vrsiti i osnovne racunske operacije nad brojevima zapisanim u formatu binary32.
+    </p>
+  </div>
+
+  <div class="container center" id="main1">
+    <table>
+      <tr>
+        <td><label for="input_significand">Znacajan deo:</label></td>
+        <td><input type="text" id="input_significand"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_exponent">Eksponent:</label></td>
+        <td><input type="text" id="input_exponent"></input></td>
+      </tr>
+    </table>
+    <input value="U binary32" type="button" name="toBinary32" id="toBinary32" class="button" onclick="convertToIEEE754(IEEE754Formats.BINARY32)"></input>
+    <input value="U binary64" type="button" name="toBinary64" id="toBinary64" class="button" onclick="convertToIEEE754(IEEE754Formats.BINARY64)"></input>
+    <input value="U decimal32 DPD" type="button" name="toDecimal32DPD" id="toDecimal32DPD" class="button" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32DPD)"></input>
+    <input value="U decimal32 BID" type="button" name="toDecimal32BID" id="toDecimal32BID" class="button" onclick="convertToIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
+    <input value="U hexadecimal32" type="button" name="toHexadecimal32" id="toHexadecimal32" class="button" onclick="convertToIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
+
+    <div class="container solution hidden" id="solution1"></div>
+  </div>
+
+  <div class="container error hidden" id="error1"></div>
+
+  <div class="container center" id="main2">
+    <table>
+      <tr>
+        <td><label for="input_significand">IEEE754 broj:</label></td>
+        <td><input type="text" id="input_ieee754"></input></td>
+      </tr>
+    </table>
+    <input value="Iz binary32" type="button" name="fromBinary32" id="fromBinary32" class="button" onclick="convertFromIEEE754(IEEE754Formats.BINARY32)"></input>
+    <input value="Iz binary64" type="button" name="fromBinary64" id="fromBinary64" class="button" onclick="convertFromIEEE754(IEEE754Formats.BINARY64)"></input>
+    <input value="Iz decimal32 DPD" type="button" name="fromDecimal32DPD" id="fromDecimal32DPD" class="button" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32DPD)"></input>
+    <input value="Iz decimal32 BID" type="button" name="fromDecimal32BID" id="fromDecimal32BID" class="button" onclick="convertFromIEEE754(IEEE754Formats.DECIMAL32BID)"></input>
+    <input value="Iz hexadecimal32" type="button" name="fromHexadecimal32" id="fromHexadecimal32" class="button" onclick="convertFromIEEE754(IEEE754Formats.HEXADECIMAL32)"></input>
+
+    <div class="container solution hidden" id="solution2"></div>
+  </div>
+
+  <div class="container error hidden" id="error2"></div>
+
+  <div class="container center" id="main3">
+    <table>
+      <tr>
+        <td><label for="input_operand1">1. operand:</label></td>
+        <td><input type="text" id="input_operand1"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_operand2">2. operand:</label></td>
+        <td><input type="text" id="input_operand2"></input></td>
+      </tr>
+    </table>
+    <input value="Saberi" type="button" name="addIEEE754" id="addIEEE754" class="button" onclick="doOperation(ArithmeticOperations.ADDITION)"></input>
+    <input value="Oduzmi" type="button" name="subtractIEEE754" id="subtractIEEE754" class="button" onclick="doOperation(ArithmeticOperations.SUBTRACTION)"></input>
+    <input value="Pomnozi" type="button" name="multiplyIEEE754" id="multiplyIEEE754" class="button" onclick="doOperation(ArithmeticOperations.MULTIPLICATION)"></input>
+    <input value="Podeli" type="button" name="divideIEEE754" id="divideIEEE754" class="button" onclick="doOperation(ArithmeticOperations.DIVISION)"></input>
+
+    <div class="container solution hidden" id="solution3"></div>
+  </div>
+
+  <div class="container error hidden" id="error3"></div>
+
+</body>
+</html>

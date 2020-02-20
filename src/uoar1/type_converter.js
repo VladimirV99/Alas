@@ -321,3 +321,10 @@ function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negati
   
   return new UOARNumber(sign, whole, fraction, number.base, number.number_type);
 }
+
+window.convertToType = convertToType;
+window.convertToUnsigned = convertToUnsigned;
+window.convertToSigned = convertToSigned;
+window.convertToSMR = convertToSMR;
+window.convertToOC = convertToOC;
+window.convertToTC = convertToTC;

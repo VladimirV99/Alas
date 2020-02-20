@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Konverter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="titlebar">
+    <h1 class="title">Konverter brojcanih sistema</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
+  </div>
+
+  <div class="info">
+    <p>
+      Konverter brojcanih sistema prevodi broj izmedju razlicitih osnova.
+    </p>
+  </div>
+
+  <div class="container center" id="main">
+    <table>
+      <tr>
+        <td><label for="input_number">Pretvoriti broj:</label></td>
+        <td><input type="text" id="input_number"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_base_src">Iz osnove:</label></td>
+        <td><input type="text" id="input_base_src"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_base_dest">U osnovu:</label></td>
+        <td><input type="text" id="input_base_dest"></input></td>
+      </tr>
+    </table>
+    <input value="Pretvori u osnovu" type="button" name="convertBase" id="convertBase" class="button" onclick="convertBase()"></input>
+    <input value="Pretvori u zapise" type="button" name="convertType" id="convertType" class="button" onclick="convertType()"></input>
+  </div>
+
+  <div class="container error hidden" id="error"></div>
+
+  <div class="container solution hidden" id="solution"></div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Aritmetika</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="titlebar">
+    <h1 class="title">Aritmetika</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
+  </div>
+
+  <div class="info">
+    <p>
+      Skup algoritama za aritmeticke operacije. 
+      Ukljucuje algoritam za neoznaceno mnozenje, Butov algoritam, modifikovani Butov algoritam, 
+      algoritam za neoznaceno i oznaceno deljenje.
+    </p>
+  </div>
+
+  <div class="container center" id="main">
+    <table>
+      <tr>
+        <td><label for="input_operand1">1. operand:</label></td>
+        <td><input type="text" id="input_operand1"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_operand2">2. operand:</label></td>
+        <td><input type="text" id="input_operand2"></input></td>
+      </tr>
+    </table>
+    <input value="Neoznaceno mnozenje" type="button" name="unsigned_multiply" id="unsigned_multiply" class="button" onclick="unsigned_multiply_wrapper()"></input>
+    <input value="Butov Algoritam" type="button" name="booth" id="booth" class="button" onclick="booth_wrapper()"></input>
+    <input value="Modifikovani Butov Alg" type="button" name="modified_booth" id="modified_booth" class="button" onclick="modified_booth_wrapper()"></input>
+    <input value="Neoznaceno deljenje" type="button" name="unsigned_divide" id="unsigned_divide" class="button" onclick="unsigned_divide_wrapper()"></input>
+    <input value="Oznaceno deljenje" type="button" name="signed_divide" id="signed_divide" class="button" onclick="signed_divide_wrapper()"></input>
+
+  </div>
+
+  <div class="container error hidden" id="error"></div>
+  
+  <div class="container solution hidden" id="solution"></div>
+
+</body>
+</html>
+ 

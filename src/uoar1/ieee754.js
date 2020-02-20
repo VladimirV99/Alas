@@ -1260,3 +1260,79 @@ function divideIEEE754(operand1, operand2, log=true){
 
   return new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
+
+window.IEEE754Formats = IEEE754Formats;
+window.SignificandExponentPair = SignificandExponentPair;
+
+window.POS_ZERO = POS_ZERO;
+window.NEG_ZERO = NEG_ZERO;
+window.POS_INF = POS_INF;
+window.NEG_INF = NEG_INF;
+window.QNAN = QNAN;
+window.SNAN = SNAN;
+window.IEEE754Number = IEEE754Number;
+
+window.BINARY32_POS_ZERO = BINARY32_POS_ZERO;
+window.BINARY32_NEG_ZERO = BINARY32_NEG_ZERO;
+window.BINARY32_POS_INF = BINARY32_POS_INF;
+window.BINARY32_NEG_INF = BINARY32_NEG_INF;
+window.BINARY32_QNAN = BINARY32_QNAN;
+window.BINARY32_SNAN = BINARY32_SNAN;
+
+window.BINARY32_MAX_EXPONENT = BINARY32_MAX_EXPONENT;
+window.BINARY32_MIN_EXPONENT = BINARY32_MIN_EXPONENT;
+window.BINARY32_EXCESS = BINARY32_EXCESS;
+window.BINARY32_EXPONENT_LENGTH = BINARY32_EXPONENT_LENGTH;
+window.BINARY32_SIGNIFICAND_LENGTH = BINARY32_SIGNIFICAND_LENGTH;
+
+window.BINARY64_MAX_EXPONENT = BINARY64_MAX_EXPONENT;
+window.BINARY64_MIN_EXPONENT = BINARY64_MIN_EXPONENT;
+window.BINARY64_EXCESS = BINARY64_EXCESS;
+window.BINARY64_EXPONENT_LENGTH = BINARY64_EXPONENT_LENGTH;
+window.BINARY64_SIGNIFICAND_LENGTH = BINARY64_SIGNIFICAND_LENGTH;
+
+window.DECIMAL32_MAX_EXPONENT = DECIMAL32_MAX_EXPONENT;
+window.DECIMAL32_MIN_EXPONENT = DECIMAL32_MIN_EXPONENT;
+window.DECIMAL32_EXCESS = DECIMAL32_EXCESS;
+window.DECIMAL32_DIGITS = DECIMAL32_DIGITS;
+window.DECIMAL32_EXPONENT_LENGTH = DECIMAL32_EXPONENT_LENGTH;
+window.DECIMAL32_SIGNIFICAND_LENGTH = DECIMAL32_SIGNIFICAND_LENGTH;
+window.DECIMAL32_TRIPLET_LENGTH = DECIMAL32_TRIPLET_LENGTH;
+
+window.HEXADECIMAL32_MAX_EXPONENT = HEXADECIMAL32_MAX_EXPONENT;
+window.HEXADECIMAL32_MIN_EXPONENT = HEXADECIMAL32_MIN_EXPONENT;
+window.HEXADECIMAL32_EXCESS = HEXADECIMAL32_EXCESS;
+window.HEXADECIMAL32_DIGITS = HEXADECIMAL32_DIGITS;
+window.HEXADECIMAL32_EXPONENT_LENGTH = HEXADECIMAL32_EXPONENT_LENGTH;
+window.HEXADECIMAL32_SIGNIFICAND_LENGTH = HEXADECIMAL32_SIGNIFICAND_LENGTH;
+
+window.convertToIEEE754Binary32 = convertToIEEE754Binary32;
+window.convertToIEEE754Binary64 = convertToIEEE754Binary64;
+window.convertToIEEE754Decimal32DPD = convertToIEEE754Decimal32DPD;
+window.convertToIEEE754Decimal32BID = convertToIEEE754Decimal32BID;
+window.convertToIEEE754Hexadecimal32 = convertToIEEE754Hexadecimal32;
+
+window.normalizeBinary = normalizeBinary;
+window.normalizeDecimal = normalizeDecimal;
+window.normalizeHexadecimal = normalizeHexadecimal;
+
+window.decimalToDPD = decimalToDPD;
+window.DPDtoDecimal = DPDtoDecimal;
+
+window.isValidIEEE754 = isValidIEEE754;
+window.toIEEE754Number = toIEEE754Number;
+
+window.getSpecialValueBinary32 = getSpecialValueBinary32;
+window.getSpecialValueBinary64 = getSpecialValueBinary64;
+window.getSpecialValueDecimal32 = getSpecialValueDecimal32;
+
+window.convertFromIEEE754Binary32 = convertFromIEEE754Binary32;
+window.convertFromIEEE754Binary64 = convertFromIEEE754Binary64;
+window.convertFromIEEE754Decimal32DPD = convertFromIEEE754Decimal32DPD;
+window.convertFromIEEE754Decimal32BID = convertFromIEEE754Decimal32BID;
+window.convertFromIEEE754Hexadecimal32 = convertFromIEEE754Hexadecimal32;
+
+window.addIEEE754 = addIEEE754;
+window.subtractIEEE754 = subtractIEEE754;
+window.multiplyIEEE754 = multiplyIEEE754;
+window.divideIEEE754 = divideIEEE754;

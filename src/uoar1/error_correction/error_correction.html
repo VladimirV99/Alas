@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Korekcija gresaka</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="titlebar">
+    <h1 class="title">Korekcija gresaka</h1>
+    <a class="back" href="../index.html"><img src="../images/back.svg" alt="Back"></a>
+  </div>
+
+  <div class="info">
+    <p>
+      Algoritmi za detekciju i korekciju gresaka popravljaju greske do kojih dolazi pri pisanju podataka na disk, ili
+        pri prenosu podataka preko Interneta.
+    </p>
+  </div>
+
+  <div class="container center" id="main1">
+    <table>
+      <tr>
+        <td><label for="input_message1">Poruka:</label></td>
+        <td><input type="text" id="input_message1"></input></td>
+      </tr>
+      <tr>
+        <td><label for="input_generator">Generator:</label></td>
+        <td><input type="text" id="input_generator"></input></td>
+      </tr>
+    </table>
+    <input value="Kodiraj CRC" type="button" name="encodeCRC" id="encodeCRC" class="button" onclick="encodeCRC()"></input>
+    <input value="Dekodiraj CRC" type="button" name="decodeCRC" id="decodeCRC" class="button" onclick="decodeCRC()"></input>
+  </div>
+
+  <div class="container center" id="main2">
+    <table>
+      <tr>
+        <td><label for="input_message2">Poruka:</label></td>
+        <td><input type="text" id="input_message2"></input></td>
+      </tr>
+    </table>
+    <input value="Kodiraj Hamming" type="button" name="encodeHammingSEC" id="encodeHammingSEC" class="button" onclick="encodeHammingSEC()"></input>
+    <input value="Dekodiraj Hamming" type="button" name="decodeHammingSEC" id="decodeHammingSEC" class="button" onclick="decodeHammingSEC()"></input>
+  </div>
+
+  <div class="container error hidden" id="error"></div>
+
+  <div class="container solution hidden" id="solution"></div>
+
+</body>
+</html>

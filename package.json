@@ -1,0 +1,34 @@
+{
+  "name": "alas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.prod.js",
+    "dev": "webpack --config webpack.dev.js",
+    "start": "webpack-dev-server --config webpack.dev.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VladimirV99/Alas.git"
+  },
+  "author": "Vladimir Vuksanovic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VladimirV99/Alas/issues"
+  },
+  "homepage": "https://github.com/VladimirV99/Alas#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.4.2",
+    "file-loader": "^5.0.2",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^7.0.1",
+    "style-loader": "^1.1.3",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.3"
+  }
+}
