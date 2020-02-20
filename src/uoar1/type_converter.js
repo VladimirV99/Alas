@@ -269,11 +269,11 @@ function convertToTC(number, standardized=false, log=true){
  * @return {UOARNumber} Number with added toAdd
  */
 function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negative numbers
-  var sign = number.sign;
-  var whole = "";
-  var fraction = "";
-  var carry = toAdd;
-  var temp;
+  let sign = number.sign;
+  let whole = "";
+  let fraction = "";
+  let carry = toAdd;
+  let temp;
   
   for(let i=number.fraction.length-1; i>=0; i--){
     temp = getValueAt(number.fraction, i, log) + carry;

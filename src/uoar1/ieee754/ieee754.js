@@ -5,8 +5,8 @@ require('../output');
 require('../ieee754');
 
 function convertToIEEE754(format, log=true){
-  var solution = document.getElementById('solution1');
-  var error = document.getElementById('error1');
+  let solution = document.getElementById('solution1');
+  let error = document.getElementById('error1');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -15,8 +15,8 @@ function convertToIEEE754(format, log=true){
   clearOutput();
   addToOutput("<hr>");
 
-  var significand = document.getElementById('input_significand').value;
-  var exponent = document.getElementById('input_exponent').value;
+  let significand = document.getElementById('input_significand').value;
+  let exponent = document.getElementById('input_exponent').value;
   if(significand==""){
     addToStackTrace("convertToIEEE754", "Significand is empty", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
@@ -33,7 +33,7 @@ function convertToIEEE754(format, log=true){
     return null;
   }
   
-  var res = null;
+  let res = null;
   switch(format){
     case IEEE754Formats.BINARY32:
       res = convertToIEEE754Binary32(significand, exponent);
@@ -77,8 +77,8 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
       return null;
     }
   }
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
   work1 = work1.concat(significand.sign + "(" + significand.toUnsigned() + ")10");
   significand = fromDecimal(significand, 2, true, false);
   work2 = work2.concat(significand.sign + "(" + significand.toUnsigned() + ")2");
@@ -99,7 +99,7 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
   work1 = work1.concat(" * 2^" + exponent);
   work2 = work2.concat(" * 2^" + exponent);
 
-  var normalize_exponent = normalizeBinary(significand, true, log);
+  let normalize_exponent = normalizeBinary(significand, true, log);
   exponent = exponent + normalize_exponent;
   if(!isInBounds(exponent, BINARY32_MIN_EXPONENT, BINARY32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Binary32", "Exponent out of bounds \"" + exponent + "\"", log);
@@ -108,11 +108,11 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
   addToOutput("<p>" + work1 + " = " + work2 + " = " + significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "</p>");
   significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH-significand.whole.length, log);
 
-  var res_sign = significand.sign==PLUS ? "0" : "1";
-  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY32_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_sign = significand.sign==PLUS ? "0" : "1";
+  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY32_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
   addToOutput("<p>eksp: " + exponent.toString() + " + " + BINARY32_EXCESS.toString() + " = " + (BINARY32_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
-  var res_significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, log).fraction;
-  var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY32);
+  let res_significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, log).fraction;
+  let res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -129,8 +129,8 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
       return null;
     }
   }
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
   work1 = work1.concat(significand.sign + "(" + significand.toUnsigned() + ")10");
   significand = fromDecimal(significand, 2, true, false);
   work2 = work2.concat(significand.sign + "(" + significand.toUnsigned() + ")2");
@@ -152,7 +152,7 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
   work1 = work1.concat(" * 2^" + exponent);
   work2 = work2.concat(" * 2^" + exponent);
 
-  var normalize_exponent = normalizeBinary(significand, true, log);
+  let normalize_exponent = normalizeBinary(significand, true, log);
   exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, BINARY64_MIN_EXPONENT, BINARY64_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Binary64", "Exponent out of bounds \"" + exponent + "\"", log);
@@ -161,11 +161,11 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
   addToOutput("<p>" + work1 + " = " + work2 + " = " + significand.sign + "(" + significand.toUnsigned() + ")2 * 2^" + exponent + "</p>");
   significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH-significand.whole.length, log);
 
-  var res_sign = significand.sign==PLUS ? "0" : "1";
-  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY64_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64_EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_sign = significand.sign==PLUS ? "0" : "1";
+  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY64_EXCESS+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64_EXPONENT_LENGTH, 0, log).toUnsigned();
   addToOutput("<p>eksp: " + exponent.toString() + " + " + BINARY64_EXCESS.toString() + " = " + (BINARY64_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
-  var res_significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH, log).fraction;
-  var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY64);
+  let res_significand = fractionToLength(significand, BINARY64_SIGNIFICAND_LENGTH, log).fraction;
+  let res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY64);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -196,9 +196,9 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
     addToStackTrace("convertToIEEE754Decimal32DPD", "Invalid number \"" + exponent + "\" for base 10", log);
     return null;
   }
-  var work1 = significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent;
+  let work1 = significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent;
 
-  var normalize_exponent = normalizeDecimal(significand, true, log);
+  let normalize_exponent = normalizeDecimal(significand, true, log);
   exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, DECIMAL32_MIN_EXPONENT, DECIMAL32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Decimal32DPD", "Exponent out of bounds \"" + exponent + "\"", log);
@@ -212,10 +212,10 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
   }
   addToOutput("<p>" + work1 + " = " + significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent + "</p>");
 
-  var res_sign = significand.sign==PLUS ? "0" : "1";
-  var res_exponent;
-  var na = addZeroesBefore(digitToBinary(significand.whole, 0), 10, NumberTypes.UNSIGNED, 4, log);
-  var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
+  let res_sign = significand.sign==PLUS ? "0" : "1";
+  let res_exponent;
+  let na = addZeroesBefore(digitToBinary(significand.whole, 0), 10, NumberTypes.UNSIGNED, 4, log);
+  let nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
   addToOutput("<p>eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 </p>");
   if(na.charAt(0)=='0'){
     addToOutput("<p>komb: " + nb.substr(0,2) + " " + na.substr(1,3) + " " + nb.substr(2,6) + "</p>");
@@ -224,7 +224,7 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
     addToOutput("<p>komb: 11 " + nb.substr(0, 2) + na.charAt(3) + " " +nb.substr(2, 6) + "</p>");
     res_exponent = "11"+nb.substr(0, 2)+na.charAt(3)+nb.substr(2, 6);
   }
-  var res_significand;
+  let res_significand;
   addToOutput("<table>");
   addToOutput("<tbody>");
   addToOutput("<tr>");
@@ -237,13 +237,13 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
     addToOutput("<td>" + addZeroesBefore(numberToBinary(significand.whole.charAt(i), log), 2, NumberTypes.UNSIGNED, 4, log) + "</td>");
   }
   addToOutput("</tr>");
-  var nc1 = decimalToDPD(decimalTo8421(significand.whole.substr(1, 3)));
-  var nc2 = decimalToDPD(decimalTo8421(significand.whole.substr(4, 3)));
+  let nc1 = decimalToDPD(decimalTo8421(significand.whole.substr(1, 3)));
+  let nc2 = decimalToDPD(decimalTo8421(significand.whole.substr(4, 3)));
   addToOutput("<tr><td colspan=\"3\">" + nc1 + "</td><td colspan=\"3\">" + nc2 + "</td></tr>");
   addToOutput("</tbody>");
   addToOutput("</table>");
   res_significand = nc1 + nc2;
-  var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32DPD);
+  let res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32DPD);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -274,9 +274,9 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
     addToStackTrace("convertToIEEE754Decimal32BID", "Invalid number \"" + exponent + "\" for base 10", log);
     return null;
   }
-  var work1 = significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent;
+  let work1 = significand.sign + "(" + significand.toUnsigned() + ")10 * 10^" + exponent;
 
-  var normalize_exponent = normalizeDecimal(significand, true, log);
+  let normalize_exponent = normalizeDecimal(significand, true, log);
   exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, DECIMAL32_MIN_EXPONENT, DECIMAL32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Decimal32BID", "Exponent out of bounds \"" + exponent + "\"", log);
@@ -292,10 +292,10 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
   }
   addToOutput(significand.sign + "(" + significand.toUnsigned() + ")2 * 10^" + exponent + "</p>");
 
-  var res_sign = significand.sign==PLUS ? "0" : "1";
-  var res_exponent;
-  var na = significand.whole.substr(0,4);
-  var nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
+  let res_sign = significand.sign==PLUS ? "0" : "1";
+  let res_exponent;
+  let na = significand.whole.substr(0,4);
+  let nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
   addToOutput("<p>eksp: " + exponent.toString() + " + " + DECIMAL32_EXCESS.toString() + " = " + (DECIMAL32_EXCESS+exponent) + " = (" + nb + ")2 </p>");
   if(na.charAt(0)=='0'){
     addToOutput("<p>komb: " + nb + " " + na.substr(1,3) + "</p>");
@@ -304,8 +304,8 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
     addToOutput("<p>komb: 11 " + nb + " " + na.charAt(3) + "</p>");
     res_exponent = "11"+nb+na.charAt(3);
   }
-  var res_significand = significand.whole.substr(4);
-  var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32BID);
+  let res_significand = significand.whole.substr(4);
+  let res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.DECIMAL32BID);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -331,8 +331,8 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
   }
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
   work1 = work1.concat(significand.sign + "(" + significand.toUnsigned() + ")10");
   significand = fromDecimal(significand, 16, true, log);
   work2 = work2.concat(significand.sign + "(" + significand.toUnsigned() + ")16");
@@ -344,7 +344,7 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
   work1 = work1.concat(" * 16^" + exponent);
   work2 = work2.concat(" * 16^" + exponent);
 
-  var normalize_exponent = normalizeHexadecimal(significand, true, log);
+  let normalize_exponent = normalizeHexadecimal(significand, true, log);
   exponent = exponent + normalize_exponent; 
   if(!isInBounds(exponent, HEXADECIMAL32_MIN_EXPONENT, HEXADECIMAL32_MAX_EXPONENT)){
     addToStackTrace("convertToIEEE754Hexadecimal32", "Exponent out of bounds \"" + exponent + "\"", log);
@@ -354,18 +354,18 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
   addToOutput(work2 + " = ");
   addToOutput(significand.sign + "(" + significand.toUnsigned() + ")16 * 16^" + exponent + "</p>");
 
-  var res_sign = significand.sign==PLUS ? "0" : "1";
-  var res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32_EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_sign = significand.sign==PLUS ? "0" : "1";
+  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32_EXCESS+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32_EXPONENT_LENGTH, 0, log).toUnsigned();
   addToOutput("<p>eksp: " + exponent.toString() + " + " + HEXADECIMAL32_EXCESS + " = " + (HEXADECIMAL32_EXCESS+exponent) + " = (" + res_exponent + ")2 </p>");
-  var res_significand = decimalTo8421(significand.fraction);
-  var res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.HEXADECIMAL32);
+  let res_significand = decimalTo8421(significand.fraction);
+  let res = new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.HEXADECIMAL32);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
 
 function convertFromIEEE754(format, log=true){
-  var solution = document.getElementById('solution2');
-  var error = document.getElementById('error2');
+  let solution = document.getElementById('solution2');
+  let error = document.getElementById('error2');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -374,8 +374,8 @@ function convertFromIEEE754(format, log=true){
   clearOutput();
   addToOutput("<hr>");
 
-  var ieee = document.getElementById('input_ieee754').value.toString();
-  var res = null;
+  let ieee = document.getElementById('input_ieee754').value.toString();
+  let res = null;
   switch(format){
     case IEEE754Formats.BINARY32:
       ieee = toIEEE754Number(ieee, IEEE754Formats.BINARY32, false);
@@ -435,15 +435,15 @@ function convertFromIEEE754Binary32(number, log=true){
     return null;
   }
 
-  var res = getSpecialValueBinary32(number);
+  let res = getSpecialValueBinary32(number);
   if(res!=null){
     addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
     return res;
   }
 
-  var sign = number.sign=="0" ? PLUS : MINUS;
-  var significand;
-  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
+  let sign = number.sign=="0" ? PLUS : MINUS;
+  let significand;
+  let exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
   addToOutput("<p>eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
   exponent -= BINARY32_EXCESS;
   addToOutput(exponent + "</p>");
@@ -458,8 +458,8 @@ function convertFromIEEE754Binary32(number, log=true){
     addToOutput("<p>frakc: (" + significand.toSigned() + ")2</p>");
   }
 
-  var whole = significand.whole!="0";
-  var len = (whole? 1 : 0) + significand.fraction.length;
+  let whole = significand.whole!="0";
+  let len = (whole? 1 : 0) + significand.fraction.length;
   if(len!=1){
     if(!whole)
       significand.whole="";
@@ -495,15 +495,15 @@ function convertFromIEEE754Binary64(number, log=true){
     return null;
   }
 
-  var res = getSpecialValueBinary64(number);
+  let res = getSpecialValueBinary64(number);
   if(res!=null){
     addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
     return res;
   }
 
-  var sign = number.sign=="0" ? PLUS : MINUS;
-  var significand;
-  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
+  let sign = number.sign=="0" ? PLUS : MINUS;
+  let significand;
+  let exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
   addToOutput("<p>eksp: (" + number.exponent + ")2 - " + BINARY32_EXCESS.toString() + " = " + exponent + " - " + BINARY32_EXCESS.toString() + " = ");
   exponent -= BINARY64_EXCESS;
   addToOutput(exponent + "</p>");
@@ -518,8 +518,8 @@ function convertFromIEEE754Binary64(number, log=true){
     addToOutput("<p>frakc: (" + significand.toSigned() + ")2</p>");
   }
 
-  var whole = significand.whole!="0";
-  var len = (whole? 1 : 0) + significand.fraction.length;
+  let whole = significand.whole!="0";
+  let len = (whole? 1 : 0) + significand.fraction.length;
   if(len!=1){
     if(!whole)
       significand.whole="";
@@ -555,15 +555,15 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
     return null;
   }
 
-  var res = getSpecialValueDecimal32(number);
+  let res = getSpecialValueDecimal32(number);
   if(res!=null){
     addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
     return res;
   }
 
-  var sign = number.sign=="0" ? PLUS : MINUS;
-  var significand;
-  var comb = "";
+  let sign = number.sign=="0" ? PLUS : MINUS;
+  let significand;
+  let comb = "";
   if(number.exponent.substr(0, 2)=="11"){
     significand = "100" + number.exponent.charAt(4);
     comb = number.exponent.substr(2, 2) + number.exponent.substr(5, 6);
@@ -572,7 +572,7 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
     comb = number.exponent.substr(0,2) + number.exponent.substr(5, 6);
   }
 
-  var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
+  let exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
   if(exponent==0){
     addToOutput("<p>subnormalan broj</p>");
     exponent = -DECIMAL32_EXCESS - DECIMAL32_DIGITS;
@@ -591,7 +591,7 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
   addToOutput("(" + significand.toUnsigned() + ")10 </p>");
 
   addToOutput("<p>(" + significand.toSigned() + ")10 * 10^" + exponent);
-  var normalize_exponent = normalizeDecimal(significand, true, log);
+  let normalize_exponent = normalizeDecimal(significand, true, log);
   if(normalize_exponent>0){
     exponent += normalize_exponent;
     addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent);
@@ -607,15 +607,15 @@ function convertFromIEEE754Decimal32BID(number, log=true){
     return null;
   }
 
-  var res = getSpecialValueDecimal32(number);
+  let res = getSpecialValueDecimal32(number);
   if(res!=null){
     addToOutput("<p>specijalna vrednost: " + res.toString() + "</p>");
     return res;
   }
 
-  var sign = number.sign=="0" ? PLUS : MINUS;
-  var significand;
-  var comb = "";
+  let sign = number.sign=="0" ? PLUS : MINUS;
+  let significand;
+  let comb = "";
   if(number.exponent.substr(0, 2)=="11"){
     significand = "100" + number.exponent.charAt(10);
     comb = number.exponent.substr(2, 8);
@@ -624,7 +624,7 @@ function convertFromIEEE754Decimal32BID(number, log=true){
     comb = number.exponent.substr(0,8);
   }
 
-  var exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
+  let exponent = baseToDecimalInteger(comb, 2, NumberTypes.UNSIGNED, log);
   if(exponent==0){
     addToOutput("<p>subnormalan broj</p>");
     exponent = -DECIMAL32_EXCESS - DECIMAL32_DIGITS;
@@ -641,7 +641,7 @@ function convertFromIEEE754Decimal32BID(number, log=true){
   addToOutput("(" + significand.toUnsigned() + ")10 </p>");
 
   addToOutput("<p>(" + significand.toSigned() + ")10 * 10^" + exponent);
-  var normalize_exponent = normalizeDecimal(significand, true, log);
+  let normalize_exponent = normalizeDecimal(significand, true, log);
   if(normalize_exponent>0){
     exponent += normalize_exponent;
     addToOutput(" = (" + significand.toSigned() + ")10 * 10^" + exponent);
@@ -657,9 +657,9 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
     return null;
   }
 
-  var sign = number.sign=="0" ? PLUS : MINUS;
-  var significand = trimNumber(new UOARNumber(sign, "0", decimalFrom8421(number.significand), 16, NumberTypes.SIGNED));
-  var exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
+  let sign = number.sign=="0" ? PLUS : MINUS;
+  let significand = trimNumber(new UOARNumber(sign, "0", decimalFrom8421(number.significand), 16, NumberTypes.SIGNED));
+  let exponent = baseToDecimalInteger(number.exponent, 2, NumberTypes.UNSIGNED, log);
   addToOutput("<p>eksp: (" + number.exponent + ")2 - " + HEXADECIMAL32_EXCESS.toString() + " = " + exponent + " - " + HEXADECIMAL32_EXCESS + " = ");
   exponent -= HEXADECIMAL32_EXCESS;
   addToOutput(exponent + "</p>");
@@ -667,7 +667,7 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
   addToOutput("<p>frakc: (0." + number.significand + ")2 = (" + significand.toUnsigned() + ")16 </p>");
   addToOutput("<p>(" + significand.toUnsigned() + ")16 * 16^" + exponent + " = ");
 
-  var len = significand.fraction.length;
+  let len = significand.fraction.length;
   if(exponent>=0 && exponent<6){
     significand.whole = significand.fraction.substr(0, exponent);
     significand.fraction = significand.fraction.substr(exponent);
@@ -694,8 +694,8 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
 }
 
 function doOperation(operation, log=true){
-  var solution = document.getElementById('solution3');
-  var error = document.getElementById('error3');
+  let solution = document.getElementById('solution3');
+  let error = document.getElementById('error3');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -720,7 +720,7 @@ function doOperation(operation, log=true){
     return null;
   }
 
-  var res;
+  let res;
   switch(operation){
     case ArithmeticOperations.ADDITION:
       res = addIEEE754(operand1, operand2, log);
@@ -755,8 +755,8 @@ function addIEEE754(operand1, operand2, log=true){
     return null;
   }
 
-  var special1 = getSpecialValueBinary32(operand1);
-  var special2 = getSpecialValueBinary32(operand2);
+  let special1 = getSpecialValueBinary32(operand1);
+  let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special2==QNAN){
       addToOutput("<p>x + "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
@@ -785,24 +785,24 @@ function addIEEE754(operand1, operand2, log=true){
     }
   }
 
-  var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent = Math.min(exponent1, exponent2);
+  let exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent = Math.min(exponent1, exponent2);
   addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
   exponent1 -= exponent;
   exponent2 -= exponent;
 
-  var significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
-  var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
+  let significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
+  let significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
   addToOutput("<p>frakc:");
   addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
   addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
-  var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
+  let significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
   addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
   
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
-  var normalize_exponent = normalizeBinary(significand, true, false);
+  let normalize_exponent = normalizeBinary(significand, true, false);
   exponent += normalize_exponent;
   if(normalize_exponent!=0)
     addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
@@ -827,7 +827,7 @@ function addIEEE754(operand1, operand2, log=true){
   significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
   exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
-  var res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
+  let res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -838,8 +838,8 @@ function subtractIEEE754(log=true){
     return null;
   }
 
-  var special1 = getSpecialValueBinary32(operand1);
-  var special2 = getSpecialValueBinary32(operand2);
+  let special1 = getSpecialValueBinary32(operand1);
+  let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special2==QNAN){
       addToOutput("<p>x - "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
@@ -874,25 +874,25 @@ function subtractIEEE754(log=true){
     }
   }
 
-  var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent = Math.min(exponent1, exponent2);
+  let exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent = Math.min(exponent1, exponent2);
   addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
   exponent1 -= exponent;
   exponent2 -= exponent;
 
-  var significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
-  var significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
+  let significand1 = trimNumber(new UOARNumber(operand1.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SIGNED));
+  let significand2 = trimNumber(new UOARNumber(operand2.sign=="0"?PLUS:MINUS, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SIGNED));
   significand2.sign = significand2.sign==PLUS ? MINUS : PLUS;
   addToOutput("<p>frakc:");
   addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
   addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
-  var significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
+  let significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
   addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
   
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
-  var normalize_exponent = normalizeBinary(significand, true, false);
+  let normalize_exponent = normalizeBinary(significand, true, false);
   exponent += normalize_exponent;
   if(normalize_exponent!=0)
     addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
@@ -917,7 +917,7 @@ function subtractIEEE754(log=true){
   significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
   exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
-  var res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
+  let res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput(res.toString());
   return res;
 }
@@ -928,8 +928,8 @@ function multiplyIEEE754(operand1, operand2, log=true){
     return null;
   }
 
-  var special1 = getSpecialValueBinary32(operand1);
-  var special2 = getSpecialValueBinary32(operand2);
+  let special1 = getSpecialValueBinary32(operand1);
+  let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special2==QNAN){
       addToOutput("<p>x * "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
@@ -956,20 +956,20 @@ function multiplyIEEE754(operand1, operand2, log=true){
     }
   }
 
-  var sign = operand1.sign==operand2.sign ? "0" : "1";
+  let sign = operand1.sign==operand2.sign ? "0" : "1";
   addToOutput("<p>znak: " + sign + "</p>");
 
-  var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent = exponent1 + exponent2 - BINARY32_EXCESS;
+  let exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent = exponent1 + exponent2 - BINARY32_EXCESS;
   addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
 
-  var significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
-  var significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
+  let significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
+  let significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
   
-  var multiplicand1 = new UOARNumber("", significand1.whole + significand1.fraction, "", 2, NumberTypes.UNSIGNED);
-  var multiplicand2 = new UOARNumber("", significand2.whole + significand2.fraction, "", 2, NumberTypes.UNSIGNED);
-  var significand = new UOARNumber("", "0", "", 2, NumberTypes.UNSIGNED);
+  let multiplicand1 = new UOARNumber("", significand1.whole + significand1.fraction, "", 2, NumberTypes.UNSIGNED);
+  let multiplicand2 = new UOARNumber("", significand2.whole + significand2.fraction, "", 2, NumberTypes.UNSIGNED);
+  let significand = new UOARNumber("", "0", "", 2, NumberTypes.UNSIGNED);
 
   for(let i=multiplicand2.whole.length-1; i>=0; i--){
     if(multiplicand2.whole[i]=="1"){
@@ -983,7 +983,7 @@ function multiplyIEEE754(operand1, operand2, log=true){
   addToOutput("<p>frakc: " + significand1.toUnsigned() + " * " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "</p>");
 
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
-  var normalize_exponent = normalizeBinary(significand, true, false);
+  let normalize_exponent = normalizeBinary(significand, true, false);
   exponent += normalize_exponent;
   if(normalize_exponent!=0)
     addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
@@ -1006,7 +1006,7 @@ function multiplyIEEE754(operand1, operand2, log=true){
   significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
   exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
-  var res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
+  let res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }
@@ -1017,8 +1017,8 @@ function divideIEEE754(operand1, operand2, log=true){
     return null;
   }
 
-  var special1 = getSpecialValueBinary32(operand1);
-  var special2 = getSpecialValueBinary32(operand2);
+  let special1 = getSpecialValueBinary32(operand1);
+  let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special2==QNAN){
       addToOutput("<p>x / "+QNAN.toString()+" = "+QNAN.toString()+"</p>");
@@ -1041,16 +1041,16 @@ function divideIEEE754(operand1, operand2, log=true){
     }
   }
 
-  var sign = operand1.sign==operand2.sign ? "0" : "1";
+  let sign = operand1.sign==operand2.sign ? "0" : "1";
   addToOutput("<p>znak: " + sign + "</p>");
 
-  var exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
-  var exponent = exponent1 - exponent2 + BINARY32_EXCESS;
+  let exponent1 = baseToDecimalInteger(operand1.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent2 = baseToDecimalInteger(operand2.exponent, 2, NumberTypes.UNSIGNED, false);
+  let exponent = exponent1 - exponent2 + BINARY32_EXCESS;
   addToOutput("<p>eksp: " + exponent + " = " + BINARY32_EXCESS + " + " + (exponent-BINARY32_EXCESS) + "</p>");
 
-  var significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
-  var significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
+  let significand1 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand1.significand, 2, NumberTypes.UNSIGNED));
+  let significand2 = trimNumber(new UOARNumber("", (exponent1==0?"0":"1"), operand2.significand, 2, NumberTypes.UNSIGNED));
   if(significand2.fraction.length > significand1.fraction.length){
     fractionToLength(significand1, significand2.fraction.length, false);
   }
@@ -1059,12 +1059,12 @@ function divideIEEE754(operand1, operand2, log=true){
   significand2.whole = significand2.whole + significand2.fraction;
   significand2.fraction = "";
 
-  var i = significand2.whole.length;
-  var dividend_string = significand1.whole + significand1.fraction + "0";
-  var dividend = new UOARNumber("+", dividend_string.substr(0, i), "", 2, NumberTypes.SIGNED);
-  var divider = new UOARNumber("+", significand2.whole, "", 2, NumberTypes.SIGNED);
-  var neg_divider = new UOARNumber("-", significand2.whole, "", 2, NumberTypes.SIGNED);
-  var significand = new UOARNumber("+", "", "", 2, NumberTypes.SIGNED);
+  let i = significand2.whole.length;
+  let dividend_string = significand1.whole + significand1.fraction + "0";
+  let dividend = new UOARNumber("+", dividend_string.substr(0, i), "", 2, NumberTypes.SIGNED);
+  let divider = new UOARNumber("+", significand2.whole, "", 2, NumberTypes.SIGNED);
+  let neg_divider = new UOARNumber("-", significand2.whole, "", 2, NumberTypes.SIGNED);
+  let significand = new UOARNumber("+", "", "", 2, NumberTypes.SIGNED);
   for(; i<dividend_string.length; i++){
     if(isGreater(dividend, divider, true, false) || dividend.whole==divider.whole){
       dividend = add(dividend, neg_divider, NumberTypes.SIGNED, false);
@@ -1090,7 +1090,7 @@ function divideIEEE754(operand1, operand2, log=true){
   addToOutput("<p>frakc: " + significand1.toUnsigned() + " / " + significand2.toUnsigned() + " = " + significand.toUnsigned() + "</p>");
 
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
-  var normalize_exponent = normalizeBinary(significand, true, false);
+  let normalize_exponent = normalizeBinary(significand, true, false);
   exponent += normalize_exponent;
   if(normalize_exponent!=0)
     addToOutput(" = (" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32_EXCESS));
@@ -1113,7 +1113,7 @@ function divideIEEE754(operand1, operand2, log=true){
   significand = fractionToLength(significand, BINARY32_SIGNIFICAND_LENGTH, false);
   exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32_EXPONENT_LENGTH, 0, log).toUnsigned();
 
-  var res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
+  let res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
   return res;
 }

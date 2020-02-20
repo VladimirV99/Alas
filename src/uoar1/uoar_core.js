@@ -5,8 +5,8 @@ const MINUS = '-';
 const SPACE = ' ';
 const RADIX = ['.', ','];
 
-var PRECISION = 8;
-var PRECISION_NUMBER = Math.pow(10, PRECISION);
+const PRECISION = 8;
+const PRECISION_NUMBER = Math.pow(10, PRECISION);
 
 /** 
  * Number type enum
@@ -65,14 +65,14 @@ class UOARNumber{
     this.number_type = number_type;
   }
   toSigned(){
-    var res = this.sign + this.whole;
+    let res = this.sign + this.whole;
     if(this.fraction!="" && this.fraction!="0"){
       res = res.concat("." + this.fraction);
     }
     return res;
   }
   toUnsigned(){
-    var res = this.whole;
+    let res = this.whole;
     if(this.fraction!="" && this.fraction!="0"){
       res = res.concat("." + this.fraction);
     }
@@ -109,8 +109,8 @@ function getValueAt(number, index, log=true){
     addToStackTrace("getValueAt", "Index out of bounds " + index + " in \"" + number + "\"", log);
     return null;
   }
-  var valCode = number.charCodeAt(index);
-  var res = valCode - ASCII_0;
+  let valCode = number.charCodeAt(index);
+  let res = valCode - ASCII_0;
   if(res<0 || res > 9){
     res = valCode - ASCII_A;
     if(res < 0 || res > 25){
@@ -195,7 +195,7 @@ function isSignAt(number, base, number_type, index){
   number = number.replace(/ /g, '');
   if(!isValidBase(base) || number.length<=index)
     return null;
-  var temp = number.charAt(index);
+  let temp = number.charAt(index);
   switch(number_type){
     case NumberTypes.UNSIGNED:
       return false;
@@ -267,7 +267,7 @@ function getSignEnd(number, base, number_type, log=true){
  * @returns {string} Sign of the number
  */
 function getSign(number, base, number_type, log=true){
-  var sign_end = getSignEnd(number, base, number_type, log);
+  let sign_end = getSignEnd(number, base, number_type, log);
   if(sign_end===null)
     return null;
   if(sign_end==0){
@@ -298,7 +298,7 @@ function getSign(number, base, number_type, log=true){
  * @returns {string} Number without the sign
  */
 function removeSign(number, base, number_type, log=true){
-  var sign_end = getSignEnd(number, base, number_type, log);
+  let sign_end = getSignEnd(number, base, number_type, log);
   if(sign_end===null)
     return null;
   if(sign_end==number.length){
@@ -354,7 +354,7 @@ function isValidUOARNumber(number){
   if(number===null || !isValidBase(number.base) || !isValidSign(number.sign, number.base, number.number_type)){
     return false;
   }
-  var temp = "";
+  let temp = "";
   for(let i=0; i<number.whole.length; i++){
     temp = number.whole.charAt(i);
     if(temp==SPACE)
@@ -387,9 +387,9 @@ function isValidNumber(number, base, number_type){
   if(number===null || !isValidBase(base)){
     return false;
   }
-  var i;
-  var hasDecimal = false;
-  var temp = "";
+  let i;
+  let hasDecimal = false;
+  let temp = "";
   for(i=0; i<number.length; i++){
     temp = number.charAt(i);
     if(!isSign(temp, base, number_type) && temp!=SPACE)
@@ -438,15 +438,15 @@ function toUOARNumber(number, base, number_type, log=true){
   }
   
   number = number.replace(/ /g, '');
-  var arr = number.split(/[.,]/);
+  let arr = number.split(/[.,]/);
 
-  var sign = getSign(arr[0], base, number_type, log);
-  var whole = removeSign(arr[0], base, number_type, log);
-  var fraction = "";
+  let sign = getSign(arr[0], base, number_type, log);
+  let whole = removeSign(arr[0], base, number_type, log);
+  let fraction = "";
   if(arr.length==2){
     fraction = arr[1];
   }
-  var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  let res = new UOARNumber(sign, whole, fraction, base, number_type);
   return res;
 }
 
@@ -630,7 +630,7 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
     addToStackTrace("UOARNumberToDecimalInteger", "Invalid number \"" + number.toSigned() + "\"", log);
     return null;
   }
-  var sign_mult = getSignMultiplierForNumber(number, standardized);
+  let sign_mult = getSignMultiplierForNumber(number, standardized);
   if(sign_mult==0){
     return null;
   }else if(sign_mult==-1){
@@ -645,7 +645,7 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
         break;
     }
   }
-  var res = 0;
+  let res = 0;
   for(let i=0; i<number.whole.length; i++){
     res = res * number.base + getValueAt(number.whole, i, log);
   }
@@ -663,9 +663,9 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
  */
 function baseToDecimalInteger(number, base, number_type, log=true){
   number = number.split(/[.,]/)[0];
-  var sign = getSign(number, base, number_type, log);
-  var whole = removeSign(number, base, number_type, log);
-  var num = new UOARNumber(sign, whole, "", base, number_type);
+  let sign = getSign(number, base, number_type, log);
+  let whole = removeSign(number, base, number_type, log);
+  let num = new UOARNumber(sign, whole, "", base, number_type);
   return UOARNumberToDecimalInteger(num, false, log);
 }
 
@@ -694,8 +694,8 @@ function toDecimal(number, standardized=false, log=true){
     return number;
   }
 
-  var sign = "";
-  var toComplement = false;
+  let sign = "";
+  let toComplement = false;
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       break;
@@ -712,21 +712,21 @@ function toDecimal(number, standardized=false, log=true){
       break;
   }
 
-  var whole = 0;
+  let whole = 0;
   for(let i = 0; i<number.whole.length; i++){
     whole = whole * number.base + getValueAt(number.whole, i, log);
   }
   whole = whole.toString();
 
-  var fraction = 0;
-  var precision = PRECISION_NUMBER / number.base;
+  let fraction = 0;
+  let precision = PRECISION_NUMBER / number.base;
   for(let i = 0; i<number.fraction.length; i++){
     fraction += Math.floor(getValueAt(number.fraction, i, log) * precision);
     precision = precision / number.base;
   }
   fraction = fraction.toString();
   
-  var res = new UOARNumber(sign, whole, fraction, 10, number.number_type);
+  let res = new UOARNumber(sign, whole, fraction, 10, number.number_type);
   if(toComplement){
     res = complement(res, true, log);
   }
@@ -763,8 +763,8 @@ function fromDecimal(number, base, standardized=false, log=true){
     return number;
   }
 
-  var sign = "";
-  var toComplement = false;
+  let sign = "";
+  let toComplement = false;
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       break;
@@ -781,14 +781,14 @@ function fromDecimal(number, base, standardized=false, log=true){
       break;
   }
   
-  var whole = "";
-  var whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
+  let whole = "";
+  let whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
   do {
     whole = toValue(whole_dec%base, false).concat(whole);
     whole_dec = Math.floor(whole_dec/base);
   } while(whole_dec>0)
 
-  var fraction = "";
+  let fraction = "";
   if(number.fraction!=""){
     number = fractionToLength(number, PRECISION, log);
     let fraction_dec = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
@@ -840,7 +840,7 @@ function convertBases(number, base_to, standardized=false, log=true){
   if(number.base==base_to){
     return number;
   }
-  var res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
+  let res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
   if(res===null){
     addToStackTrace("convertBases", "Conversion error, result null", log);
   }
@@ -885,8 +885,8 @@ function wholeToLength(number, length, log=true){
     addToStackTrace("wholeToLength", "Number is too big", log);
     return null;
   }
-  var whole = number.whole;
-  var toAdd = length-whole.length;
+  let whole = number.whole;
+  let toAdd = length-whole.length;
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
     case NumberTypes.SIGNED:
@@ -914,7 +914,7 @@ function fractionToLength(number, length, log=true){
     addToStackTrace("fractionToLength", "Number is null", log);
     return null;
   }
-  var fraction = number.fraction;;
+  let fraction = number.fraction;;
   if(fraction.length>length){
     fraction = fraction.substr(0, length);
   }else if(fraction.length<length){
@@ -938,8 +938,8 @@ function addZeroesAfter(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesAfter", "Number is null", log);
     return null;
   }
-  var offset = getSignEnd(number, base, number_type, log);
-  var toAdd = length - number.replace(/[.,]/, "").length - offset;
+  let offset = getSignEnd(number, base, number_type, log);
+  let toAdd = length - number.replace(/[.,]/, "").length - offset;
   if(toAdd>0){
     number = number.concat(createZeroString(toAdd));
   }
@@ -960,9 +960,9 @@ function addZeroesBefore(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesBefore", "Number is null", log);
     return null;
   }
-  var offset = getSignEnd(number, base, number_type, log);
-  var toAdd = length - number.replace(/[.,]/, "").length - offset;
-  var res = number.substr(0, offset);
+  let offset = getSignEnd(number, base, number_type, log);
+  let toAdd = length - number.replace(/[.,]/, "").length - offset;
+  let res = number.substr(0, offset);
   if(toAdd>0){
     res = res.concat(createZeroString(toAdd));
   }
@@ -978,12 +978,12 @@ function addZeroesBefore(number, base, number_type, length, log=true){
  * @returns {string} Digit converted to binary
  */
 function digitToBinary(number, index, log=true){
-  var val = getValueAt(number, index, false);
+  let val = getValueAt(number, index, false);
   if(val===null){
     addToStackTrace("digitToBinary", "Invalid digit \"" + number.charAt(index) + "\"", log);
     return null;
   }
-  var res = "";
+  let res = "";
   do{
     res = toValue(val%2, log).concat(res);
     val = Math.floor(val/2);
@@ -1002,7 +1002,7 @@ function numberToBinary(number, log=true){
     addToStackTrace("numberToBinary", "Cannot convert negative number", log);
     return null;
   }
-  var res = "";
+  let res = "";
   do {
     res = toValue(number%2).concat(res);
     number = Math.floor(number/2);
@@ -1021,8 +1021,8 @@ function binaryToDigit(number, log=true){
     addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
     return null;
   }
-  var res = 0;
-  var temp;
+  let res = 0;
+  let temp;
   for(let i=0; i<number.length; i++){
     temp = getValueAt(number, i, false);
     if(temp===null){
@@ -1041,8 +1041,8 @@ function binaryToDigit(number, log=true){
  * @returns {string} Number converted to 8421 
  */
 function decimalTo8421(number, log=true){
-  var res = "";
-  var temp;
+  let res = "";
+  let temp;
   for(let i=0; i<number.length; i++){
     temp = getValueAt(number, i, log);
     if(temp===null || temp>15){
@@ -1062,8 +1062,8 @@ function decimalTo8421(number, log=true){
  * @returns {string} Number converted to decimal 
  */
 function decimalFrom8421(number, log=true){
-  var res = "";
-  var temp;
+  let res = "";
+  let temp;
   for(let i=0; i<number.length; i+=4){
     temp = binaryToDigit(number.substr(i, 4));
     if(temp===null){
@@ -1106,8 +1106,8 @@ function isGreater(number1, number2, standardized=false, log=true){
     }
   }
 
-  var sign1 = getSignMultiplierForNumber(number1, true);
-  var sign2 = getSignMultiplierForNumber(number2, true);
+  let sign1 = getSignMultiplierForNumber(number1, true);
+  let sign2 = getSignMultiplierForNumber(number2, true);
   if(sign1!=sign2){
     return sign1>sign2;
   }else{
@@ -1160,7 +1160,7 @@ function getAbsoluteValue(number){
       return new UOARNumber("0", number.whole, number.fraction, number.base, NumberTypes.SMR);
     case NumberTypes.OC:
     case NumberTypes.TC:
-      var res = number.copy();
+      let res = number.copy();
       if(number.sign.charAt(0)=="1"){
         res = complement(res);
       }
@@ -1222,21 +1222,21 @@ function add(add1, add2, number_type, standardized=false, log=true){
   }
   add1 = trimSign(add1.copy());
   add2 = trimSign(add2.copy());
-  var base = add1.base;
+  let base = add1.base;
   if(add1.number_type!=number_type)
     convertToType(add1, number_type, false, log);
   if(add2.number_type!=number_type)
     convertToType(add2, number_type, false, log);
 
   equalizeLength(add1, add2, standardized, log);
-  var whole_len=add1.whole.length;
-  var fraction_len=add1.fraction.length;
+  let whole_len=add1.whole.length;
+  let fraction_len=add1.fraction.length;
 
-  var sign;
-  var whole = "";
-  var fraction = "";
-  var carry = 0;
-  var temp;
+  let sign;
+  let whole = "";
+  let fraction = "";
+  let carry = 0;
+  let temp;
   
   switch(number_type){
     case NumberTypes.UNSIGNED:
@@ -1342,7 +1342,7 @@ function add(add1, add2, number_type, standardized=false, log=true){
       addToStackTrace("add", "Invalid number type", log);
       return null;
   }
-  var res = new UOARNumber(sign, whole, fraction, base, number_type);
+  let res = new UOARNumber(sign, whole, fraction, base, number_type);
   if(number_type == NumberTypes.OC){
     res = addToLowestPoint(res, carry, false);
   }
@@ -1366,11 +1366,11 @@ function complement(number, standardized=false, log=true){
   if(!standardized){
     trimSign(number);
   }
-  var base_complement = number.base-1;
-  var complement_sign = "";
-  var complement_whole = "";
-  var complement_fraction = "";
-  var carry = 0;
+  let base_complement = number.base-1;
+  let complement_sign = "";
+  let complement_whole = "";
+  let complement_fraction = "";
+  let carry = 0;
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       addToStackTrace("complement", "Can't complement unsigned number", log);
@@ -1401,7 +1401,7 @@ function complement(number, standardized=false, log=true){
       break;
   }
 
-  var res = new UOARNumber(complement_sign, complement_whole, complement_fraction, number.base, number.number_type);
+  let res = new UOARNumber(complement_sign, complement_whole, complement_fraction, number.base, number.number_type);
   return res;
 }
 
@@ -1414,7 +1414,7 @@ function complement(number, standardized=false, log=true){
 function createConstantString(constant, length){
   if(constant.length != 1)
     return null;
-  var res = "";
+  let res = "";
   for(let i = 0; i<length; i++){
     res = res.concat(constant);
   }
@@ -1437,8 +1437,8 @@ function createZeroString(length){
  * @param {ShiftType} shift_type Shift type 
  */
 function shift(numbers, by, shift_type){
-  var line = "";
-  var ptr = 0;
+  let line = "";
+  let ptr = 0;
   for(let i = 0; i<numbers.length; i++){
     line = line.concat(numbers[i].sign).concat(numbers[i].whole).concat(numbers[i].fraction);
   }
@@ -1457,9 +1457,9 @@ function shift(numbers, by, shift_type){
       return;
   }
   
-  var sign_len = 0;
-  var whole_len = 0;
-  var frac_len = 0;
+  let sign_len = 0;
+  let whole_len = 0;
+  let frac_len = 0;
   for(let i = 0; i<numbers.length; i++){
     sign_len = numbers[i].sign.length;
     whole_len = numbers[i].whole.length;

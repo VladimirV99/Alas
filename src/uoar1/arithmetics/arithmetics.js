@@ -5,24 +5,24 @@ import '../output';
 import '../common.css';
 
 function unsigned_multiply_wrapper(log=true) {
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
   clearOutput();
   clearStackTrace();
-  var multiplicand = document.getElementById('input_operand1').value.trim();
-  var multiplier = document.getElementById('input_operand2').value.trim();
+  let multiplicand = document.getElementById('input_operand1').value.trim();
+  let multiplier = document.getElementById('input_operand2').value.trim();
   if(multiplicand=="" || multiplier==""){
     addToStackTrace("unsigned_multiply", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
-  var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+  multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+  multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
   if(multiplicand===null || multiplier===null){
     if(multiplicand===null){
       addToStackTrace("unsigned_multiply", "Invalid multiplicand", log);
@@ -33,10 +33,10 @@ function unsigned_multiply_wrapper(log=true) {
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = fromDecimal(multiplicand, 2, false, true);
-  var multiplier = fromDecimal(multiplier, 2, false, true);
+  multiplicand = fromDecimal(multiplicand, 2, false, true);
+  multiplier = fromDecimal(multiplier, 2, false, true);
   
-  var res = unsigned_multiply(multiplicand, multiplier, false, log);
+  let res = unsigned_multiply(multiplicand, multiplier, false, log);
   if(res!=null){
     solution.innerHTML=getOutput();
     if(solution.classList.contains('hidden'))
@@ -61,13 +61,13 @@ function unsigned_multiply(num1, num2, standardized=false, log=true){
   num1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
   num2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
   equalizeLength(num1, num2, true, log);
-  var len = num1.sign.length + num1.whole.length + num1.fraction.length;
+  let len = num1.sign.length + num1.whole.length + num1.fraction.length;
 
-  var c = new UOARNumber("0", "", "", 2, NumberTypes.TC);
-  var a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
-  var m = num1;
-  var p = num2;
-  var registers = [c, a, p];
+  let c = new UOARNumber("0", "", "", 2, NumberTypes.TC);
+  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
+  let m = num1;
+  let p = num2;
+  let registers = [c, a, p];
 
   addToOutput("<p>");
   addToOutput("M: (" + m.toSigned() + ")2<br>");
@@ -78,9 +78,9 @@ function unsigned_multiply(num1, num2, standardized=false, log=true){
   addToOutput("<thead><tr><th>C</th><th>A</th><th>P</th><th>Komentar</th></tr></thead>");
   addToOutput("<tbody>");
   addToOutput("<tr><td>" + registers[0].toWhole() + "</td><td class=\"align-right\">" + registers[1].toWhole() + "</td><td>" + registers[2].toWhole() + "</td><td>Init</td></tr>");
-  var work1 = "";
-  var work2 = "";
-  var op = "";
+  let work1 = "";
+  let work2 = "";
+  let op = "";
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
@@ -113,34 +113,34 @@ function unsigned_multiply(num1, num2, standardized=false, log=true){
 
   addToOutput("<p>");
   addToOutput("AP = (" + registers[1].toWhole() + " " + registers[2].toWhole() + ")2<br>");
-  var AP = registers[1].toWhole() + registers[2].toWhole();
-  var AP_frac_len = 2 * num1.fraction.length;
+  let AP = registers[1].toWhole() + registers[2].toWhole();
+  let AP_frac_len = 2 * num1.fraction.length;
   AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
-  var res = toUOARNumber(AP, 2, NumberTypes.TC, false);
+  let res = toUOARNumber(AP, 2, NumberTypes.TC, false);
   addToOutput("Rezultat: (" + res.toSigned() + ")2");
   addToOutput("</p>");
   return res;
 }
 
 function booth_wrapper(log=true) {
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
   clearOutput();
   clearStackTrace();
-  var multiplicand = document.getElementById('input_operand1').value.trim();
-  var multiplier = document.getElementById('input_operand2').value.trim();
+  let multiplicand = document.getElementById('input_operand1').value.trim();
+  let multiplier = document.getElementById('input_operand2').value.trim();
   if(multiplicand=="" || multiplier==""){
     addToStackTrace("booth", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
-  var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+  multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+  multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
   if(multiplicand===null || multiplier===null){
     if(multiplicand===null){
       addToStackTrace("booth", "Invalid multiplicand", log);
@@ -151,10 +151,10 @@ function booth_wrapper(log=true) {
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = fromDecimal(multiplicand, 2, false, true);
-  var multiplier = fromDecimal(multiplier, 2, false, true);
+  multiplicand = fromDecimal(multiplicand, 2, false, true);
+  multiplier = fromDecimal(multiplier, 2, false, true);
   
-  var res = booth(multiplicand, multiplier, false, log);
+  let res = booth(multiplicand, multiplier, false, log);
   if(res!=null){
     solution.innerHTML=getOutput();
     if(solution.classList.contains('hidden'))
@@ -175,14 +175,14 @@ function booth(num1, num2, standardized=false, log=true){
   num1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
   num2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
   equalizeLength(num1, num2, true, log);
-  var len = num1.sign.length + num1.whole.length + num1.fraction.length;
+  let len = num1.sign.length + num1.whole.length + num1.fraction.length;
 
-  var a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
-  var m = num1;
-  var neg_m = complement(num1);
-  var p = num2;
-  var p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
-  var registers = [a, p, p1];
+  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
+  let m = num1;
+  let neg_m = complement(num1);
+  let p = num2;
+  let p1 = new UOARNumber("0", "", "", 2, NumberTypes.TC);
+  let registers = [a, p, p1];
 
   addToOutput("<p>");
   addToOutput("M: (" + m.toSigned() + ")2<br>");
@@ -194,9 +194,9 @@ function booth(num1, num2, standardized=false, log=true){
   addToOutput("<thead><tr><th>A</th><th>P</th><th>P0</th><th>Komentar</th></tr></thead>");
   addToOutput("<tbody>");
   addToOutput("<tr><td class=\"align-right\">" + registers[0].toWhole() + "</td><td>" + registers[1].toWhole() + "</td><td>" + registers[2].toWhole() + "</td><td>Init</td></tr>");
-  var work1 = "";
-  var work2 = "";
-  var op = "";
+  let work1 = "";
+  let work2 = "";
+  let op = "";
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
@@ -229,34 +229,34 @@ function booth(num1, num2, standardized=false, log=true){
 
   addToOutput("<p>");
   addToOutput("AP = (" + registers[0].toWhole() + " " + registers[1].toWhole() + ")2<br>");
-  var AP = registers[0].toWhole() + registers[1].toWhole();
-  var AP_frac_len = 2 * num1.fraction.length;
+  let AP = registers[0].toWhole() + registers[1].toWhole();
+  let AP_frac_len = 2 * num1.fraction.length;
   AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
-  var res = toUOARNumber(AP, 2, NumberTypes.TC, false);
+  let res = toUOARNumber(AP, 2, NumberTypes.TC, false);
   addToOutput("Rezultat: (" + res.toSigned() + ")2");
   addToOutput("</p>");
   return res;
 }
 
 function modified_booth_wrapper(log=true) {
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
   clearOutput();
   clearStackTrace();
-  var multiplicand = document.getElementById('input_operand1').value.trim();
-  var multiplier = document.getElementById('input_operand2').value.trim();
+  let multiplicand = document.getElementById('input_operand1').value.trim();
+  let multiplier = document.getElementById('input_operand2').value.trim();
   if(multiplicand=="" || multiplier==""){
     addToStackTrace("modified_booth", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
-  var multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
+  multiplicand = toUOARNumber(multiplicand, 10, NumberTypes.SIGNED, false);
+  multiplier = toUOARNumber(multiplier, 10, NumberTypes.SIGNED, false);
   if(multiplicand===null || multiplier===null){
     if(multiplicand===null){
       addToStackTrace("modified_booth", "Invalid multiplicand", log);
@@ -267,10 +267,10 @@ function modified_booth_wrapper(log=true) {
     error.classList.remove('hidden');
     return null;
   }
-  var multiplicand = fromDecimal(multiplicand, 2, false, true);
-  var multiplier = fromDecimal(multiplier, 2, false, true);
+  multiplicand = fromDecimal(multiplicand, 2, false, true);
+  multiplier = fromDecimal(multiplier, 2, false, true);
 
-  var res = modified_booth(multiplicand, multiplier, false, log);
+  let res = modified_booth(multiplicand, multiplier, false, log);
   if(res!=null){
     solution.innerHTML=getOutput();
     if(solution.classList.contains('hidden'))
@@ -298,11 +298,11 @@ function modified_booth(num1, num2, standardized=false, log=true){
   }
   wholeToLength(num1, 2*Math.max(num1.whole.length, num2.whole.length)-1);
 
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
 
-  var mults = [];
-  var last_char = "0";
+  let mults = [];
+  let last_char = "0";
   for(let i=num2.whole.length-1; i>=0; i--){
     work1 = "<td>" + num2.whole.charAt(i) + "</td>" + work1;
     if(num2.whole.charAt(i)==last_char){
@@ -321,13 +321,13 @@ function modified_booth(num1, num2, standardized=false, log=true){
   }
   addToOutput("<p>Kodirani mnozilac:<table style=\"border: none;\"><tbody><tr>"+work1+"</tr><tr>"+work2+"</tr></tbody></table></p>");
 
-  var coded_mults = [];
+  let coded_mults = [];
   for(let i = 0; i<mults.length; i+=2){
     coded_mults.unshift(2*mults[i]+mults[i+1]);
   }
 
-  var res = new UOARNumber("0", "0", "0", 2, NumberTypes.TC);
-  var registers = [num1];
+  let res = new UOARNumber("0", "0", "0", 2, NumberTypes.TC);
+  let registers = [num1];
 
   addToOutput("<table style=\"border: none;\"");
   addToOutput("<thead><tr><th>k</th><th>v(k)</th><th>M<<2k</th><th>(M<<2k)v(k)</th></tr></thead>");
@@ -367,24 +367,24 @@ function modified_booth(num1, num2, standardized=false, log=true){
 }
 
 function unsigned_divide_wrapper(log=true) {
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
   clearOutput();
   clearStackTrace();
-  var dividend = document.getElementById('input_operand1').value.trim();
-  var divider = document.getElementById('input_operand2').value.trim();
+  let dividend = document.getElementById('input_operand1').value.trim();
+  let divider = document.getElementById('input_operand2').value.trim();
   if(dividend=="" || divider==""){
     addToStackTrace("unsigned_divide", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
     error.classList.remove('hidden');
     return null;
   }
-  var dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
-  var divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
+  dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
+  divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
   if(dividend===null || divider===null){
     if(dividend===null){
       addToStackTrace("unsigned_divide", "Invalid dividend", log);
@@ -395,10 +395,10 @@ function unsigned_divide_wrapper(log=true) {
     error.classList.remove('hidden');
     return null;
   }
-  var dividend = fromDecimal(dividend, 2, false, true);
-  var divider = fromDecimal(divider, 2, false, true);
+  dividend = fromDecimal(dividend, 2, false, true);
+  divider = fromDecimal(divider, 2, false, true);
 
-  var res = unsigned_divide(dividend, divider, false, log);
+  let res = unsigned_divide(dividend, divider, false, log);
   if(res!=null){
     solution.innerHTML=getOutput();
     if(solution.classList.contains('hidden'))
@@ -423,13 +423,13 @@ function unsigned_divide(num1, num2, standardized=false, log=true){
   num1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
   num2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
   equalizeLength(num1, num2, true, log);
-  var len = num1.sign.length + num1.whole.length;
+  let len = num1.sign.length + num1.whole.length;
 
-  var a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
-  var p = num1;
-  var m = num2;
-  var neg_m = complement(num2);
-  var registers = [a, p];
+  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
+  let p = num1;
+  let m = num2;
+  let neg_m = complement(num2);
+  let registers = [a, p];
 
   addToOutput("<p>");
   addToOutput("P: (" + p.toSigned() + ")2<br>");
@@ -440,8 +440,8 @@ function unsigned_divide(num1, num2, standardized=false, log=true){
   addToOutput("<thead><tr><th>A</th><th>P</th><th>Komentar</th></tr></thead>");
   addToOutput("<tbody>");
   addToOutput("<tr><td class=\"align-right\">" + registers[0].toWhole() + "</td><td>" + registers[1].toWhole() + "</td><td>Init</td></tr>");
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
@@ -469,9 +469,9 @@ function unsigned_divide(num1, num2, standardized=false, log=true){
   addToOutput("</table>");
 
   addToOutput("<p>");
-  var quotient = toDecimal(registers[1], false, false);
+  let quotient = toDecimal(registers[1], false, false);
   addToOutput("Kolicnik: P = (" + registers[1].toWhole() + ")2 = " + quotient.toUnsigned() + "<br>");
-  var rest = toDecimal(registers[0], false ,false);
+  let rest = toDecimal(registers[0], false ,false);
   addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + rest.toUnsigned() + "<br>");
   addToOutput("</p>");
   
@@ -479,24 +479,24 @@ function unsigned_divide(num1, num2, standardized=false, log=true){
 }
 
 function signed_divide_wrapper(log=true) {
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
   clearOutput();
   clearStackTrace();
-  var dividend = document.getElementById('input_operand1').value.trim();
-  var divider = document.getElementById('input_operand2').value.trim();
+  let dividend = document.getElementById('input_operand1').value.trim();
+  let divider = document.getElementById('input_operand2').value.trim();
   if(dividend=="" || divider==""){
     addToStackTrace("signed_divide", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace().last().message+"</p>";
     error.classList.remove('hidden');
     return null;
   }
-  var dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
-  var divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
+  dividend = toUOARNumber(dividend, 10, NumberTypes.SIGNED, false);
+  divider = toUOARNumber(divider, 10, NumberTypes.SIGNED, false);
   if(dividend===null || divider===null){
     if(dividend===null){
       addToStackTrace("signed_divide", "Invalid dividend", log);
@@ -507,10 +507,10 @@ function signed_divide_wrapper(log=true) {
     error.classList.remove('hidden');
     return null;
   }
-  var dividend = fromDecimal(dividend, 2, false, true);
-  var divider = fromDecimal(divider, 2, false, true);
+  dividend = fromDecimal(dividend, 2, false, true);
+  divider = fromDecimal(divider, 2, false, true);
 
-  var res = signed_divide(dividend, divider, false, log);
+  let res = signed_divide(dividend, divider, false, log);
   if(res!=null){
     solution.innerHTML=getOutput();
     if(solution.classList.contains('hidden'))
@@ -531,20 +531,20 @@ function signed_divide(num1, num2, standardized=false, log=true){
   num1 = convertToType(trimSign(num1), NumberTypes.TC, standardized, log);
   num2 = convertToType(trimSign(num2), NumberTypes.TC, standardized, log);
   equalizeLength(num1, num2, true, log);
-  var len = num1.sign.length + num1.whole.length;
+  let len = num1.sign.length + num1.whole.length;
 
-  var a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
-  var p = num1;
-  var m = num2;
-  var neg_m = complement(num2);
-  var registers = [a, p];
+  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, num1.fraction.length);
+  let p = num1;
+  let m = num2;
+  let neg_m = complement(num2);
+  let registers = [a, p];
 
   addToOutput("<p>");
   addToOutput("P: (" + p.toSigned() + ")2<br>");
   addToOutput("M: (" + m.toSigned() + ")2");
   addToOutput("</p>");
 
-  var operation;
+  let operation;
   if(p.sign!=m.sign){
     operation = PLUS;
     addToOutput("<p>A i M su razlicitog znaka => A + M</p>");
@@ -553,14 +553,14 @@ function signed_divide(num1, num2, standardized=false, log=true){
     addToOutput("<p>A i M su istog znaka => A - M</p>");
   }
 
-  var sign = p.sign;
+  let sign = p.sign;
 
   addToOutput("<table style=\"border: none;\">");
   addToOutput("<thead><tr><th>A</th><th>P</th><th>Komentar</th></tr></thead>");
   addToOutput("<tbody>");
   addToOutput("<tr><td class=\"align-right\">" + registers[0].toWhole() + "</td><td>" + registers[1].toWhole() + "</td><td>Init</td></tr>");
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
@@ -588,7 +588,7 @@ function signed_divide(num1, num2, standardized=false, log=true){
   addToOutput("</table>");
 
   addToOutput("<p>");
-  var quotient = convertToSigned(toDecimal(registers[1], false, false));
+  let quotient = convertToSigned(toDecimal(registers[1], false, false));
   if(operation==PLUS){
     quotient = complement(quotient);
     addToOutput("Kolicnik: -P = -(" + registers[1].toWhole() + ")2 = " + quotient.toSigned() + "<br>");
@@ -596,7 +596,7 @@ function signed_divide(num1, num2, standardized=false, log=true){
     addToOutput("Kolicnik: P = (" + registers[1].toWhole() + ")2 = " + quotient.toSigned() + "<br>");
   }
   
-  var rest = convertToSigned(toDecimal(registers[0], false ,false));
+  let rest = convertToSigned(toDecimal(registers[0], false ,false));
   addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + rest.toUnsigned() + "<br>");
   addToOutput("</p>");
   

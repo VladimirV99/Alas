@@ -8,7 +8,6 @@ if (!Array.prototype.last){
 };
 
 function addToOutput(text){
-  console.log('output ' + output + ' ' + text);
   output = output.concat(text + "\n");
 }
 
@@ -40,15 +39,10 @@ function getStackTrace(){
   return stackTrace;
 }
 
-// window.output = output;
-// window.stackTrace = stackTrace;
-window.getOutput = getOutput;
-window.getStackTrace = getStackTrace;
-
 window.addToOutput = addToOutput;
 window.clearOutput = clearOutput;
+window.getOutput = getOutput;
 window.addToStackTrace = addToStackTrace;
 window.clearStackTrace = clearStackTrace;
 window.printStackTrace = printStackTrace;
-
-// module.exports = {clearStackTrace}
+window.getStackTrace = getStackTrace;

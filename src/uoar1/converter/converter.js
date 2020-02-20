@@ -4,16 +4,16 @@ import '../output';
 
 import '../common.css';
 
-export function convertBase(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+function convertBase(log=true){
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
-  var val = document.getElementById('input_number').value;
-  var base1 = document.getElementById('input_base_src').value;
-  var base2 = document.getElementById('input_base_dest').value;
+  let val = document.getElementById('input_number').value;
+  let base1 = document.getElementById('input_base_src').value;
+  let base2 = document.getElementById('input_base_dest').value;
   clearStackTrace();
   clearOutput();
   if(val=="" || base1=="" || base2==""){
@@ -41,7 +41,7 @@ export function convertBase(log=true){
     return null;
   }
 
-  var res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
+  let res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
   if(res===null){
     addToStackTrace("convertBase", "Conversion Error", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -58,7 +58,7 @@ function convertBases(number, base_to, log=true){
   if(number.base==base_to){
     return number;
   }
-  var res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
+  let res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
   if(res===null){
     addToStackTrace("convertBases", "Conversion error, result null", log);
   }
@@ -76,13 +76,12 @@ function toDecimal(number, standardized=false, log=true){
   if(number.base==10){
     return number;
   }
-  var work1 = "";
-  var work2 = "";
-  
+  let work1 = "";
+  let work2 = "";
 
-  var whole = 0;
-  var num_length = number.whole.length-1;
-  var temp;
+  let whole = 0;
+  let num_length = number.whole.length-1;
+  let temp;
   for(let i = 0; i<number.whole.length; i++){
     temp = getValueAt(number.whole, i, log);
     work1 = work1.concat(temp + "*" + number.base + "^" + num_length);
@@ -97,9 +96,9 @@ function toDecimal(number, standardized=false, log=true){
   }
   whole = whole.toString();
 
-  var fraction = 0;
-  var precision = PRECISION_NUMBER / number.base;
-  var base_deg = number.base;
+  let fraction = 0;
+  let precision = PRECISION_NUMBER / number.base;
+  let base_deg = number.base;
   for(let i = 0; i<number.fraction.length; i++){
     temp = getValueAt(number.fraction, i, log);
     work1 = work1.concat(" + " + temp + "*" + number.base + "^(-" + (i+1) + ")");
@@ -110,7 +109,7 @@ function toDecimal(number, standardized=false, log=true){
   }
   fraction = fraction.toString();
   
-  var res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
+  let res = new UOARNumber(number.sign, whole, fraction, 10, number.number_type);
   res = trimNumber(res);
   addToOutput("<p>");
   addToOutput("(" + number.toSigned() + ")" + number.base + " = ");
@@ -135,11 +134,11 @@ function fromDecimal(number, base, standardized=false, log=true){
     return number;
   }
   
-  var work1 = "";
-  var work2 = "";
+  let work1 = "";
+  let work2 = "";
 
-  var whole = "";
-  var whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
+  let whole = "";
+  let whole_dec = baseToDecimalInteger(number.whole, number.base, NumberTypes.UNSIGNED, log);
   if(whole_dec==0){
     whole = "0";
   }else{
@@ -162,7 +161,7 @@ function fromDecimal(number, base, standardized=false, log=true){
     addToOutput("</table>");
   }
   
-  var fraction = "";
+  let fraction = "";
   if(number.fraction!="0"){
     number = fractionToLength(number, PRECISION, log);
     let fraction_dec = baseToDecimalInteger(number.fraction, number.base, NumberTypes.UNSIGNED, log);
@@ -189,20 +188,20 @@ function fromDecimal(number, base, standardized=false, log=true){
     addToOutput("</table>");
   }
 
-  var res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
+  let res = new UOARNumber(number.sign, whole, fraction, base, number.number_type);
   addToOutput("<p>"+res.toSigned()+"</p>");
   return res;
 }
 
 function convertType(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
     error.classList.add('hidden');
-  var val = document.getElementById('input_number').value;
-  var base = document.getElementById('input_base_src').value;
+  let val = document.getElementById('input_number').value;
+  let base = document.getElementById('input_base_src').value;
   clearStackTrace();
   clearOutput();
 
@@ -213,7 +212,7 @@ function convertType(log=true){
     return null;
   }
     
-  var number = toUOARNumber(val, base, NumberTypes.SIGNED, false);
+  let number = toUOARNumber(val, base, NumberTypes.SIGNED, false);
   if(number===null){
     addToStackTrace("convertType", "Invalid number", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -239,5 +238,3 @@ function convertType(log=true){
 
 window.convertBase = convertBase;
 window.convertType = convertType;
-
-// document.getElementById('convertBase').onclick = convertBase;

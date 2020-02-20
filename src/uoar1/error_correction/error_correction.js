@@ -4,8 +4,8 @@ import '../output';
 import '../common.css';
 
 function encodeCRC(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -13,8 +13,8 @@ function encodeCRC(log=true){
   clearStackTrace();
   clearOutput();
 
-  var message = document.getElementById('input_message1').value;
-  var generator = document.getElementById('input_generator').value;
+  let message = document.getElementById('input_message1').value;
+  let generator = document.getElementById('input_generator').value;
   if(message=="" || generator==""){
     addToStackTrace("encodeCRC", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -39,7 +39,7 @@ function encodeCRC(log=true){
     break;
   }
 
-  var res = message + createZeroString(generator.length-1);
+  let res = message + createZeroString(generator.length-1);
   addToOutput("<p>"+res+" % "+generator+" = ");
 
   while(res.length>=generator.length){
@@ -76,8 +76,8 @@ function encodeCRC(log=true){
 }
 
 function decodeCRC(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -85,8 +85,8 @@ function decodeCRC(log=true){
   clearStackTrace();
   clearOutput();
 
-  var message = document.getElementById('input_message1').value;
-  var generator = document.getElementById('input_generator').value;
+  let message = document.getElementById('input_message1').value;
+  let generator = document.getElementById('input_generator').value;
   if(message=="" || generator==""){
     addToStackTrace("decodeCRC", "Empty input", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -111,7 +111,7 @@ function decodeCRC(log=true){
     break;
   }
 
-  var res = message;
+  let res = message;
   while(res.length>=generator.length){
     let temp = "";
     for(let i = 0; i<generator.length; i++){
@@ -158,8 +158,8 @@ function isBinaryInteger(number){
 }
 
 function encodeHammingSEC(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -167,7 +167,7 @@ function encodeHammingSEC(log=true){
   clearStackTrace();
   clearOutput();
 
-  var message = document.getElementById('input_message2').value;
+  let message = document.getElementById('input_message2').value;
   if(message.length!=8){
     addToStackTrace("encodeCRC", "Message must be 8 digits long", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -181,16 +181,16 @@ function encodeHammingSEC(log=true){
     return null;
   }
 
-  var control_bits = 1;
+  let control_bits = 1;
   while(Math.pow(2, control_bits)<=message.length){
     control_bits++;
   }
 
-  var bits = [];
+  let bits = [];
   addToOutput("<p><table style=\"border: none;\">");
   addToOutput("<tbody>");
-  var m_count = message.length;
-  var c_count = control_bits;
+  let m_count = message.length;
+  let c_count = control_bits;
   for(let i = message.length+control_bits; i>0; i--){
     addToOutput("<tr>");
     if((i&(i-1))!=0){
@@ -222,7 +222,7 @@ function encodeHammingSEC(log=true){
   addToOutput("</tbody>");
   addToOutput("</table></p>");
 
-  var res = [];
+  let res = [];
   for(let i = 0; i<control_bits; i++){
     let ones = 0;
     for(let j = 0; j<bits.length; j++){
@@ -266,8 +266,8 @@ function encodeHammingSEC(log=true){
 }
 
 function decodeHammingSEC(log=true){
-  var solution = document.getElementById('solution');
-  var error = document.getElementById('error');
+  let solution = document.getElementById('solution');
+  let error = document.getElementById('error');
   if(!solution.classList.contains('hidden'))
     solution.classList.add('hidden');
   if(!error.classList.contains('hidden'))
@@ -275,7 +275,7 @@ function decodeHammingSEC(log=true){
   clearStackTrace();
   clearOutput();
 
-  var message = document.getElementById('input_message2').value;
+  let message = document.getElementById('input_message2').value;
   if(message.length!=12){
     addToStackTrace("encodeCRC", "Message must be 12 digits long", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -289,13 +289,13 @@ function decodeHammingSEC(log=true){
     return null;
   }
 
-  var control_bits = 4;
+  let control_bits = 4;
 
-  var bits = [];
+  let bits = [];
   addToOutput("<p><table style=\"border: none;\">");
   addToOutput("<tbody>");
-  var m_count = message.length;
-  var c_count = control_bits;
+  let m_count = message.length;
+  let c_count = control_bits;
   for(let i = message.length; i>0; i--){
     addToOutput("<tr>");
     if((i&(i-1))!=0){
@@ -329,13 +329,13 @@ function decodeHammingSEC(log=true){
   addToOutput("</tbody>");
   addToOutput("</table></p>");
 
-  var code = [];
+  let code = [];
   code.push(message.charAt(message.length-control_bits+0));
   code.push(message.charAt(message.length-control_bits+1));
   code.push(message.charAt(message.length-control_bits+2));
   code.push(message.charAt(message.length-control_bits+3));
 
-  var check_code = [];
+  let check_code = [];
   for(let i = 0; i<control_bits; i++){
     let ones = 0;
     for(let j = 0; j<bits.length; j++){
@@ -370,17 +370,17 @@ function decodeHammingSEC(log=true){
   }
   addToOutput("</p>");
 
-  var error = "";
+  let code_error = "";
   for(let i = control_bits-1; i>=0; i--){
-    error = (code[i]==check_code[i] ? "0" : "1") + error;
+    code_error = (code[i]==check_code[i] ? "0" : "1") + code_error;
   }
-  addToOutput("<p>c4c3c2c1 + c4'c3'c2'c1' = " + error + "</p>");
+  addToOutput("<p>c4c3c2c1 + c4'c3'c2'c1' = " + code_error + "</p>");
 
-  var res = message;
+  let res = message;
 
-  var has_error = false;
+  let has_error = false;
   for(let i = 0; i<bits.length; i++){
-    if(error==bits[i]){
+    if(code_error==bits[i]){
       has_error = true;
       res = res.substr(0, message.length-control_bits-i-1) + (res.charAt(message.length-control_bits-i-1)=="0"?"1":"0") + res.substr(message.length-control_bits-i);
       addToOutput("<p>greska u bitu m" + (i+1) + "<br>korekcija: " + res + "</p>");
