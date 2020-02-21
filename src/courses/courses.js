@@ -1,2 +1,2 @@
-import '../common.css';
-import './courses.css';
+import '../common.scss';
+import './courses.scss';

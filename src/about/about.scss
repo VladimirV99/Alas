@@ -1,13 +1,13 @@
-#about, #about th, #about td{
+#about, #about th, #about td {
   border: 1px solid black;
 }
 
-#about{
+#about {
   border-collapse: collapse;
   background-color: #90e0e0;
 }
 
-.bio-main{
+.bio-main {
   margin: 30px 0px 30px 5%;
   width: 55%;
   display: block;
@@ -18,17 +18,17 @@
   text-align: justify;
 }
 
-.bio-aside{
+.bio-aside {
   width:40%;
   padding: 0px 5%;
   margin: 30px 0px;
   float: right;
   display: block;
   box-sizing: border-box;
-}
 
-.bio-aside table{
-  width: 100%;
+  table {
+    width: 100%;
+  }
 }
 
 @media screen and (max-width: 750px) {
@@ -45,7 +45,7 @@
     margin: 30px auto;
   }
 
-  .bio-aside table{
+  .bio-aside table {
     width: 100%;
   }
 }

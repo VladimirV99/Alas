@@ -1,0 +1,63 @@
+.course, .course td, .course th{
+  border: 1px solid black;
+}
+
+.courses{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.course {
+  width: 350px;
+  display: inline-block;
+  border: 0px;
+  margin: 10px 0px;
+  border-collapse: collapse;
+  background-color: #90e0e0;
+
+  tr td:first-child{
+    width: 10%;
+  }
+
+  th {
+    text-align: center;
+    padding: 6px;
+    font-size: 20px;
+    font-weight: bold;
+
+    a {
+      text-decoration: none;
+      color: black;
+    }
+  }
+
+  td {
+    padding: 5px;
+
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+hr.separator{
+  width: 85%;
+  background-color: blue;
+  height: 1px;
+}
+
+@media screen and (max-width: 900px) {
+  .course {
+    width: 300px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .course {
+    width: 90%;
+    margin: 10px auto;
+    margin-bottom: 15px;
+  }
+}

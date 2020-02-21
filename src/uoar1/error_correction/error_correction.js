@@ -1,7 +1,7 @@
 import '../uoar_core';
 import '../output';
 
-import '../common.css';
+import '../common.scss';
 
 function encodeCRC(log=true){
   let solution = document.getElementById('solution');

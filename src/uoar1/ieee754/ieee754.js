@@ -1,8 +1,8 @@
-require('../common.css');
+import '../uoar_core';
+import '../output';
+import '../ieee754';
 
-require('../uoar_core');
-require('../output');
-require('../ieee754');
+import '../common.scss';
 
 function convertToIEEE754(format, log=true){
   let solution = document.getElementById('solution1');

@@ -2,7 +2,7 @@ import '../uoar_core';
 import '../type_converter';
 import '../output';
 
-import '../common.css';
+import '../common.scss';
 
 function convertBase(log=true){
   let solution = document.getElementById('solution');
