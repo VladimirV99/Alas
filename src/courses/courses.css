@@ -1,0 +1,91 @@
+.course th a{
+  text-decoration: none;
+  color: black;
+}
+
+.course, .course td, .course th{
+  border: 1px solid black;
+}
+
+.courses{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.course{
+  width: 350px;
+  display: inline-block;
+  border: 0px;
+  margin: 10px 0px;
+  border-collapse: collapse;
+  background-color: #90e0e0;
+}
+
+.course th{
+  text-align: center;
+  padding: 6px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.course td{
+  padding: 5px;
+}
+
+.course td a{
+  text-decoration: none;
+}
+
+.course tr td:first-child{
+  width: 10%;
+}
+
+hr.separator{
+  width: 85%;
+  background-color: blue;
+  height: 1px;
+}
+
+@media screen and (max-width: 600px) {
+  .nav a{
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding:15px 0;
+    margin: 0px;
+  }
+  .nav ul{
+    padding: 0;
+    margin: 0;
+    float:none;
+    display: block;
+  }
+  .nav ul li{
+    margin:0;
+    padding:0;
+    text-align: center;
+    width: 33.3%;
+  }
+  .nav ul li a{
+    width: 100%;
+    margin:0px;
+    padding:15px 0px;
+    text-align: center;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .course {
+    width: 300px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .course {
+    width: 90%;
+    margin: 10px auto;
+    margin-bottom: 15px;
+  }
+}
