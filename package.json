@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "mocha ./test/main.test.js && webpack --mode production",
     "dev": "webpack --mode development",
-    "start": "webpack-dev-server --mode development"
+    "start": "webpack-dev-server --mode development",
+    "test": "mocha ./test/main.test.js"
   },
   "repository": {
     "type": "git",

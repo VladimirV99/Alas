@@ -1,0 +1,1 @@
+require('./uoar_core.test');
