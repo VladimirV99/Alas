@@ -12,10 +12,11 @@
 .course {
   width: 350px;
   display: inline-block;
-  border: 0px;
+  border: 2px solid black;
+  border-radius: 3px;
   margin: 10px 0px;
   border-collapse: collapse;
-  background-color: #90e0e0;
+  background-color: #70e0e0;
 
   tr td:first-child{
     width: 10%;
@@ -55,8 +56,12 @@ hr.separator{
 }
 
 @media screen and (max-width: 800px) {
+  .courses {
+    display: table;
+  }
+
   .course {
-    width: 90%;
+    width: 100%;
     margin: 10px auto;
     margin-bottom: 15px;
   }

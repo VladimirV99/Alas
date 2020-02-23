@@ -1,10 +1,12 @@
 #about, #about th, #about td {
+  padding: 5px;
   border: 1px solid black;
 }
 
 #about {
+  border: 2px solid black;
   border-collapse: collapse;
-  background-color: #90e0e0;
+  background-color: #70e0e0;
 }
 
 .bio-main {
