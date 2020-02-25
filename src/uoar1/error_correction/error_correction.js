@@ -1,5 +1,5 @@
-import '../uoar_core';
-import '../output';
+import { NumberTypes, createZeroString, addZeroesBefore, numberToBinary } from '../uoar_core';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
 
 import '../common.scss';
 

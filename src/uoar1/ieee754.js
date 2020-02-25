@@ -1,10 +1,15 @@
+import { 
+  NumberTypes, isInBounds, isValidNumber, standardizeUOARNumber, toUOARNumber, toLength, fromDecimal, trimSign, trimNumber, fractionToLength, addZeroesBefore
+} from './uoar_core';
+import { addToStackTrace } from './output';
+
 /** 
  * IEEE754 Format
  * @readonly
  * @typedef {number} IEEE754Format
  * @enum {IEEE754Format}
 */
-const IEEE754Formats = Object.freeze({
+export const IEEE754Formats = Object.freeze({
   BINARY32: 0,
   BINARY64: 1,
   DECIMAL32DPD: 2,
@@ -18,7 +23,7 @@ const IEEE754Formats = Object.freeze({
  * @property {number} exponent Exponent 
  * @property {string} value Value
  */
-class SignificandExponentPair {
+export class SignificandExponentPair {
   constructor(significand, base, exponent, value=""){
     this.significand = significand;
     this.base = base;
@@ -35,12 +40,12 @@ class SignificandExponentPair {
   }
 }
 
-const POS_ZERO = new SignificandExponentPair(null, 0, 0, "+0");
-const NEG_ZERO = new SignificandExponentPair(null, 0, 0, "-0");
-const POS_INF = new SignificandExponentPair(null, 0, 0, "+Inf");
-const NEG_INF = new SignificandExponentPair(null, 0, 0, "-Inf");
-const QNAN = new SignificandExponentPair(null, 0, 0, "qNaN");
-const SNAN = new SignificandExponentPair(null, 0, 0, "sNaN");
+export const POS_ZERO = new SignificandExponentPair(null, 0, 0, "+0");
+export const NEG_ZERO = new SignificandExponentPair(null, 0, 0, "-0");
+export const POS_INF = new SignificandExponentPair(null, 0, 0, "+Inf");
+export const NEG_INF = new SignificandExponentPair(null, 0, 0, "-Inf");
+export const QNAN = new SignificandExponentPair(null, 0, 0, "qNaN");
+export const SNAN = new SignificandExponentPair(null, 0, 0, "sNaN");
 
 /**
  * @typedef {Object} IEEE754Number
@@ -49,7 +54,7 @@ const SNAN = new SignificandExponentPair(null, 0, 0, "sNaN");
  * @property {string} significand Significand
  * @property {IEEE754Format} format Is Special Value
  */
-class IEEE754Number {
+export class IEEE754Number {
   constructor(sign, exponent, significand, format){
     this.sign = sign;
     this.exponent = exponent;
@@ -61,39 +66,39 @@ class IEEE754Number {
   }
 }
 
-const BINARY32_POS_ZERO = new IEEE754Number("0", "00000000", "00000000000000000000000", IEEE754Formats.BINARY32);
-const BINARY32_NEG_ZERO = new IEEE754Number("1", "00000000", "00000000000000000000000", IEEE754Formats.BINARY32);
-const BINARY32_POS_INF = new IEEE754Number("0", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
-const BINARY32_NEG_INF = new IEEE754Number("1", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
-const BINARY32_QNAN = new IEEE754Number("0", "11111111", "01000000000000000000000", IEEE754Formats.BINARY32);
-const BINARY32_SNAN = new IEEE754Number("0", "11111111", "11000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_POS_ZERO = new IEEE754Number("0", "00000000", "00000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_NEG_ZERO = new IEEE754Number("1", "00000000", "00000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_POS_INF = new IEEE754Number("0", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_NEG_INF = new IEEE754Number("1", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_QNAN = new IEEE754Number("0", "11111111", "01000000000000000000000", IEEE754Formats.BINARY32);
+export const BINARY32_SNAN = new IEEE754Number("0", "11111111", "11000000000000000000000", IEEE754Formats.BINARY32);
 
-const BINARY32_MAX_EXPONENT = 127;
-const BINARY32_MIN_EXPONENT = -126;
-const BINARY32_EXCESS = 127;
-const BINARY32_EXPONENT_LENGTH = 8;
-const BINARY32_SIGNIFICAND_LENGTH = 23;
+export const BINARY32_MAX_EXPONENT = 127;
+export const BINARY32_MIN_EXPONENT = -126;
+export const BINARY32_EXCESS = 127;
+export const BINARY32_EXPONENT_LENGTH = 8;
+export const BINARY32_SIGNIFICAND_LENGTH = 23;
 
-const BINARY64_MAX_EXPONENT = 1023;
-const BINARY64_MIN_EXPONENT = -1022;
-const BINARY64_EXCESS = 1023;
-const BINARY64_EXPONENT_LENGTH = 11;
-const BINARY64_SIGNIFICAND_LENGTH = 52;
+export const BINARY64_MAX_EXPONENT = 1023;
+export const BINARY64_MIN_EXPONENT = -1022;
+export const BINARY64_EXCESS = 1023;
+export const BINARY64_EXPONENT_LENGTH = 11;
+export const BINARY64_SIGNIFICAND_LENGTH = 52;
 
-const DECIMAL32_MAX_EXPONENT = 96;
-const DECIMAL32_MIN_EXPONENT = -95;
-const DECIMAL32_EXCESS = 101;
-const DECIMAL32_DIGITS = 7;
-const DECIMAL32_EXPONENT_LENGTH = 11;
-const DECIMAL32_SIGNIFICAND_LENGTH = 20;
-const DECIMAL32_TRIPLET_LENGTH = 10;
+export const DECIMAL32_MAX_EXPONENT = 96;
+export const DECIMAL32_MIN_EXPONENT = -95;
+export const DECIMAL32_EXCESS = 101;
+export const DECIMAL32_DIGITS = 7;
+export const DECIMAL32_EXPONENT_LENGTH = 11;
+export const DECIMAL32_SIGNIFICAND_LENGTH = 20;
+export const DECIMAL32_TRIPLET_LENGTH = 10;
 
-const HEXADECIMAL32_MAX_EXPONENT = 64;
-const HEXADECIMAL32_MIN_EXPONENT = -63;
-const HEXADECIMAL32_EXCESS = 64;
-const HEXADECIMAL32_DIGITS = 6;
-const HEXADECIMAL32_EXPONENT_LENGTH = 7;
-const HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
+export const HEXADECIMAL32_MAX_EXPONENT = 64;
+export const HEXADECIMAL32_MIN_EXPONENT = -63;
+export const HEXADECIMAL32_EXCESS = 64;
+export const HEXADECIMAL32_DIGITS = 6;
+export const HEXADECIMAL32_EXPONENT_LENGTH = 7;
+export const HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
 
 /**
  * Converts a significand and exponent to IEEE754 Binary32
@@ -103,7 +108,7 @@ const HEXADECIMAL32_SIGNIFICAND_LENGTH = 24;
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} significand*2^exponent as IEEE754 Binary32 
  */
-function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
+export function convertToIEEE754Binary32(significand, exponent, standardized=false, log=true){
   if(significand.number_type!=NumberTypes.SIGNED){
     addToStackTrace("convertToIEEE754Binary32", "Significand isn't signed", log);
     return null;
@@ -151,7 +156,7 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} significand*2^exponent as IEEE754 Binary64 
  */
-function convertToIEEE754Binary64(significand, exponent, standardized=false, log=true){
+export function convertToIEEE754Binary64(significand, exponent, standardized=false, log=true){
   if(significand.number_type!=NumberTypes.SIGNED){
     addToStackTrace("convertToIEEE754Binary64", "Significand isn't signed", log);
     return null;
@@ -199,7 +204,7 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} significand*10^exponent as IEEE754 Decimal32 DPD
  */
-function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false, log=true){
+export function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false, log=true){
   if(significand.number_type!=NumberTypes.SIGNED){
     addToStackTrace("convertToIEEE754Decimal32DPD", "Significand isn't signed", log);
     return null;
@@ -260,7 +265,7 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} significand*10^exponent as IEEE754 Decimal32 BID 
  */
-function convertToIEEE754Decimal32BID(significand, exponent, standardized=false, log=true){
+export function convertToIEEE754Decimal32BID(significand, exponent, standardized=false, log=true){
   if(significand.number_type!=NumberTypes.SIGNED){
     addToStackTrace("convertToIEEE754Decimal32BID", "Significand isn't signed", log);
     return null;
@@ -318,7 +323,7 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} significand*16^exponent as IEEE754 Hexadecimal32 
  */
-function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false, log=true){
+export function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false, log=true){
   if(significand.number_type!=NumberTypes.SIGNED){
     addToStackTrace("convertToIEEE754Hexadecimal32", "Significand isn't signed", log);
     return null;
@@ -363,7 +368,7 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
  * @param {boolean} [log=true] Should log
  * @returns {number} Normalization exponent for number
  */
-function normalizeBinary(number, standardized=false, log=true){
+export function normalizeBinary(number, standardized=false, log=true){
   if(!standardized){
     standardizeUOARNumber(number, false);
     if(number===null){
@@ -399,7 +404,7 @@ function normalizeBinary(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {number} Normalization exponent for number
  */
-function normalizeDecimal(number, standardized=false, log=true){
+export function normalizeDecimal(number, standardized=false, log=true){
   if(!standardized){
     standardizeUOARNumber(number, false);
     if(number===null){
@@ -453,7 +458,7 @@ function normalizeDecimal(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {number} Normalization exponent for number
  */
-function normalizeHexadecimal(number, standardized=false, log=true){
+export function normalizeHexadecimal(number, standardized=false, log=true){
   if(!standardized){
     standardizeUOARNumber(number, false);
     if(number===null){
@@ -492,7 +497,7 @@ function normalizeHexadecimal(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Decimal number converted to DPD 
  */
-function decimalToDPD(number, log=true){
+export function decimalToDPD(number, log=true){
   if(!isValidNumber(number, 2, NumberTypes.UNSIGNED)){
     addToStackTrace("decimalToDPD", "Invalid number \"" + number + "\"", log);
     return null;
@@ -507,7 +512,7 @@ function decimalToDPD(number, log=true){
     number = number.substr(number.length-12, 12);
   }
 
-  aei = number.charAt(0) + number.charAt(4) + number.charAt(8);
+  let aei = number.charAt(0) + number.charAt(4) + number.charAt(8);
   if(aei=="000"){
     res = res.concat(number.substr(1,3) + number.substr(5, 3) + "0" + number.substr(9, 3));
   }else if(aei=="001"){
@@ -535,7 +540,7 @@ function decimalToDPD(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} DPD converted to decimal number
  */
-function DPDtoDecimal(number, log=true){
+export function DPDtoDecimal(number, log=true){
   if(!isValidNumber(number, 2, NumberTypes.UNSIGNED)){
     addToStackTrace("DPDtoDecimal", "Invalid number \"" + number + "\"", log);
     return null;
@@ -550,7 +555,7 @@ function DPDtoDecimal(number, log=true){
     number = number.substr(number.length-10, 10);
   }
 
-  vwxst = number.substr(6, 3) + number.substr(3, 2);
+  let vwxst = number.substr(6, 3) + number.substr(3, 2);
   if(vwxst.charAt(0)=="0"){
     res = res.concat("0" + number.substr(0, 3) + "0" + number.substr(3, 3) + "0" + number.substr(7,3));
   }else{
@@ -583,7 +588,7 @@ function DPDtoDecimal(number, log=true){
  * @param {IEEE754Number} number Number to check
  * @returns {boolean} True if number is valid IEEE754, false otherwise 
  */
-function isValidIEEE754(number){
+export function isValidIEEE754(number){
   if(number===null)
     return false;
   if(number.sign.length!=1 || (number.sign!="0" && number.sign!="1"))
@@ -628,7 +633,7 @@ function isValidIEEE754(number){
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} number converted to IEEE754Number
  */
-function toIEEE754Number(number, format, log=true){
+export function toIEEE754Number(number, format, log=true){
   if(number==null){
     addToStackTrace("toIEEE754Number", "Number is null", log);
     return null;
@@ -670,7 +675,7 @@ function toIEEE754Number(number, format, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Special value of the number or null
  */
-function getSpecialValueBinary32(number, log=true){
+export function getSpecialValueBinary32(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.BINARY32)){
     addToStackTrace("getSpecialValueBinary32", "Invalid IEEE754 Binary32 number \"" + number + "\"", log);
     return null;
@@ -697,7 +702,7 @@ function getSpecialValueBinary32(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Special value of number or null
  */
-function getSpecialValueBinary64(number, log=true){
+export function getSpecialValueBinary64(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.BINARY64)){
     addToStackTrace("getSpecialValueBinary64", "Invalid IEEE754 Binary64 number \"" + number + "\"", log);
     return null;
@@ -724,7 +729,7 @@ function getSpecialValueBinary64(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Special value of number or null
  */
-function getSpecialValueDecimal32(number, log=true){
+export function getSpecialValueDecimal32(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32DPD)){
     addToStackTrace("getSpecialValueDecimal32", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
@@ -751,7 +756,7 @@ function getSpecialValueDecimal32(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Object containing significand and exponent
  */
-function convertFromIEEE754Binary32(number, log=true){
+export function convertFromIEEE754Binary32(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.BINARY32)){
     addToStackTrace("convertFromIEEE754Binary32", "Invalid IEEE754 Binary32 number \"" + number + "\"", log);
     return null;
@@ -808,7 +813,7 @@ function convertFromIEEE754Binary32(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Object containing significand and exponent
  */
-function convertFromIEEE754Binary64(number, log=true){
+export function convertFromIEEE754Binary64(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.BINARY64)){
     addToStackTrace("convertFromIEEE754Binary64", "Invalid IEEE754 Binary64 number \"" + number + "\"", log);
     return null;
@@ -865,7 +870,7 @@ function convertFromIEEE754Binary64(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Object containing significand and exponent
  */
-function convertFromIEEE754Decimal32DPD(number, log=true){
+export function convertFromIEEE754Decimal32DPD(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32DPD)){
     addToStackTrace("convertFromIEEE754Decimal32DPD", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
@@ -907,7 +912,7 @@ function convertFromIEEE754Decimal32DPD(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Object containing significand and exponent
  */
-function convertFromIEEE754Decimal32BID(number, log=true){
+export function convertFromIEEE754Decimal32BID(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.DECIMAL32BID)){
     addToStackTrace("convertFromIEEE754Decimal32BID", "Invalid IEEE754 Decimal32 number \"" + number + "\"", log);
     return null;
@@ -948,7 +953,7 @@ function convertFromIEEE754Decimal32BID(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {SignificandExponentPair} Object containing significand and exponent
  */
-function convertFromIEEE754Hexadecimal32(number, log=true){
+export function convertFromIEEE754Hexadecimal32(number, log=true){
   if(!isValidIEEE754(number, IEEE754Formats.HEXADECIMAL32)){
     addToStackTrace("convertFromIEEE754Hexadecimal32", "Invalid IEEE754 Hexadecimal32 number \"" + number + "\"", log);
     return null;
@@ -989,7 +994,7 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} Sum of operands
  */
-function addIEEE754(operand1, operand2, log=true){
+export function addIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("addIEEE754", "Empty Operand", log)
     return null;
@@ -1044,7 +1049,7 @@ function addIEEE754(operand1, operand2, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} Difference of operands
  */
-function subtractIEEE754(operand1, operand2, log=true){
+export function subtractIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("subtractIEEE754", "Empty Operand", log)
     return null;
@@ -1100,7 +1105,7 @@ function subtractIEEE754(operand1, operand2, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} Product of operands
  */
-function multiplyIEEE754(operand1, operand2, log=true){
+export function multiplyIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("multiplyIEEE754", "Empty Operand", log)
     return null;
@@ -1175,7 +1180,7 @@ function multiplyIEEE754(operand1, operand2, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} Division quotient
  */
-function divideIEEE754(operand1, operand2, log=true){
+export function divideIEEE754(operand1, operand2, log=true){
   if(operand1=="" || operand2==""){
     addToStackTrace("divideIEEE754", "Empty Operand", log)
     return null;
@@ -1260,79 +1265,3 @@ function divideIEEE754(operand1, operand2, log=true){
 
   return new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
-
-window.IEEE754Formats = IEEE754Formats;
-window.SignificandExponentPair = SignificandExponentPair;
-
-window.POS_ZERO = POS_ZERO;
-window.NEG_ZERO = NEG_ZERO;
-window.POS_INF = POS_INF;
-window.NEG_INF = NEG_INF;
-window.QNAN = QNAN;
-window.SNAN = SNAN;
-window.IEEE754Number = IEEE754Number;
-
-window.BINARY32_POS_ZERO = BINARY32_POS_ZERO;
-window.BINARY32_NEG_ZERO = BINARY32_NEG_ZERO;
-window.BINARY32_POS_INF = BINARY32_POS_INF;
-window.BINARY32_NEG_INF = BINARY32_NEG_INF;
-window.BINARY32_QNAN = BINARY32_QNAN;
-window.BINARY32_SNAN = BINARY32_SNAN;
-
-window.BINARY32_MAX_EXPONENT = BINARY32_MAX_EXPONENT;
-window.BINARY32_MIN_EXPONENT = BINARY32_MIN_EXPONENT;
-window.BINARY32_EXCESS = BINARY32_EXCESS;
-window.BINARY32_EXPONENT_LENGTH = BINARY32_EXPONENT_LENGTH;
-window.BINARY32_SIGNIFICAND_LENGTH = BINARY32_SIGNIFICAND_LENGTH;
-
-window.BINARY64_MAX_EXPONENT = BINARY64_MAX_EXPONENT;
-window.BINARY64_MIN_EXPONENT = BINARY64_MIN_EXPONENT;
-window.BINARY64_EXCESS = BINARY64_EXCESS;
-window.BINARY64_EXPONENT_LENGTH = BINARY64_EXPONENT_LENGTH;
-window.BINARY64_SIGNIFICAND_LENGTH = BINARY64_SIGNIFICAND_LENGTH;
-
-window.DECIMAL32_MAX_EXPONENT = DECIMAL32_MAX_EXPONENT;
-window.DECIMAL32_MIN_EXPONENT = DECIMAL32_MIN_EXPONENT;
-window.DECIMAL32_EXCESS = DECIMAL32_EXCESS;
-window.DECIMAL32_DIGITS = DECIMAL32_DIGITS;
-window.DECIMAL32_EXPONENT_LENGTH = DECIMAL32_EXPONENT_LENGTH;
-window.DECIMAL32_SIGNIFICAND_LENGTH = DECIMAL32_SIGNIFICAND_LENGTH;
-window.DECIMAL32_TRIPLET_LENGTH = DECIMAL32_TRIPLET_LENGTH;
-
-window.HEXADECIMAL32_MAX_EXPONENT = HEXADECIMAL32_MAX_EXPONENT;
-window.HEXADECIMAL32_MIN_EXPONENT = HEXADECIMAL32_MIN_EXPONENT;
-window.HEXADECIMAL32_EXCESS = HEXADECIMAL32_EXCESS;
-window.HEXADECIMAL32_DIGITS = HEXADECIMAL32_DIGITS;
-window.HEXADECIMAL32_EXPONENT_LENGTH = HEXADECIMAL32_EXPONENT_LENGTH;
-window.HEXADECIMAL32_SIGNIFICAND_LENGTH = HEXADECIMAL32_SIGNIFICAND_LENGTH;
-
-window.convertToIEEE754Binary32 = convertToIEEE754Binary32;
-window.convertToIEEE754Binary64 = convertToIEEE754Binary64;
-window.convertToIEEE754Decimal32DPD = convertToIEEE754Decimal32DPD;
-window.convertToIEEE754Decimal32BID = convertToIEEE754Decimal32BID;
-window.convertToIEEE754Hexadecimal32 = convertToIEEE754Hexadecimal32;
-
-window.normalizeBinary = normalizeBinary;
-window.normalizeDecimal = normalizeDecimal;
-window.normalizeHexadecimal = normalizeHexadecimal;
-
-window.decimalToDPD = decimalToDPD;
-window.DPDtoDecimal = DPDtoDecimal;
-
-window.isValidIEEE754 = isValidIEEE754;
-window.toIEEE754Number = toIEEE754Number;
-
-window.getSpecialValueBinary32 = getSpecialValueBinary32;
-window.getSpecialValueBinary64 = getSpecialValueBinary64;
-window.getSpecialValueDecimal32 = getSpecialValueDecimal32;
-
-window.convertFromIEEE754Binary32 = convertFromIEEE754Binary32;
-window.convertFromIEEE754Binary64 = convertFromIEEE754Binary64;
-window.convertFromIEEE754Decimal32DPD = convertFromIEEE754Decimal32DPD;
-window.convertFromIEEE754Decimal32BID = convertFromIEEE754Decimal32BID;
-window.convertFromIEEE754Hexadecimal32 = convertFromIEEE754Hexadecimal32;
-
-window.addIEEE754 = addIEEE754;
-window.subtractIEEE754 = subtractIEEE754;
-window.multiplyIEEE754 = multiplyIEEE754;
-window.divideIEEE754 = divideIEEE754;

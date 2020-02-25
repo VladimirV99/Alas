@@ -1,12 +1,14 @@
-const ASCII_0 = '0'.charCodeAt(0);
-const ASCII_A = 'A'.charCodeAt(0);
-const PLUS = '+';
-const MINUS = '-';
-const SPACE = ' ';
-const RADIX = ['.', ','];
+import { addToStackTrace } from './output';
 
-const PRECISION = 8;
-const PRECISION_NUMBER = Math.pow(10, PRECISION);
+export const ASCII_0 = '0'.charCodeAt(0);
+export const ASCII_A = 'A'.charCodeAt(0);
+export const PLUS = '+';
+export const MINUS = '-';
+export const SPACE = ' ';
+export const RADIX = ['.', ','];
+
+export const PRECISION = 8;
+export const PRECISION_NUMBER = Math.pow(10, PRECISION);
 
 /** 
  * Number type enum
@@ -14,7 +16,7 @@ const PRECISION_NUMBER = Math.pow(10, PRECISION);
  * @typedef {number} NumberType
  * @enum {NumberType}
 */
-const NumberTypes = Object.freeze({
+export const NumberTypes = Object.freeze({
   UNSIGNED: 0,
   SIGNED: 1,
   SMR: 2,
@@ -29,24 +31,24 @@ const NumberTypes = Object.freeze({
  * @typedef {number} ArithmeticOperation
  * @enum {ArithmeticOperation}
 */
-const ArithmeticOperations = Object.freeze({
+export const ArithmeticOperations = Object.freeze({
   ADDITION: 0,
   SUBTRACTION: 1,
   MULTIPLICATION: 2,
   DIVISION: 3
 });
 
- /**
-  * Shift type enum
-  * @readonly
-  * @typedef {number} ShiftType
-  * @enum {ShiftType}
-  */
- const ShiftTypes = Object.freeze({
-   RIGHT_A: 0,
-   RIGHT_L: 1,
-   LEFT: 2
- });
+/**
+* Shift type enum
+* @readonly
+* @typedef {number} ShiftType
+* @enum {ShiftType}
+*/
+export const ShiftTypes = Object.freeze({
+  RIGHT_A: 0,
+  RIGHT_L: 1,
+  LEFT: 2
+});
 
 /**
  * @typedef {Object} UOARNumber
@@ -56,7 +58,7 @@ const ArithmeticOperations = Object.freeze({
  * @property {number} base
  * @property {NumberType} number_type
  */
-class UOARNumber{
+export class UOARNumber{
   constructor(sign, whole, fraction, base, number_type){
     this.sign = sign;
     this.whole = whole;
@@ -93,7 +95,7 @@ class UOARNumber{
  * @param {number} max Maximum
  * @returns {boolean} True if number is in bounds, false otherwise
  */
-function isInBounds(number, min, max){
+export function isInBounds(number, min, max){
   return number>=min && number<=max;
 }
 
@@ -104,7 +106,7 @@ function isInBounds(number, min, max){
  * @param {boolean} [log=true] Should log errors
  * @returns {number} Character's Decimal Value if Valid, null otherwise.
  */
-function getValueAt(number, index, log=true){
+export function getValueAt(number, index, log=true){
   if(index<0 || number.length <= index){
     addToStackTrace("getValueAt", "Index out of bounds " + index + " in \"" + number + "\"", log);
     return null;
@@ -138,7 +140,7 @@ function getValue(number, log=true){
  * @param {boolean} [log=true] Should log errors
  * @returns {string} If value is valid returns appropriate string, null otherwise
  */
-function toValue(value, log=true){
+export function toValue(value, log=true){
   if(value<0 || value>35){
     addToStackTrace("toValue", "Value Out of Bounds + \"" + value + "\"", log);
     return null;
@@ -179,7 +181,7 @@ function isRadixPoint(character){
  * @param {number} base Base to validate
  * @returns {boolean} is base inside bounds
  */
-function isValidBase(base){
+export function isValidBase(base){
   return base!=null && base>1 && base<36;
 }
 
@@ -315,7 +317,7 @@ function removeSign(number, base, number_type, log=true){
  * @param {NumberType} number_type Type of the number
  * @returns {boolean} True if valid, false otherwise
  */
-function isValidSign(sign, base, number_type){
+export function isValidSign(sign, base, number_type){
   sign = sign.replace(/ /g, '');
   if(sign.length==0){
     if(number_type==NumberTypes.UNSIGNED)
@@ -350,7 +352,7 @@ function isValidSign(sign, base, number_type){
  * @param {UOARNumber} number Number to validate
  * @returns {boolean} true if valid, false otherwise.
  */
-function isValidUOARNumber(number){
+export function isValidUOARNumber(number){
   if(number===null || !isValidBase(number.base) || !isValidSign(number.sign, number.base, number.number_type)){
     return false;
   }
@@ -383,7 +385,7 @@ function isValidUOARNumber(number){
  * @param {NumberType} number_type Type of the number
  * @returns {boolean} true if valid, false otherwise.
  */
-function isValidNumber(number, base, number_type){
+export function isValidNumber(number, base, number_type){
   if(number===null || !isValidBase(base)){
     return false;
   }
@@ -423,7 +425,7 @@ function isValidNumber(number, base, number_type){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number as UOARNumber
  */
-function toUOARNumber(number, base, number_type, log=true){
+export function toUOARNumber(number, base, number_type, log=true){
   if(number==null){
     addToStackTrace("toUOARNumber", "Number is null", log);
     return null;
@@ -455,7 +457,7 @@ function toUOARNumber(number, base, number_type, log=true){
  * @param {UOARNumber} number Number to trim
  * @returns {UOARNumber} Trimmed number
  */
-function trimSign(number){
+export function trimSign(number){
   if(!isValidSign(number.sign, number.base, number.number_type)){
     return null;
   }
@@ -483,7 +485,7 @@ function trimSign(number){
  * @param {UOARNumber} number Number to trim
  * @returns {UOARNumber} Trimmed number 
  */
-function trimNumber(number){
+export function trimNumber(number){
   number.whole = number.whole.replace(/ /g, '');
   number.fraction = number.fraction.replace(/ /g, '');
   switch(number.number_type){
@@ -537,7 +539,7 @@ function trimNumber(number){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Standardized number
  */
-function standardizeUOARNumber(number, log=true){
+export function standardizeUOARNumber(number, log=true){
   if(!isValidBase(number.base)){
     addToStackTrace("standardizeUOARNumber", "Invalid base \"" + number.base + "\"", log);
     return null;
@@ -561,7 +563,7 @@ function standardizeUOARNumber(number, log=true){
  * @param {boolean} [standardized=false] Treat as standardized 
  * @returns {number} 1 if positive, -1 if negative, 0 if invalid
  */
-function getSignMultiplierForNumber(number, standardized=false){
+export function getSignMultiplierForNumber(number, standardized=false){
   return getSignMultiplier(number.sign, number.base, number.number_type, standardized);
 }
 
@@ -661,7 +663,7 @@ function UOARNumberToDecimalInteger(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {number} Number converted to an integer
  */
-function baseToDecimalInteger(number, base, number_type, log=true){
+export function baseToDecimalInteger(number, base, number_type, log=true){
   number = number.split(/[.,]/)[0];
   let sign = getSign(number, base, number_type, log);
   let whole = removeSign(number, base, number_type, log);
@@ -676,7 +678,7 @@ function baseToDecimalInteger(number, base, number_type, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to base 10
  */
-function toDecimal(number, standardized=false, log=true){
+export function toDecimal(number, standardized=false, log=true){
   if(number===null){
     addToStackTrace("toDecimal", "Number is null", log);
     return null;
@@ -741,7 +743,7 @@ function toDecimal(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to specified base
  */
-function fromDecimal(number, base, standardized=false, log=true){
+export function fromDecimal(number, base, standardized=false, log=true){
   if(number===null){
     addToStackTrace("fromDecimal", "Number is null", log);
     return null;
@@ -803,7 +805,7 @@ function fromDecimal(number, base, standardized=false, log=true){
     }
   }
 
-  res = new UOARNumber(sign, whole, fraction, base, number.number_type);
+  let res = new UOARNumber(sign, whole, fraction, base, number.number_type);
   if(toComplement){
     res = complement(res, true, log);
   }
@@ -818,7 +820,7 @@ function fromDecimal(number, base, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to base base_to
  */
-function convertBases(number, base_to, standardized=false, log=true){
+export function convertBases(number, base_to, standardized=false, log=true){
   if(number===null){
     addToStackTrace("convertBases", "Number is null", log);
     return null;
@@ -855,7 +857,7 @@ function convertBases(number, base_to, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
-function toLength(number, n, m, log=true){
+export function toLength(number, n, m, log=true){
   if(number===null){
     addToStackTrace("toLength", "Number is null", log);
     return null;
@@ -876,7 +878,7 @@ function toLength(number, n, m, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
-function wholeToLength(number, length, log=true){
+export function wholeToLength(number, length, log=true){
   if(number===null){
     addToStackTrace("wholeToLength", "Number is null", log);
     return null;
@@ -909,7 +911,7 @@ function wholeToLength(number, length, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number trimmed to specified length
  */
-function fractionToLength(number, length, log=true){
+export function fractionToLength(number, length, log=true){
   if(number===null){
     addToStackTrace("fractionToLength", "Number is null", log);
     return null;
@@ -933,7 +935,7 @@ function fractionToLength(number, length, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number with the specified length with zeroes at the end
  */
-function addZeroesAfter(number, base, number_type, length, log=true){
+export function addZeroesAfter(number, base, number_type, length, log=true){
   if(number===null){
     addToStackTrace("addZeroesAfter", "Number is null", log);
     return null;
@@ -955,7 +957,7 @@ function addZeroesAfter(number, base, number_type, length, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number with the specified length with zeroes at the beginning
  */
-function addZeroesBefore(number, base, number_type, length, log=true){
+export function addZeroesBefore(number, base, number_type, length, log=true){
   if(number===null){
     addToStackTrace("addZeroesBefore", "Number is null", log);
     return null;
@@ -977,7 +979,7 @@ function addZeroesBefore(number, base, number_type, length, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Digit converted to binary
  */
-function digitToBinary(number, index, log=true){
+export function digitToBinary(number, index, log=true){
   let val = getValueAt(number, index, false);
   if(val===null){
     addToStackTrace("digitToBinary", "Invalid digit \"" + number.charAt(index) + "\"", log);
@@ -997,7 +999,7 @@ function digitToBinary(number, index, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted to binary
  */
-function numberToBinary(number, log=true){
+export function numberToBinary(number, log=true){
   if(number<0){
     addToStackTrace("numberToBinary", "Cannot convert negative number", log);
     return null;
@@ -1040,7 +1042,7 @@ function binaryToDigit(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted to 8421 
  */
-function decimalTo8421(number, log=true){
+export function decimalTo8421(number, log=true){
   let res = "";
   let temp;
   for(let i=0; i<number.length; i++){
@@ -1061,7 +1063,7 @@ function decimalTo8421(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {string} Number converted to decimal 
  */
-function decimalFrom8421(number, log=true){
+export function decimalFrom8421(number, log=true){
   let res = "";
   let temp;
   for(let i=0; i<number.length; i+=4){
@@ -1088,7 +1090,7 @@ function decimalFrom8421(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {boolean} True if first number is greater, false otherwise
  */
-function isGreater(number1, number2, standardized=false, log=true){
+export function isGreater(number1, number2, standardized=false, log=true){
   if(number1.base!=number2.base){
     addToStackTrace("isGreater", "Can't compare numbers. Bases are not equal", log);
     return null;
@@ -1176,7 +1178,7 @@ function getAbsoluteValue(number){
  * @param {boolean} [standardized=false] Treat as standardized 
  * @param {boolean} [log=true] Should log
  */
-function equalizeLength(num1, num2, standardized=false, log=true){
+export function equalizeLength(num1, num2, standardized=false, log=true){
   if(num1.number_type!=num2.number_type){
     addToStackTrace("equalizeLength", "Numbers are not same type", log);
     return null;
@@ -1211,7 +1213,7 @@ function equalizeLength(num1, num2, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Sum of the two numbers 
  */
-function add(add1, add2, number_type, standardized=false, log=true){
+export function add(add1, add2, number_type, standardized=false, log=true){
   if(!isValidUOARNumber(add1) || !isValidUOARNumber(add2)){
     addToStackTrace("add", "Numbers are invalid", log);
     return null;
@@ -1357,7 +1359,7 @@ function add(add1, add2, number_type, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Complemented number
  */
-function complement(number, standardized=false, log=true){
+export function complement(number, standardized=false, log=true){
   if(!isValidUOARNumber(number)){
     addToStackTrace("complement", "Number is invalid", log);
     return null;
@@ -1386,6 +1388,7 @@ function complement(number, standardized=false, log=true){
     case NumberTypes.TC:
       carry = 1;
     case NumberTypes.OC:
+      let temp;
       for(let i=number.fraction.length-1; i>=0; i--){
         temp = base_complement - getValueAt(number.fraction, i, log) + carry;
         complement_fraction = toValue(temp%number.base) + complement_fraction;
@@ -1411,7 +1414,7 @@ function complement(number, standardized=false, log=true){
  * @param {number} length Length of the string
  * @returns {string} Constant string of specified length
  */
-function createConstantString(constant, length){
+export function createConstantString(constant, length){
   if(constant.length != 1)
     return null;
   let res = "";
@@ -1426,7 +1429,7 @@ function createConstantString(constant, length){
  * @param {number} length Length of the string
  * @returns {string} Zero string of specified length
  */
-function createZeroString(length){
+export function createZeroString(length){
   return createConstantString("0", length);
 }
 
@@ -1436,7 +1439,7 @@ function createZeroString(length){
  * @param {number} by Number of places to shift
  * @param {ShiftType} shift_type Shift type 
  */
-function shift(numbers, by, shift_type){
+export function shift(numbers, by, shift_type){
   let line = "";
   let ptr = 0;
   for(let i = 0; i<numbers.length; i++){
@@ -1472,63 +1475,3 @@ function shift(numbers, by, shift_type){
     ptr += frac_len;
   }
 }
-
-window.ASCII_0 = ASCII_0;
-window.ASCII_A = ASCII_A;
-window.PLUS = PLUS;
-window.MINUS = MINUS;
-window.SPACE = SPACE;
-window.RADIX = RADIX;
-
-window.PRECISION = PRECISION;
-window.PRECISION_NUMBER = PRECISION_NUMBER;
-
-window.NumberTypes = NumberTypes;
-window.ArithmeticOperations = ArithmeticOperations;
-window.ShiftTypes = ShiftTypes;
-window.UOARNumber = UOARNumber;
-
-window.isInBounds = isInBounds;
-window.getValueAt = getValueAt;
-window.getValue = getValue;
-window.toValue = toValue;
-window.isRadixPointAt = isRadixPointAt;
-window.isRadixPoint = isRadixPoint;
-window.isValidBase = isValidBase;
-// window.isSignAt = isSignAt;
-// window.isSign = isSign;
-// window.getSignEnd = getSignEnd;
-// window.getSign = getSign;
-// window.removeSign = removeSign;
-// window.isValidSign = isValidSign;
-window.isValidUOARNumber = isValidUOARNumber;
-window.isValidNumber = isValidNumber;
-window.toUOARNumber = toUOARNumber;
-window.trimSign = trimSign;
-window.trimNumber = trimNumber;
-window.standardizeUOARNumber = standardizeUOARNumber;
-window.getSignMultiplierForNumber = getSignMultiplierForNumber;
-// window.getSignMultiplier = getSignMultiplier;
-window.UOARNumberToDecimalInteger = UOARNumberToDecimalInteger;
-window.baseToDecimalInteger = baseToDecimalInteger;
-window.toDecimal = toDecimal;
-window.fromDecimal = fromDecimal;
-window.convertBases = convertBases;
-window.toLength = toLength;
-window.wholeToLength = wholeToLength;
-window.fractionToLength = fractionToLength;
-window.addZeroesAfter = addZeroesAfter;
-window.addZeroesBefore = addZeroesBefore;
-window.digitToBinary = digitToBinary;
-window.numberToBinary = numberToBinary;
-window.binaryToDigit = binaryToDigit;
-window.decimalTo8421 = decimalTo8421;
-window.decimalFrom8421 = decimalFrom8421;
-// window.isGreater = isGreater;
-// window.getAbsoluteValue = getAbsoluteValue;
-window.equalizeLength = equalizeLength;
-window.add = add;
-window.complement = complement;
-window.shift = shift;
-window.createConstantString = createConstantString;
-window.createZeroString = createZeroString;

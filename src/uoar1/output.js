@@ -7,42 +7,34 @@ if (!Array.prototype.last){
   };
 };
 
-function addToOutput(text){
+export function addToOutput(text){
   output = output.concat(text + "\n");
 }
 
-function clearOutput(){
+export function clearOutput(){
   output = "";
 }
 
-function getOutput(){
+export function getOutput(){
   return output;
 }
 
-function addToStackTrace(source, message, log=true){
+export function addToStackTrace(source, message, log=true){
   stackTrace.push({"source": source, "message": message});
   if(log)
     console.error(source + ": " + message);
 }
 
-function clearStackTrace(){
+export function clearStackTrace(){
   stackTrace = [];
 }
 
-function printStackTrace(){
+export function printStackTrace(){
   for(item of stackTrace){
     console.log(stackTrace.source + ": " + stackTrace.message);
   }
 }
 
-function getStackTrace(){
+export function getStackTrace(){
   return stackTrace;
 }
-
-window.addToOutput = addToOutput;
-window.clearOutput = clearOutput;
-window.getOutput = getOutput;
-window.addToStackTrace = addToStackTrace;
-window.clearStackTrace = clearStackTrace;
-window.printStackTrace = printStackTrace;
-window.getStackTrace = getStackTrace;

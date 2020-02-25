@@ -1,6 +1,17 @@
-import '../uoar_core';
-import '../output';
-import '../ieee754';
+import { 
+  NumberTypes, ArithmeticOperations, UOARNumber, PLUS, MINUS, isInBounds, standardizeUOARNumber, toUOARNumber, fromDecimal, toDecimal, digitToBinary, trimNumber,
+  baseToDecimalInteger, numberToBinary, wholeToLength, fractionToLength, trimSign, toLength, addZeroesBefore, decimalTo8421, decimalFrom8421, add, isGreater
+} from '../uoar_core';
+import { 
+  IEEE754Formats, IEEE754Number, SignificandExponentPair,
+  BINARY32_MAX_EXPONENT, BINARY32_MIN_EXPONENT, BINARY32_EXCESS, BINARY32_EXPONENT_LENGTH, BINARY32_SIGNIFICAND_LENGTH,
+  BINARY64_MAX_EXPONENT, BINARY64_MIN_EXPONENT, BINARY64_EXCESS, BINARY64_EXPONENT_LENGTH, BINARY64_SIGNIFICAND_LENGTH,
+  DECIMAL32_MAX_EXPONENT, DECIMAL32_MIN_EXPONENT, DECIMAL32_EXCESS, DECIMAL32_DIGITS, DECIMAL32_EXPONENT_LENGTH, DECIMAL32_SIGNIFICAND_LENGTH, DECIMAL32_TRIPLET_LENGTH,
+  HEXADECIMAL32_MAX_EXPONENT, HEXADECIMAL32_MIN_EXPONENT, HEXADECIMAL32_EXCESS, HEXADECIMAL32_DIGITS, HEXADECIMAL32_EXPONENT_LENGTH, HEXADECIMAL32_SIGNIFICAND_LENGTH,
+  normalizeBinary, normalizeDecimal, normalizeHexadecimal, decimalToDPD, DPDtoDecimal, toIEEE754Number, isValidIEEE754,
+  getSpecialValueBinary32, getSpecialValueBinary64, getSpecialValueDecimal32
+} from '../ieee754';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
 
 import '../common.scss';
 
@@ -704,8 +715,8 @@ function doOperation(operation, log=true){
   clearOutput();
   addToOutput("<hr>");
 
-  operand1 = document.getElementById("input_operand1").value;
-  operand2 = document.getElementById("input_operand2").value;
+  let operand1 = document.getElementById("input_operand1").value;
+  let operand2 = document.getElementById("input_operand2").value;
   if(operand1=="" || operand2==""){
     addToStackTrace("doOperation", "Empty Operand", log);
     error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
@@ -832,7 +843,7 @@ function addIEEE754(operand1, operand2, log=true){
   return res;
 }
 
-function subtractIEEE754(log=true){
+function subtractIEEE754(operand1, operand2, log=true){
   if(operand1==null || operand2==null || operand1.format!=IEEE754Formats.BINARY32 || operand2.format!=IEEE754Formats.BINARY32 || !isValidIEEE754(operand1) || !isValidIEEE754(operand2)){
     addToStackTrace("subtractIEEE754", "Invalid operands", log);
     return null;
@@ -1121,3 +1132,5 @@ function divideIEEE754(operand1, operand2, log=true){
 window.convertToIEEE754 = convertToIEEE754;
 window.convertFromIEEE754 = convertFromIEEE754;
 window.doOperation = doOperation;
+window.IEEE754Formats = IEEE754Formats;
+window.ArithmeticOperations = ArithmeticOperations;

@@ -1,3 +1,6 @@
+import { PLUS, MINUS, UOARNumber, NumberTypes, standardizeUOARNumber, complement } from './uoar_core';
+import { addToStackTrace } from './output';
+
 /**
  * Converts given number to the specified type
  * @param {UOARNumber} number Number to convert 
@@ -6,7 +9,7 @@
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to the specified type
  */
-function convertToType(number, type, standardized=false, log=true) {
+export function convertToType(number, type, standardized=false, log=true) {
   if (number.number_type == type)
     return number;
   switch (type) {
@@ -31,7 +34,7 @@ function convertToType(number, type, standardized=false, log=true) {
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to an unsigned number
  */
-function convertToUnsigned(number, standardized=false, log=true){
+export function convertToUnsigned(number, standardized=false, log=true){
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number===null){
@@ -78,7 +81,7 @@ function convertToUnsigned(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to a signed number
  */
-function convertToSigned(number, standardized=false, log=true){
+export function convertToSigned(number, standardized=false, log=true){
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number===null){
@@ -124,7 +127,7 @@ function convertToSigned(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to Signed Magnitude Representation
  */
-function convertToSMR(number, standardized=false, log=true){
+export function convertToSMR(number, standardized=false, log=true){
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number===null){
@@ -168,7 +171,7 @@ function convertToSMR(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to One's complement 
  */
-function convertToOC(number, standardized=false, log=true){
+export function convertToOC(number, standardized=false, log=true){
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number===null){
@@ -218,7 +221,7 @@ function convertToOC(number, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to Two's complement 
  */
-function convertToTC(number, standardized=false, log=true){
+export function convertToTC(number, standardized=false, log=true){
   if(!standardized){
     number = standardizeUOARNumber(number.copy(), log);
     if(number===null){
@@ -321,10 +324,3 @@ function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negati
   
   return new UOARNumber(sign, whole, fraction, number.base, number.number_type);
 }
-
-window.convertToType = convertToType;
-window.convertToUnsigned = convertToUnsigned;
-window.convertToSigned = convertToSigned;
-window.convertToSMR = convertToSMR;
-window.convertToOC = convertToOC;
-window.convertToTC = convertToTC;
