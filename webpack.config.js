@@ -10,7 +10,7 @@ module.exports = {
     index: './src/index/index.js',
     courses: './src/courses/courses.js',
     about: './src/about/about.js',
-    arithmetics: './src/uoar1/arithmetics/arithmetics.js',
+    arithmetic: './src/uoar1/arithmetic/arithmetic.js',
     converter: './src/uoar1/converter/converter.js',
     error_correction: './src/uoar1/error_correction/error_correction.js',
     ieee754: './src/uoar1/ieee754/ieee754.js',
@@ -55,10 +55,10 @@ module.exports = {
       filename: 'about.html'
     }),
     new HtmlWebpackPlugin({
-      template: 'src/uoar1/arithmetics/arithmetics.html',
+      template: 'src/uoar1/arithmetic/arithmetic.html',
       inject: true,
-      chunks: ['arithmetics'],
-      filename: 'uoar1/arithmetics.html'
+      chunks: ['arithmetic'],
+      filename: 'uoar1/arithmetic.html'
     }),
     new HtmlWebpackPlugin({
       template: 'src/uoar1/converter/converter.html',

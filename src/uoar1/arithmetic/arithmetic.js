@@ -1,9 +1,12 @@
 import { 
-  UOARNumber, NumberTypes, ShiftTypes, PLUS, MINUS, fromDecimal, trimSign, toUOARNumber, toDecimal,
-  equalizeLength, getSignMultiplierForNumber, wholeToLength, toLength, createZeroString, shift, add, complement
-} from '../uoar_core';
-import { convertToType, convertToSigned } from '../type_converter';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
+  UOARNumber, NumberTypes, PLUS, MINUS, trimSign, toUOARNumber,
+  equalizeLength, getSignMultiplierForNumber, wholeToLength, toLength
+} from '../uoar_core.mjs';
+import { ShiftTypes, add, complement, shift } from '../uoar_arithmetic.mjs';
+import { fromDecimal, toDecimal } from '../base_converter.mjs';
+import { convertToType, convertToSigned } from '../type_converter.mjs';
+import { createZeroString } from '../util.mjs';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
 
 import '../common.scss';
 

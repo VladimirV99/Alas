@@ -1,9 +1,11 @@
 import { 
-  UOARNumber, NumberTypes, PRECISION, PRECISION_NUMBER, isValidBase, isValidNumber, getValueAt, toValue,
-  toUOARNumber, baseToDecimalInteger, fractionToLength, trimNumber, standardizeUOARNumber
-} from '../uoar_core';
-import { convertToSMR, convertToOC, convertToTC } from '../type_converter';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
+  UOARNumber, NumberTypes, PRECISION, PRECISION_NUMBER, isValidNumber, getValueAt, toValue,
+  toUOARNumber, fractionToLength, trimNumber, standardizeUOARNumber
+} from '../uoar_core.mjs';
+import { baseToDecimalInteger } from '../base_converter.mjs';
+import { convertToSMR, convertToOC, convertToTC } from '../type_converter.mjs';
+import { isValidBase } from '../util.mjs';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
 
 import '../common.scss';
 

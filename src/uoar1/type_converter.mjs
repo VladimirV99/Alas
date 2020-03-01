@@ -1,5 +1,6 @@
-import { PLUS, MINUS, UOARNumber, NumberTypes, standardizeUOARNumber, complement } from './uoar_core';
-import { addToStackTrace } from './output';
+import { PLUS, MINUS, UOARNumber, NumberTypes, toValue, standardizeUOARNumber } from './uoar_core.mjs';
+import { complement, addToLowestPoint } from './uoar_arithmetic.mjs';
+import { addToStackTrace } from './output.mjs';
 
 /**
  * Converts given number to the specified type
@@ -262,65 +263,4 @@ export function convertToTC(number, standardized=false, log=true){
       return number;
   }
   return null;
-}
-
-/**
- * Adds toAdd to the lowest point of number
- * @param {UOARNumber} number Number to add to
- * @param {number} toAdd Number to add
- * @param {boolean} [log=true] Should log
- * @return {UOARNumber} Number with added toAdd
- */
-function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negative numbers
-  let sign = number.sign;
-  let whole = "";
-  let fraction = "";
-  let carry = toAdd;
-  let temp;
-  
-  for(let i=number.fraction.length-1; i>=0; i--){
-    temp = getValueAt(number.fraction, i, log) + carry;
-    if(temp<0){
-      carry = -Math.ceil(-temp/number.base);
-      fraction = (temp-carry*number.base) + fraction;
-    }else{
-      fraction = toValue(temp%number.base) + fraction;
-      carry = Math.floor(temp/number.base);
-    }
-  }
-  for(let i=number.whole.length-1; i>=0; i--){
-    temp = getValueAt(number.whole, i, log) + carry;
-    if(temp<0){
-      carry = -Math.ceil(-temp/number.base);
-      whole = (temp-carry*number.base) + whole;
-    }else{
-      whole = toValue(temp%number.base) + whole;
-      carry = Math.floor(temp/number.base);
-    }
-  }
-
-  if(carry<0){
-    return null;
-  }else if(carry>0){
-    switch(number.number_type){
-      case NumberTypes.UNSIGNED:
-      case NumberTypes.SIGNED:
-        whole = toValue(carry, log) + whole;
-        break;
-      case NumberTypes.OC:
-      case NumberTypes.TC:
-        for(let i=number.sign.length-1; i>=0; i--){
-          temp = getValueAt(number.whole, i, log) + carry;
-          sign = toValue(temp%number.base) + sign;
-          carry = Math.floor(temp/number.base);
-        }
-        sign_end = getSignEnd(number.sign, number.base, number.number_type, log);
-        whole = sign.substr(sign_end) + whole;
-        sign = sign.substr(0, sign_end);
-        break;
-        
-    }
-  }
-  
-  return new UOARNumber(sign, whole, fraction, number.base, number.number_type);
 }

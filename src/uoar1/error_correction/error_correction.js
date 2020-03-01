@@ -1,5 +1,7 @@
-import { NumberTypes, createZeroString, addZeroesBefore, numberToBinary } from '../uoar_core';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
+import { NumberTypes, addZeroesBefore } from '../uoar_core.mjs';
+import { numberToBinary } from '../base_converter.mjs';
+import { createZeroString } from '../util.mjs';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
 
 import '../common.scss';
 

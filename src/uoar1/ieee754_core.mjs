@@ -1,7 +1,9 @@
 import { 
-  NumberTypes, isInBounds, isValidNumber, standardizeUOARNumber, toUOARNumber, toLength, fromDecimal, trimSign, trimNumber, fractionToLength, addZeroesBefore
-} from './uoar_core';
-import { addToStackTrace } from './output';
+  NumberTypes, isValidNumber, standardizeUOARNumber, toUOARNumber, toLength, trimSign, trimNumber, fractionToLength, addZeroesBefore
+} from './uoar_core.mjs';
+import { fromDecimal, decimalFrom8421, decimalTo8421 } from './base_converter.mjs';
+import { isInBounds } from './util.mjs'; 
+import { addToStackTrace } from './output.mjs';
 
 /** 
  * IEEE754 Format

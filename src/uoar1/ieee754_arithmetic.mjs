@@ -1,11 +1,24 @@
-import { 
-  NumberTypes, toUOARNumber, toLength, fromDecimal, baseToDecimalInteger, trimSign, trimNumber, fractionToLength, add, normalizeBinary
-} from './uoar_core';
+import { NumberTypes, toUOARNumber, toLength, trimSign, trimNumber, fractionToLength } from './uoar_core.mjs';
+import { fromDecimal, baseToDecimalInteger } from './base_converter.mjs';
+import { add } from './uoar_arithmetic.mjs';
 import { 
   IEEE754Number, POS_ZERO, NEG_ZERO, POS_INF, NEG_INF, QNAN, SNAN, IEEE754Formats, 
-  BINARY32, BINARY32_SPECIAL_VALUES, toIEEE754Number, getSpecialValueBinary32
-} from './ieee754_core';
-import { addToStackTrace } from './output';
+  BINARY32, BINARY32_SPECIAL_VALUES, toIEEE754Number, getSpecialValueBinary32, normalizeBinary
+} from './ieee754_core.mjs';
+import { addToStackTrace } from './output.mjs';
+
+/** 
+ * Arithmetic operations
+ * @readonly
+ * @typedef {number} ArithmeticOperation
+ * @enum {ArithmeticOperation}
+*/
+export const ArithmeticOperations = Object.freeze({
+  ADDITION: 0,
+  SUBTRACTION: 1,
+  MULTIPLICATION: 2,
+  DIVISION: 3
+});
 
 /**
  * Adds two IEEE754 binary32 numbers

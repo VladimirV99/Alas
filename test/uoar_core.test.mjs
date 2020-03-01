@@ -1,6 +1,7 @@
-let expect = require('chai').expect;
+import chai from 'chai';
+const expect = chai.expect;
 
-require('../src/uoar1/uoar_core');
+import { UOARNumber, NumberTypes } from '../src/uoar1/uoar_core.mjs';
 
 describe('UOAR Core', function() {
 

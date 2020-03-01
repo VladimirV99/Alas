@@ -1,13 +1,17 @@
 import { 
-  NumberTypes, ArithmeticOperations, UOARNumber, PLUS, MINUS, isInBounds, standardizeUOARNumber, toUOARNumber, fromDecimal, toDecimal, digitToBinary, trimNumber,
-  baseToDecimalInteger, numberToBinary, wholeToLength, fractionToLength, trimSign, toLength, addZeroesBefore, decimalTo8421, decimalFrom8421, add, isGreater, createZeroString
-} from '../uoar_core';
+  NumberTypes, UOARNumber, PLUS, MINUS, standardizeUOARNumber, toUOARNumber, trimNumber,
+  wholeToLength, fractionToLength, trimSign, toLength, addZeroesBefore
+} from '../uoar_core.mjs';
+import { add, isGreater } from '../uoar_arithmetic.mjs';
+import { baseToDecimalInteger, fromDecimal, toDecimal, digitToBinary, numberToBinary, decimalTo8421, decimalFrom8421 } from '../base_converter.mjs';
 import { 
   IEEE754Formats, IEEE754Number, SignificandExponentPair, BINARY32, BINARY64, DECIMAL32, HEXADECIMAL32,
   normalizeBinary, normalizeDecimal, normalizeHexadecimal, decimalToDPD, DPDtoDecimal, toIEEE754Number, isValidIEEE754,
   getSpecialValueBinary32, getSpecialValueBinary64, getSpecialValueDecimal32, BINARY32_SPECIAL_VALUES
-} from '../ieee754_core';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output';
+} from '../ieee754_core.mjs';
+import { ArithmeticOperations } from '../ieee754_arithmetic.mjs';
+import { isInBounds, createZeroString } from '../util.mjs';
+import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
 
 import '../common.scss';
 

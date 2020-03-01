@@ -1,0 +1,1 @@
+import './uoar_core.test.mjs';
