@@ -1,1 +1,1 @@
-import './uoar_core.test.mjs';
+import './uoar/uoar_core.test.mjs';

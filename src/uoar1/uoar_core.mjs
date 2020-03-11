@@ -3,10 +3,10 @@ import { addToStackTrace } from './output.mjs';
 
 const ASCII_0 = '0'.charCodeAt(0);
 const ASCII_A = 'A'.charCodeAt(0);
+const SPACE = ' ';
+const RADIX = ['.', ','];
 export const PLUS = '+';
 export const MINUS = '-';
-export const SPACE = ' ';
-export const RADIX = ['.', ','];
 
 export const PRECISION = 8;
 export const PRECISION_NUMBER = Math.pow(10, PRECISION);
@@ -36,22 +36,22 @@ export const NumberTypes = Object.freeze({
  */
 export class UOARNumber{
   constructor(sign, whole, fraction, base, number_type){
-    this.sign = sign;
-    this.whole = whole;
-    this.fraction = fraction;
+    this.sign = sign.trim();
+    this.whole = whole.trim();
+    this.fraction = fraction.trim();
     this.base = base;
     this.number_type = number_type;
   }
   toSigned(){
     let res = this.sign + this.whole;
-    if(this.fraction!="" && this.fraction!="0"){
+    if(this.fraction!=""){
       res = res.concat("." + this.fraction);
     }
     return res;
   }
   toUnsigned(){
     let res = this.whole;
-    if(this.fraction!="" && this.fraction!="0"){
+    if(this.fraction!=""){
       res = res.concat("." + this.fraction);
     }
     return res;
@@ -150,7 +150,6 @@ function isRadixPoint(character){
  * @returns {boolean} true if number has a sign at index, false otherwise
  */
 function isSignAt(number, base, number_type, index){
-  number = number.replace(/ /g, '');
   if(!isValidBase(base) || number.length<=index)
     return null;
   let temp = number.charAt(index);
@@ -244,7 +243,7 @@ export function getSign(number, base, number_type, log=true){
         return null;
     }
   }
-  return number.substr(0, sign_end);
+  return number.substr(0, sign_end).replace(/ /g, '');
 }
 
 /**
@@ -276,10 +275,7 @@ export function removeSign(number, base, number_type, log=true){
 export function isValidSign(sign, base, number_type){
   sign = sign.replace(/ /g, '');
   if(sign.length==0){
-    if(number_type==NumberTypes.UNSIGNED)
-      return true;
-    else
-      return false;
+    return number_type==NumberTypes.UNSIGNED;
   }
   switch(number_type){
     case NumberTypes.SIGNED:
@@ -300,7 +296,64 @@ export function isValidSign(sign, base, number_type){
           return false;
       }
       return true;
+    default:
+      return false;
   }
+}
+
+/**
+ * Gets sign multiplier of a number
+ * @param {UOARNumber} number Number to operate on
+ * @param {boolean} [standardized=false] Treat as standardized 
+ * @returns {number} 1 if positive, -1 if negative, 0 if invalid
+ */
+export function getSignMultiplierForNumber(number, standardized=false){
+  return getSignMultiplier(number.sign, number.base, number.number_type, standardized);
+}
+
+/**
+ * Gets sign multiplier of a number
+ * @param {string} sign Sign to operate on
+ * @param {number} base Base of the number
+ * @param {NumberType} number_type Type of the number
+ * @param {boolean} [standardized=false] Treat as standardized 
+ * @returns {number} 1 if positive, -1 if negative, 0 if invalid
+ */
+function getSignMultiplier(sign, base, number_type, standardized=false){
+  switch(number_type){
+    case NumberTypes.UNSIGNED:
+      return 1;
+    case NumberTypes.SIGNED:
+      if(standardized){
+        if(sign==MINUS){
+          return -1;
+        } else if(sign==PLUS){
+          return 1;
+        }
+        break;
+      }else{
+        let sign_dec = 1;
+        for(let i = 0; i<sign.length; i++){
+          if(sign.charAt(i)==MINUS){
+            sign_dec *= -1;
+          }else if(sign.charAt(i)!=PLUS && sign.charAt(i)!=SPACE){
+            return 0;
+          }
+        }
+        return sign_dec;
+      }
+    case NumberTypes.OC:
+    case NumberTypes.TC:
+      if(standardized || isValidSign(sign, base, number_type)){
+        if(sign.charAt(0)=="0"){
+          return 1;
+        }else{
+          return -1;
+        }
+      }
+      break;
+  }
+  return 0;
 }
   
 /**
@@ -404,8 +457,7 @@ export function toUOARNumber(number, base, number_type, log=true){
   if(arr.length==2){
     fraction = arr[1];
   }
-  let res = new UOARNumber(sign, whole, fraction, base, number_type);
-  return res;
+  return new UOARNumber(sign, whole, fraction, base, number_type);
 }
 
 /**
@@ -437,7 +489,7 @@ export function trimSign(number){
 }
 
 /**
- * Removes excess zeroes from a number
+ * Removes excess zeroes and spaces from a number
  * @param {UOARNumber} number Number to trim
  * @returns {UOARNumber} Trimmed number 
  */
@@ -514,85 +566,6 @@ export function standardizeUOARNumber(number, log=true){
 }
 
 /**
- * Gets sign multiplier of a number
- * @param {UOARNumber} number Number to operate on
- * @param {boolean} [standardized=false] Treat as standardized 
- * @returns {number} 1 if positive, -1 if negative, 0 if invalid
- */
-export function getSignMultiplierForNumber(number, standardized=false){
-  return getSignMultiplier(number.sign, number.base, number.number_type, standardized);
-}
-
-/**
- * Gets sign multiplier of a number
- * @param {string} sign Sign to operate on
- * @param {number} base Base of the number
- * @param {NumberType} number_type Type of the number
- * @param {boolean} [standardized=false] Treat as standardized 
- * @returns {number} 1 if positive, -1 if negative, 0 if invalid
- */
-function getSignMultiplier(sign, base, number_type, standardized=false){
-  switch(number_type){
-    case NumberTypes.UNSIGNED:
-      return 1;
-    case NumberTypes.SIGNED:
-      if(standardized){
-        if(sign==MINUS){
-          return -1;
-        } else if(sign==PLUS){
-          return 1;
-        }
-        break;
-      }else{
-        let num_len = sign.length;
-        let index = 0;
-        let sign_dec = 1;
-        for(; index<num_len; index++){
-          if(sign.charAt(index)==MINUS){
-            sign_dec *= -1;
-          }else if(sign.charAt(index)!=PLUS && sign.charAt(index)!=SPACE){
-            return null;
-          }
-        }
-        return sign_dec;
-      }
-    case NumberTypes.OC:
-    case NumberTypes.TC:
-      if(standardized || isValidSign(sign, base, number_type)){
-        if(sign.charAt(0)=="0"){
-          return 1;
-        }else{
-          return -1;
-        }
-      }
-      break;
-  }
-  return 0;
-}
-
-/**
- * Trims number to specified length
- * @param {UOARNumber} number Number to operate on
- * @param {number} n Total length
- * @param {number} m Fraction length
- * @param {boolean} [log=true] Should log
- * @returns {UOARNumber} Number trimmed to specified length
- */
-export function toLength(number, n, m, log=true){
-  if(number===null){
-    addToStackTrace("toLength", "Number is null", log);
-    return null;
-  }
-  number = wholeToLength(number, n-m, false);
-  if(number===null){
-    addToStackTrace("toLength", "Number is too big", true);
-    return null;
-  }
-  number = fractionToLength(number, m, log);
-  return number;
-}
-
-/**
  * Trims whole part of the number to a specified length
  * @param {UOARNumber} number Number to operate on
  * @param {number} length Length of the whole
@@ -648,6 +621,32 @@ export function fractionToLength(number, length, log=true){
 }
 
 /**
+ * Trims number to specified length
+ * @param {UOARNumber} number Number to operate on
+ * @param {number} n Total length
+ * @param {number} m Fraction length
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Number trimmed to specified length
+ */
+export function toLength(number, n, m, log=true){
+  if(number===null){
+    addToStackTrace("toLength", "Number is null", log);
+    return null;
+  }
+  if(n-m<1){
+    addToStackTrace("toLength", "Fraction length longer than entire number", log);
+    return null;
+  }
+  number = wholeToLength(number, n-m, false);
+  if(number===null){
+    addToStackTrace("toLength", "Number is too big", true);
+    return null;
+  }
+  number = fractionToLength(number, m, log);
+  return number;
+}
+
+/**
  * Adds zeroes after the number to specified length
  * @param {string} number Number to add zeroes to
  * @param {number} base Base of the number
@@ -662,7 +661,7 @@ export function addZeroesAfter(number, base, number_type, length, log=true){
     return null;
   }
   let offset = getSignEnd(number, base, number_type, log);
-  let toAdd = length - number.replace(/[.,]/, "").length - offset;
+  let toAdd = length - (number.replace(/[., ]/g, '').length - offset);
   if(toAdd>0){
     number = number.concat(createZeroString(toAdd));
   }
@@ -684,7 +683,7 @@ export function addZeroesBefore(number, base, number_type, length, log=true){
     return null;
   }
   let offset = getSignEnd(number, base, number_type, log);
-  let toAdd = length - number.replace(/[.,]/, "").length - offset;
+  let toAdd = length - number.replace(/[., ]/g, '').length - offset;
   let res = number.substr(0, offset);
   if(toAdd>0){
     res = res.concat(createZeroString(toAdd));
@@ -699,18 +698,23 @@ export function addZeroesBefore(number, base, number_type, length, log=true){
  * @param {UOARNumber} num2 Number 2
  * @param {boolean} [standardized=false] Treat as standardized 
  * @param {boolean} [log=true] Should log
+ * @returns {boolean} true if operation was successful, false otherwise.
  */
 export function equalizeLength(num1, num2, standardized=false, log=true){
+  if(num1==null || num2==null){
+    addToStackTrace("equalizeLength", "A numbers is null", log);
+    return false;
+  }
   if(num1.number_type!=num2.number_type){
     addToStackTrace("equalizeLength", "Numbers are not same type", log);
-    return null;
+    return false;
   }
   if(!standardized){
     num1 = standardizeUOARNumber(num1, log);
     num2 = standardizeUOARNumber(num2, log);
     if(num1==null || num2==null){
       addToStackTrace("equalizeLength", "Numbers are invalid", log);
-      return null;
+      return false;
     }
   }
   
@@ -724,4 +728,6 @@ export function equalizeLength(num1, num2, standardized=false, log=true){
   }else if(num1.fraction.length<num2.fraction.length){
     num1 = fractionToLength(num1, num2.fraction.length, log);
   }
+
+  return true;
 }
