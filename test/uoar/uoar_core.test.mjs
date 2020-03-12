@@ -58,8 +58,23 @@ describe('UOAR Core', function() {
     });
 
     it('copy', function() {
-      let number = new UOARNumber("-", "10", "50", 10, NumberTypes.SIGNED);
+      let number = new UOARNumber("-", "10", "50", 8, NumberTypes.SIGNED);
       expect(number.copy()).to.deep.equal(number);
+    });
+
+    it('toString', function() {
+      let number = new UOARNumber("-", "10", "50", 8, NumberTypes.SIGNED);
+      expect(number.toString()).to.equal("-10.50 (8)");
+    });
+
+    it('toString no fraction', function() {
+      let number = new UOARNumber("-", "10", "", 8, NumberTypes.SIGNED);
+      expect(number.toString()).to.equal("-10 (8)");
+    });
+
+    it('toString with spaces', function() {
+      let number = new UOARNumber(" - ", " 10 ", " 50 ", 8, NumberTypes.SIGNED);
+      expect(number.toString()).to.equal("-10.50 (8)");
     });
 
   });
@@ -183,7 +198,6 @@ describe('UOAR Core', function() {
     });
 
     it('OC/TC', function() {
-      expect(removeSign("00010.50", 10, NumberTypes.SMR, false)).to.equal("10.50");
       expect(removeSign("00010.50", 10, NumberTypes.OC, false)).to.equal("10.50");
       expect(removeSign("00010.50", 10, NumberTypes.TC, false)).to.equal("10.50");
     });
@@ -573,12 +587,6 @@ describe('UOAR Core', function() {
     it('too large', function() {
       let number = new UOARNumber("+", "1000", "50", 10, NumberTypes.SIGNED);
       expect(wholeToLength(number, 3, false)).to.be.null;
-    });
-
-    it('too large when untrimmed', function() {
-      let number = new UOARNumber("+", "0010", "50", 10, NumberTypes.SIGNED);
-      let res = new UOARNumber("+", "010", "50", 10, NumberTypes.SIGNED);
-      expect(wholeToLength(number, 3, false)).to.deep.equal(res);
     });
 
   });

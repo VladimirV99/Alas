@@ -3,8 +3,10 @@ import { addToStackTrace } from './output.mjs';
 
 const ASCII_0 = '0'.charCodeAt(0);
 const ASCII_A = 'A'.charCodeAt(0);
-const SPACE = ' ';
-const RADIX = ['.', ','];
+const SPACE_MATCH = /^[ \t\n]$/;
+const SPACE_REPLACE = /[ \t\n]/g;
+const RADIX_MATCH = /^[.,]$/;
+const RADIX_REPLACE = /[.,]/g;
 export const PLUS = '+';
 export const MINUS = '-';
 
@@ -61,6 +63,14 @@ export class UOARNumber{
   }
   copy(){
     return new UOARNumber(this.sign, this.whole, this.fraction, this.base, this.number_type);
+  }
+  toString(){
+    let res = this.sign + this.whole;
+    if(this.fraction!=""){
+      res = res.concat("." + this.fraction);
+    }
+    res = res.concat(" ("+this.base+")");
+    return res;
   }
 }
 
@@ -124,12 +134,7 @@ export function toValue(value, log=true){
  * @returns {boolean} true if number has a radix point at index, false otherwise
  */
 function isRadixPointAt(number, index){
-  for(let radix of RADIX){
-    if(number.charAt(index)==radix){
-      return true;
-    }
-  }
-  return false;
+  return RADIX_MATCH.test(number.charAt(index));
 }
 
 /**
@@ -150,8 +155,14 @@ function isRadixPoint(character){
  * @returns {boolean} true if number has a sign at index, false otherwise
  */
 function isSignAt(number, base, number_type, index){
-  if(!isValidBase(base) || number.length<=index)
-    return null;
+  if(!isValidBase(base)){
+    addToStackTrace("isSignAt", "Invalid base \"" + base + "\"", log);
+    return false;
+  }
+  if(index<0 || number.length <= index){
+    addToStackTrace("isSignAt", "Index out of bounds " + index + " in \"" + number + "\"", log);
+    return false;
+  }
   let temp = number.charAt(index);
   switch(number_type){
     case NumberTypes.UNSIGNED:
@@ -163,7 +174,7 @@ function isSignAt(number, base, number_type, index){
     case NumberTypes.TC:
       return index==0 && (temp==toValue(0, false) || temp==toValue(base-1, false));
     default:
-      return null;
+      return false;
   }
 }
 
@@ -193,7 +204,7 @@ function getSignEnd(number, base, number_type, log=true){
     case NumberTypes.SIGNED:
       let i;
       for(i=0; i<number.length; i++){
-        if(!isSignAt(number, base, number_type, i) && number.charAt(i)!=SPACE){
+        if(!isSignAt(number, base, number_type, i) && !SPACE_MATCH.test(number.charAt(i))){
           break;
         }
       }
@@ -203,16 +214,22 @@ function getSignEnd(number, base, number_type, log=true){
     case NumberTypes.TC:
       let j;
       for(j=0; j<number.length; j++)
-        if(number.charAt(j)!=SPACE)
+        if(!SPACE_MATCH.test(number.charAt(j)))
           break;
       let first_char = getValue(number.charAt(j), log);
       if(first_char===null)
-        return null;
-      if(first_char==0 || first_char==base-1)
-        return j+1;
+        return -1;
+      else if(first_char==0 || first_char==base-1){
+        if(number_type==NumberTypes.SMR)
+          return j+1;
+        for(; j<number.length; j++)
+          if(number.charAt(j)!=first_char && !SPACE_MATCH.test(number.charAt(j)))
+            break;
+        return j;
+      }
       return 0;
   }
-  return null;
+  return -1;
 }
 
 /**
@@ -225,7 +242,7 @@ function getSignEnd(number, base, number_type, log=true){
  */
 export function getSign(number, base, number_type, log=true){
   let sign_end = getSignEnd(number, base, number_type, log);
-  if(sign_end===null)
+  if(sign_end===-1)
     return null;
   if(sign_end==0){
     switch(number_type){
@@ -243,7 +260,7 @@ export function getSign(number, base, number_type, log=true){
         return null;
     }
   }
-  return number.substr(0, sign_end).replace(/ /g, '');
+  return number.substr(0, sign_end).replace(SPACE_REPLACE, '');
 }
 
 /**
@@ -256,7 +273,7 @@ export function getSign(number, base, number_type, log=true){
  */
 export function removeSign(number, base, number_type, log=true){
   let sign_end = getSignEnd(number, base, number_type, log);
-  if(sign_end===null)
+  if(sign_end===-1)
     return null;
   if(sign_end==number.length){
     addToStackTrace("removeSign", "Missing whole for number \"" + number + "\", assuming zero", log);
@@ -273,7 +290,7 @@ export function removeSign(number, base, number_type, log=true){
  * @returns {boolean} True if valid, false otherwise
  */
 export function isValidSign(sign, base, number_type){
-  sign = sign.replace(/ /g, '');
+  sign = sign.replace(SPACE_REPLACE, '');
   if(sign.length==0){
     return number_type==NumberTypes.UNSIGNED;
   }
@@ -336,12 +353,13 @@ function getSignMultiplier(sign, base, number_type, standardized=false){
         for(let i = 0; i<sign.length; i++){
           if(sign.charAt(i)==MINUS){
             sign_dec *= -1;
-          }else if(sign.charAt(i)!=PLUS && sign.charAt(i)!=SPACE){
+          }else if(sign.charAt(i)!=PLUS && !SPACE_MATCH.test(sign.charAt(i))){
             return 0;
           }
         }
         return sign_dec;
       }
+    case NumberTypes.SMR:
     case NumberTypes.OC:
     case NumberTypes.TC:
       if(standardized || isValidSign(sign, base, number_type)){
@@ -368,7 +386,7 @@ export function isValidUOARNumber(number){
   let temp = "";
   for(let i=0; i<number.whole.length; i++){
     temp = number.whole.charAt(i);
-    if(temp==SPACE)
+    if(SPACE_MATCH.test(temp))
       continue;
     temp = getValue(temp, false);
     if(temp===null || temp>=number.base){
@@ -377,7 +395,7 @@ export function isValidUOARNumber(number){
   }
   for(let i=0; i<number.fraction.length; i++){
     temp = number.fraction.charAt(i);
-    if(temp==SPACE)
+    if(SPACE_MATCH.test(temp))
       continue;
     temp = getValue(temp, false);
     if(temp===null || temp>=number.base){
@@ -403,13 +421,13 @@ export function isValidNumber(number, base, number_type){
   let temp = "";
   for(i=0; i<number.length; i++){
     temp = number.charAt(i);
-    if(!isSign(temp, base, number_type) && temp!=SPACE)
+    if(!isSign(temp, base, number_type) && !SPACE_MATCH.test(temp))
       break;
   }
   for(; i<number.length; i++){
     temp = number.charAt(i);
     if(!isRadixPoint(temp)){
-      if(temp==SPACE)
+      if(SPACE_MATCH.test(temp))
         continue;
       temp = getValue(temp, false);
       if(temp===null || temp>=base){
@@ -448,8 +466,8 @@ export function toUOARNumber(number, base, number_type, log=true){
     return null;
   }
   
-  number = number.replace(/ /g, '');
-  let arr = number.split(/[.,]/);
+  number = number.replace(SPACE_REPLACE, '');
+  let arr = number.split(RADIX_REPLACE);
 
   let sign = getSign(arr[0], base, number_type, log);
   let whole = removeSign(arr[0], base, number_type, log);
@@ -467,6 +485,7 @@ export function toUOARNumber(number, base, number_type, log=true){
  */
 export function trimSign(number){
   if(!isValidSign(number.sign, number.base, number.number_type)){
+    addToStackTrace("trimSign", "Invalid sign \"" + number.sign + "\" for number " + number.toString(), log);
     return null;
   }
   switch(number.number_type){
@@ -494,8 +513,8 @@ export function trimSign(number){
  * @returns {UOARNumber} Trimmed number 
  */
 export function trimNumber(number){
-  number.whole = number.whole.replace(/ /g, '');
-  number.fraction = number.fraction.replace(/ /g, '');
+  number.whole = number.whole.replace(SPACE_REPLACE, '');
+  number.fraction = number.fraction.replace(SPACE_REPLACE, '');
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
     case NumberTypes.SIGNED:
@@ -553,9 +572,9 @@ export function standardizeUOARNumber(number, log=true){
     return null;
   }
   if(isValidUOARNumber(number)){
-    number.sign = number.sign.replace(/ /g, '');
-    number.whole = number.whole.replace(/ /g, '');
-    number.fraction = number.fraction.replace(/ /g, '');
+    number.sign = number.sign.replace(SPACE_REPLACE, '');
+    number.whole = number.whole.replace(SPACE_REPLACE, '');
+    number.fraction = number.fraction.replace(SPACE_REPLACE, '');
     trimSign(number);
     trimNumber(number);
     return number;
@@ -660,8 +679,9 @@ export function addZeroesAfter(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesAfter", "Number is null", log);
     return null;
   }
+  number = number.replace(SPACE_REPLACE, '');
   let offset = getSignEnd(number, base, number_type, log);
-  let toAdd = length - (number.replace(/[., ]/g, '').length - offset);
+  let toAdd = length - number.substr(offset).replace(RADIX_REPLACE, '').length;
   if(toAdd>0){
     number = number.concat(createZeroString(toAdd));
   }
@@ -682,8 +702,9 @@ export function addZeroesBefore(number, base, number_type, length, log=true){
     addToStackTrace("addZeroesBefore", "Number is null", log);
     return null;
   }
+  number = number.replace(SPACE_REPLACE, '');
   let offset = getSignEnd(number, base, number_type, log);
-  let toAdd = length - number.replace(/[., ]/g, '').length - offset;
+  let toAdd = length - number.substr(offset).replace(RADIX_REPLACE, '').length;
   let res = number.substr(0, offset);
   if(toAdd>0){
     res = res.concat(createZeroString(toAdd));
