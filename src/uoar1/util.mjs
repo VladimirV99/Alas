@@ -25,7 +25,7 @@ export function isValidBase(base){
  * @returns {string} Constant string of specified length
  */
 export function createConstantString(constant, length){
-  if(constant.length != 1)
+  if(constant.length != 1 || length<0)
     return null;
   let res = "";
   for(let i = 0; i<length; i++){
