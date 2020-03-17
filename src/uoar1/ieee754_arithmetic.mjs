@@ -60,7 +60,7 @@ export function addIEEE754(operand1, operand2, log=true){
 
   let significand1 = new UOARNumber(operand1.sign, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SMR);
   let significand2 = new UOARNumber(operand2.sign, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SMR);
-  let significand = add(significand1, significand2, NumberTypes.SMR, true, false);
+  let significand = add(significand1, significand2, true, false);
   exponent += normalizeBinary(significand, true, false);
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
@@ -116,7 +116,7 @@ export function subtractIEEE754(operand1, operand2, log=true){
   let significand1 = trimNumber(new UOARNumber(operand1.sign, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SMR));
   let significand2 = trimNumber(new UOARNumber(operand2.sign, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SMR));
   significand2.sign = significand2.sign=="0" ? "1" : "0";
-  let significand = add(significand1, significand2, NumberTypes.SMR, true, false);
+  let significand = add(significand1, significand2, true, false);
   exponent += normalizeBinary(significand, true, false);
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
@@ -183,7 +183,7 @@ export function multiplyIEEE754(operand1, operand2, log=true){
 
   for(let i=multiplicand2.whole.length-1; i>=0; i--){
     if(multiplicand2.whole[i]=="1"){
-      significand = add(significand, multiplicand1, NumberTypes.UNSIGNED, false);
+      significand = add(significand, multiplicand1, false);
     }
     multiplicand1.whole = multiplicand1.whole.concat("0");
   }
@@ -263,7 +263,7 @@ export function divideIEEE754(operand1, operand2, log=true){
   let significand = new UOARNumber("+", "", "", 2, NumberTypes.SIGNED);
   for(; i<dividend_string.length; i++){
     if(isGreater(dividend, divider, true, false) || dividend.whole==divider.whole){
-      dividend = add(dividend, neg_divider, NumberTypes.SIGNED, false);
+      dividend = add(dividend, neg_divider, false);
       significand.whole = significand.whole.concat("1");
     }else{
       significand.whole = significand.whole.concat("0");
@@ -275,7 +275,7 @@ export function divideIEEE754(operand1, operand2, log=true){
   trimNumber(dividend);
   while(significand.whole.length <= BINARY32.SIGNIFICAND_LENGTH+1 && dividend.whole!="0"){
     if(isGreater(dividend, divider, true, false) || dividend.whole==divider.whole){
-      dividend = add(dividend, neg_divider, NumberTypes.SIGNED, false);
+      dividend = add(dividend, neg_divider, false);
       significand.fraction = significand.fraction.concat("1");
     }else{
       significand.fraction = significand.fraction.concat("0");

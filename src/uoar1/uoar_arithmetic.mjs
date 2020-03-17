@@ -1,5 +1,5 @@
 import {
-  NumberTypes, UOARNumber, getValueAt, getValue, toValue, isValidUOARNumber, trimSign, trimNumber, standardizeUOARNumber, getSignMultiplierForNumber, equalizeLength
+  PLUS, MINUS, NumberTypes, UOARNumber, getValueAt, getValue, toValue, isValidUOARNumber, trimSign, trimNumber, standardizeUOARNumber, getSignMultiplierForNumber, equalizeLength
 } from './uoar_core.mjs';
 import { createConstantString, createZeroString } from './util.mjs';
 import { addToStackTrace } from './output.mjs';
@@ -86,7 +86,7 @@ export function isGreater(number1, number2, standardized=false, log=true){
  * @param {UOARNumber} number Number to operate on
  * @returns {UOARNumber} Absolute value of the number 
  */
-function getAbsoluteValue(number){
+export function getAbsoluteValue(number){
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       return number.copy();
@@ -97,7 +97,7 @@ function getAbsoluteValue(number){
     case NumberTypes.OC:
     case NumberTypes.TC:
       let res = number.copy();
-      if(number.sign.charAt(0)=="1"){
+      if(getSignMultiplierForNumber(number,false)==-1){
         res = complement(res);
       }
       return res;
@@ -109,27 +109,27 @@ function getAbsoluteValue(number){
  * Adds two numbers together
  * @param {UOARNumber} add1 First factor
  * @param {UOARNumber} add2 Second factor
- * @param {NumberTypes} number_type Type to return
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Sum of the two numbers 
  */
-export function add(add1, add2, number_type, standardized=false, log=true){
+export function add(add1, add2, standardized=false, log=true){
   if(!isValidUOARNumber(add1) || !isValidUOARNumber(add2)){
     addToStackTrace("add", "Numbers are invalid", log);
     return null;
   }
   if(add1.base!=add2.base){
-    addToStackTrace("add", "Can't add numbers. Bases are not equal");
+    addToStackTrace("add", "Can't add numbers. Bases are not equal", log);
+    return null;
+  }
+  if(add1.number_type!=add2.number_type){
+    addToStackTrace("add", "Can't compare numbers. Types are not the same", log);
     return null;
   }
   add1 = trimSign(add1.copy());
   add2 = trimSign(add2.copy());
   let base = add1.base;
-  if(add1.number_type!=number_type)
-    convertToType(add1, number_type, false, log);
-  if(add2.number_type!=number_type)
-    convertToType(add2, number_type, false, log);
+  let number_type = add1.number_type;
 
   equalizeLength(add1, add2, standardized, log);
   let whole_len=add1.whole.length;
@@ -230,8 +230,6 @@ export function add(add1, add2, number_type, standardized=false, log=true){
       sign =  toValue(temp%base, false);
       if(number_type == NumberTypes.OC){
         carry = Math.floor(temp/base);
-        if(carry==0)
-          break;
       }else if(number_type == NumberTypes.TC){
         if(add1.sign.charAt(0) == add2.sign.charAt(0)){
           if(add1.sign.charAt(0)!=sign){
@@ -262,7 +260,7 @@ export function add(add1, add2, number_type, standardized=false, log=true){
  */
 export function complement(number, standardized=false, log=true){
   if(!isValidUOARNumber(number)){
-    addToStackTrace("complement", "Number is invalid", log);
+    addToStackTrace("complement", "Invalid number \"" + number.toString() + "\"", log);
     return null;
   }
   number = number.copy();
@@ -281,8 +279,20 @@ export function complement(number, standardized=false, log=true){
     case NumberTypes.SIGNED:
       if(number.sign.charAt(0)==PLUS)
         complement_sign = MINUS;
-      else
+      else if(number.sign.charAt(0)==MINUS)
         complement_sign = PLUS;
+      else
+        return null;
+      complement_whole = number.whole;
+      complement_fraction = number.fraction;
+      break;
+    case NumberTypes.SMR:
+      if(number.sign.charAt(0)=="0")
+        complement_sign = base_complement.toString();
+      else if(number.sign.charAt(0)==base_complement.toString())
+        complement_sign = "0";
+      else
+        return null;
       complement_whole = number.whole;
       complement_fraction = number.fraction;
       break;
@@ -311,11 +321,24 @@ export function complement(number, standardized=false, log=true){
 
 /**
  * Shift all numbers by specified number of places
- * @param {Object} numbers Array of UOARNumbers
+ * @param {UOARNumber[]} numbers Array of UOARNumbers
  * @param {number} by Number of places to shift
- * @param {ShiftType} shift_type Shift type 
+ * @param {ShiftType} shift_type Shift type
+ * @param {boolean} [log=true] Should log
+ * @returns {boolean} True if shift was successfull, false otherwise
  */
-export function shift(numbers, by, shift_type){
+export function shift(numbers, by, shift_type, log=true){
+  for(let i = 0; i<numbers.length; i++){
+    if(numbers[i].number_type==NumberTypes.SIGNED) {
+      addToStackTrace("shift", "Can't shift signed number " + numbers[i].toString(), log);
+      return false;
+    }
+    if(!isValidUOARNumber(numbers[i])){
+      addToStackTrace("shift", "Invalid number \"" + numbers[i].toString() + "\"", log);
+      return false;
+    }
+  }
+
   let line = "";
   let ptr = 0;
   for(let i = 0; i<numbers.length; i++){
@@ -333,7 +356,7 @@ export function shift(numbers, by, shift_type){
       ptr = by;
       break;
     default:
-      return;
+      return false;
   }
   
   let sign_len = 0;
@@ -350,6 +373,7 @@ export function shift(numbers, by, shift_type){
     numbers[i].fraction = line.substr(ptr, frac_len);
     ptr += frac_len;
   }
+  return true;
 }
 
 /**
@@ -359,7 +383,12 @@ export function shift(numbers, by, shift_type){
  * @param {boolean} [log=true] Should log
  * @return {UOARNumber} Number with added toAdd
  */
-export function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding negative numbers
+export function addToLowestPoint(number, toAdd, log=true){
+  if(!isValidUOARNumber(number)){
+    addToStackTrace("addToLowestPoint", "Invalid number \"" + numbers[i].toString() + "\"", log);
+    return null;
+  }
+
   let sign = number.sign;
   let whole = "";
   let fraction = "";
@@ -376,8 +405,11 @@ export function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding
       carry = Math.floor(temp/number.base);
     }
   }
-  for(let i=number.whole.length-1; i>=0; i--){
-    temp = getValueAt(number.whole, i, log) + carry;
+  let number_whole = number.whole;
+  if(number.number_type==NumberTypes.OC || number.number_type==NumberTypes.TC)
+    number_whole = sign + number_whole;
+  for(let i=number_whole.length-1; i>=0; i--){
+    temp = getValueAt(number_whole, i, log) + carry;
     if(temp<0){
       carry = -Math.ceil(-temp/number.base);
       whole = (temp-carry*number.base) + whole;
@@ -387,26 +419,31 @@ export function addToLowestPoint(number, toAdd, log=true){ //TODO Support adding
     }
   }
 
+  if(number.number_type==NumberTypes.OC || number.number_type==NumberTypes.TC){
+    let i;
+    for(i=0; i<whole.length-1; i++){
+      if(whole.charAt(i)!="0")
+        break;
+    }
+    whole = whole.substr(i);
+  }
+
   if(carry<0){
+    //TODO Support adding negative numbers
     return null;
   }else if(carry>0){
     switch(number.number_type){
       case NumberTypes.UNSIGNED:
       case NumberTypes.SIGNED:
+      case NumberTypes.SMR:
         whole = toValue(carry, log) + whole;
         break;
       case NumberTypes.OC:
       case NumberTypes.TC:
-        for(let i=number.sign.length-1; i>=0; i--){
-          temp = getValueAt(number.whole, i, log) + carry;
-          sign = toValue(temp%number.base) + sign;
-          carry = Math.floor(temp/number.base);
-        }
-        sign_end = getSignEnd(number.sign, number.base, number.number_type, log);
-        whole = sign.substr(sign_end) + whole;
-        sign = sign.substr(0, sign_end);
+        sign = "0";
         break;
-        
+      default:
+        return null;
     }
   }
   

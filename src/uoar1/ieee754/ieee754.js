@@ -809,7 +809,7 @@ function addIEEE754(operand1, operand2, log=true){
   addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
   addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
-  let significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
+  let significand = add(significand1, significand2, true, false);
   addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
   
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32.OFFSET));
@@ -899,7 +899,7 @@ function subtractIEEE754(operand1, operand2, log=true){
   addToOutput("<table class=\"calculation\"><tr><td>"+significand1.sign+"</td><td class=\"align-right\">"+significand1.whole+".</td><td class=\"align-left\">"+significand1.fraction+"</td></tr>");
   addToOutput("<tr><td>"+significand2.sign+"</td><td class=\"align-right\">"+significand2.whole+".</td><td>"+significand2.fraction+"</td class=\"align-left\"></tr>");
 
-  let significand = add(significand1, significand2, NumberTypes.SIGNED, true, false);
+  let significand = add(significand1, significand2, true, false);
   addToOutput("<tr><td>"+significand.sign+"</td><td class=\"align-right\">"+significand.whole+".</td><td class=\"align-left\">"+significand.fraction+"</td></table></p>");
   
   addToOutput("<p>(" + significand.toSigned() + ")2 * 2^" + (exponent-BINARY32.OFFSET));
@@ -984,7 +984,7 @@ function multiplyIEEE754(operand1, operand2, log=true){
 
   for(let i=multiplicand2.whole.length-1; i>=0; i--){
     if(multiplicand2.whole[i]=="1"){
-      significand = add(significand, multiplicand1, NumberTypes.UNSIGNED, false);
+      significand = add(significand, multiplicand1, false);
     }
     multiplicand1.whole = multiplicand1.whole.concat("0");
   }
@@ -1078,7 +1078,7 @@ function divideIEEE754(operand1, operand2, log=true){
   let significand = new UOARNumber("+", "", "", 2, NumberTypes.SIGNED);
   for(; i<dividend_string.length; i++){
     if(isGreater(dividend, divider, true, false) || dividend.whole==divider.whole){
-      dividend = add(dividend, neg_divider, NumberTypes.SIGNED, false);
+      dividend = add(dividend, neg_divider, false);
       significand.whole = significand.whole.concat("1");
     }else{
       significand.whole = significand.whole.concat("0");
@@ -1090,7 +1090,7 @@ function divideIEEE754(operand1, operand2, log=true){
   trimNumber(dividend);
   while(significand.whole.length+significand.fraction.length <= BINARY32.SIGNIFICAND_LENGTH+1 && dividend.whole!="0"){
     if(isGreater(dividend, divider, true, false) || dividend.whole==divider.whole){
-      dividend = add(dividend, neg_divider, NumberTypes.SIGNED, false);
+      dividend = add(dividend, neg_divider, false);
       significand.fraction = significand.fraction.concat("1");
     }else{
       significand.fraction = significand.fraction.concat("0");

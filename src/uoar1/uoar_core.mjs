@@ -462,7 +462,7 @@ export function toUOARNumber(number, base, number_type, log=true){
     return null;
   }
   if(!isValidNumber(number, base, number_type)){
-    addToStackTrace("toUOARNumber", "Number is invalid", log);
+    addToStackTrace("toUOARNumber", "Invalid number \"" + number + "\"", log);
     return null;
   }
   
@@ -579,7 +579,7 @@ export function standardizeUOARNumber(number, log=true){
     trimNumber(number);
     return number;
   }else{
-    addToStackTrace("standardizeUOARNumber", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
+    addToStackTrace("standardizeUOARNumber", "Invalid number \"" + number.toString() + "\"", log);
     return null;
   }
 }

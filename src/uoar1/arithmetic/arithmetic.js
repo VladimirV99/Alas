@@ -96,7 +96,7 @@ function unsigned_multiply(num1, num2, standardized=false, log=true){
     if(op=="0"){
       work2 = work2.concat("NOOP");
     }else if(op=="1"){
-      registers[1] = add(registers[1], m, NumberTypes.TC, true, log);
+      registers[1] = add(registers[1], m, true, log);
       work1 = "+" + m.toWhole() + "<br>" + registers[1].toWhole() + "<br>";
       if(registers[1].whole.length>m.whole.length){
         registers[0].sign = registers[1].whole.charAt(0);
@@ -105,7 +105,10 @@ function unsigned_multiply(num1, num2, standardized=false, log=true){
       work2 = work2.concat("A = A + M");
     }
     
-    shift(registers, 1, ShiftTypes.RIGHT_L);
+    if(!shift(registers, 1, ShiftTypes.RIGHT_L, false)){
+      addToStackTrace("unsigned_multiply", "Unable to shift registers", log);
+      return null;
+    }
     work1 = work1.concat(registers[1].toWhole());
 
     addToOutput("<td>" + registers[0].toWhole() + "</td>");
@@ -212,16 +215,19 @@ function booth(num1, num2, standardized=false, log=true){
     if(op=="00" || op=="11"){
       work2 = work2.concat("NOOP");
     }else if(op=="10"){
-      registers[0] = add(registers[0], neg_m, NumberTypes.TC, true, log);
+      registers[0] = add(registers[0], neg_m, true, log);
       work1 = "+" + neg_m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
       work2 = work2.concat("A = A - M");
     }else if(op=="01"){
-      registers[0] = add(registers[0], m, NumberTypes.TC, true, log);
+      registers[0] = add(registers[0], m, true, log);
       work1 = "+" + m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
       work2 = work2.concat("A = A + M"); 
     }
     
-    shift(registers, 1, ShiftTypes.RIGHT_A);
+    if(!shift(registers, 1, ShiftTypes.RIGHT_A, false)){
+      addToStackTrace("booth", "Unable to shift registers", log);
+      return null;
+    }
     work1 = work1.concat(registers[0].toWhole());
 
     addToOutput("<td class=\"align-right\">" + work1 + "</td>");
@@ -349,11 +355,11 @@ function modified_booth(num1, num2, standardized=false, log=true){
       work1 = createZeroString(num1.whole.length);
     }else if(coded_mults[i]==temp){
       work1 = multiplier.toWhole();
-      res = add(res, multiplier, NumberTypes.TC, false);
+      res = add(res, multiplier, false, log);
     }else if(coded_mults[i]==2*temp){
       multiplier.whole = multiplier.whole.substr(1) + "0";
       work1 = multiplier.toWhole();
-      res = add(res, multiplier, NumberTypes.TC, false);
+      res = add(res, multiplier, false, log);
     }
 
     addToOutput("<tr>");
@@ -363,7 +369,10 @@ function modified_booth(num1, num2, standardized=false, log=true){
     addToOutput("<td>" + work1 + "</td>");
     addToOutput("</tr>");
 
-    shift(registers, 2, ShiftTypes.LEFT);
+    if(!shift(registers, 2, ShiftTypes.LEFT, false)){
+      addToStackTrace("modified_booth", "Unable to shift registers", log);
+      return null;
+    }
   }
   addToOutput("</tbody>");
   addToOutput("</table>");
@@ -451,14 +460,17 @@ function unsigned_divide(num1, num2, standardized=false, log=true){
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
-    shift(registers, 1, ShiftTypes.LEFT);
+    if(!shift(registers, 1, ShiftTypes.LEFT, false)){
+      addToStackTrace("unsigned_divide", "Unable to shift registers", log);
+      return null;
+    }
 
-    registers[0] = wholeToLength(add(registers[0], neg_m, NumberTypes.TC, true, log), registers[0].whole.length, false);
+    registers[0] = wholeToLength(add(registers[0], neg_m, true, log), registers[0].whole.length, false);
     work1 = registers[0].toWhole() + "<br>" + "-" + m.toWhole() + "<br>" + registers[0].toWhole();
     work2 = "A = A - M<br>";
 
     if(registers[0].sign=="1"){
-      registers[0] = wholeToLength(add(registers[0], m, NumberTypes.TC, true, log), registers[0].whole.length, false);
+      registers[0] = wholeToLength(add(registers[0], m, true, log), registers[0].whole.length, false);
       work1 = work1 + "<br>" + registers[0].toWhole();
       work2 = work2 + " A<0 Restauracija";
     }else{
@@ -570,15 +582,18 @@ function signed_divide(num1, num2, standardized=false, log=true){
   for(let im=0; im<len; im++){
     addToOutput("<tr>");
     
-    shift(registers, 1, ShiftTypes.LEFT);
+    if(!shift(registers, 1, ShiftTypes.LEFT, false)){
+      addToStackTrace("signed_divide", "Unable to shift registers", log);
+      return null;
+    }
 
     work1 = registers[0].toWhole() + "<br>"
-    registers[0] = wholeToLength(add(registers[0], operation==PLUS?m:neg_m, NumberTypes.TC, true, log), registers[0].whole.length, false);
+    registers[0] = wholeToLength(add(registers[0], operation==PLUS?m:neg_m, true, log), registers[0].whole.length, false);
     work1 = work1 + operation + m.toWhole() + "<br>" + registers[0].toWhole();
     work2 = "A = A " + operation + " M";
 
     if(registers[0].sign!=sign){
-      registers[0] = wholeToLength(add(registers[0], operation==PLUS?neg_m:m, NumberTypes.TC, true, log), registers[0].whole.length, false);
+      registers[0] = wholeToLength(add(registers[0], operation==PLUS?neg_m:m, true, log), registers[0].whole.length, false);
       work1 = work1 + "<br>" + registers[0].toWhole();
       work2 = work2 + "<br>A menja znak <br> Restauracija";
     }else{

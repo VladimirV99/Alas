@@ -441,7 +441,7 @@ export function normalizeDecimal(number, standardized=false, log=true){
     number.whole = number.whole + number.fraction.substr(0, DECIMAL32.DIGITS-number.whole.length);
     number.fraction = "";
     if(carry>0){
-      let new_number = add(number, new UOARNumber(number.sign, "1", "", 10, NumberTypes.SIGNED), NumberTypes.SIGNED, true, log);
+      let new_number = add(number, new UOARNumber(number.sign, "1", "", 10, NumberTypes.SIGNED), true, log);
       if(new_number===null){
         addToStackTrace("normalizeDecimal", "Rounding error");
         return null;
