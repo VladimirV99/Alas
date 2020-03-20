@@ -420,11 +420,13 @@ export function addToLowestPoint(number, toAdd, log=true){
   }
 
   if(number.number_type==NumberTypes.OC || number.number_type==NumberTypes.TC){
+    let sign = whole.charAt(0);
     let i;
     for(i=0; i<whole.length-1; i++){
-      if(whole.charAt(i)!="0")
+      if(whole.charAt(i)!=sign)
         break;
     }
+    sign = whole.substr(0, i);
     whole = whole.substr(i);
   }
 

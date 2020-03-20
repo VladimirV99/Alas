@@ -12,7 +12,7 @@ import { addToStackTrace } from './output.mjs';
  */
 export function convertToType(number, type, standardized=false, log=true) {
   if (number.number_type == type)
-    return number;
+    return number.copy();
   switch (type) {
     case NumberTypes.UNSIGNED:
       return convertToUnsigned(number, standardized, log);
@@ -157,7 +157,7 @@ export function convertToSMR(number, standardized=false, log=true){
     case NumberTypes.TC:
       if(number.sign!="0"){
         number = complement(number, true, false);
-        number.sign = toValue(number.base, true, false);
+        number.sign = toValue(number.base-1, true, false);
       }
       number.number_type = NumberTypes.SMR;
       return number;
