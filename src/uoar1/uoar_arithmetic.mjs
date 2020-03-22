@@ -34,12 +34,15 @@ export function isGreater(number1, number2, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number1 = standardizeUOARNumber(number1);
-    number2 = standardizeUOARNumber(number2);
+    number1 = standardizeUOARNumber(number1.copy());
+    number2 = standardizeUOARNumber(number2.copy());
     if(number1===null || number2===null){
       addToStackTrace("isGreater", "Invalid numbers", log);
       return null;
     }
+  }else{
+    number1 = number1.copy();
+    number2 = number2.copy();
   }
 
   let sign1 = getSignMultiplierForNumber(number1, true);
@@ -84,9 +87,10 @@ export function isGreater(number1, number2, standardized=false, log=true){
 /**
  * Finds the absolute value of the given number
  * @param {UOARNumber} number Number to operate on
+ * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Absolute value of the number 
  */
-export function getAbsoluteValue(number){
+export function getAbsoluteValue(number, log=true){
   switch(number.number_type){
     case NumberTypes.UNSIGNED:
       return number.copy();
@@ -101,8 +105,10 @@ export function getAbsoluteValue(number){
         res = complement(res);
       }
       return res;
+    default:
+      addToStackTrace("getAbsoluteValue", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -180,7 +186,7 @@ export function add(add1, add2, standardized=false, log=true){
       }else{
         let a;
         let b;
-        if(isGreater(getAbsoluteValue(add1), getAbsoluteValue(add2), false, log)){
+        if(isGreater(getAbsoluteValue(add1, false), getAbsoluteValue(add2, false), false, log)){
           sign = sign1;
           a = add1;
           b = add2;
@@ -313,6 +319,9 @@ export function complement(number, standardized=false, log=true){
       temp = base_complement - getValue(number.sign) + carry;
       complement_sign = toValue(temp%number.base);
       break;
+    default:
+      addToStackTrace("complement", "Invalid number type", log);
+      return null;
   }
 
   let res = new UOARNumber(complement_sign, complement_whole, complement_fraction, number.base, number.number_type);

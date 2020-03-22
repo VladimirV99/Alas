@@ -75,55 +75,55 @@ describe('UOAR Arithmetic', function() {
 
     it('unsigned', function() {
       let number = new UOARNumber("", "10", "50", 10, NumberTypes.UNSIGNED);
-      expect(getAbsoluteValue(number)).to.deep.equal(number);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(number);
     });
 
     it('signed positive', function() {
       let number = new UOARNumber("+", "10", "50", 10, NumberTypes.SIGNED);
       let res = new UOARNumber("+", "10", "50", 10, NumberTypes.SIGNED);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('signed negative', function() {
       let number = new UOARNumber("-", "10", "50", 10, NumberTypes.SIGNED);
       let res = new UOARNumber("+", "10", "50", 10, NumberTypes.SIGNED);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('SMR positive', function() {
       let number = new UOARNumber("0", "10", "50", 10, NumberTypes.SMR);
       let res = new UOARNumber("0", "10", "50", 10, NumberTypes.SMR);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('SMR negative', function() {
       let number = new UOARNumber("9", "10", "50", 10, NumberTypes.SMR);
       let res = new UOARNumber("0", "10", "50", 10, NumberTypes.SMR);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('OC positive', function() {
       let number = new UOARNumber("0", "10", "50", 10, NumberTypes.OC);
       let res = new UOARNumber("0", "10", "50", 10, NumberTypes.OC);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('OC negative', function() {
       let number = new UOARNumber("9", "10", "50", 10, NumberTypes.OC);
       let res = new UOARNumber("0", "89", "49", 10, NumberTypes.OC);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('TC positive', function() {
       let number = new UOARNumber("0", "10", "50", 10, NumberTypes.TC);
       let res = new UOARNumber("0", "10", "50", 10, NumberTypes.TC);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
     it('TC negative', function() {
       let number = new UOARNumber("9", "10", "50", 10, NumberTypes.TC);
       let res = new UOARNumber("0", "89", "50", 10, NumberTypes.TC);
-      expect(getAbsoluteValue(number)).to.deep.equal(res);
+      expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
   });

@@ -1,6 +1,7 @@
 import {
-  NumberTypes, UOARNumber, PRECISION, PRECISION_NUMBER, getValueAt, toValue, getSign, removeSign, addZeroesBefore,
-  isValidUOARNumber, isValidNumber, trimNumber, standardizeUOARNumber, getSignMultiplierForNumber, fractionToLength
+  SPACE_MATCH, SPACE_REPLACE, RADIX_REPLACE, NumberTypes, UOARNumber, PRECISION, PRECISION_NUMBER,
+  getValueAt, toValue, getSign, removeSign, addZeroesBefore, isValidUOARNumber, isValidNumber,
+  trimNumber, standardizeUOARNumber, getSignMultiplierForNumber, fractionToLength
 } from './uoar_core.mjs';
 import { complement } from './uoar_arithmetic.mjs';
 import { isValidBase } from './util.mjs';
@@ -18,12 +19,11 @@ export function UOARNumberToDecimalInteger(number, standardized=false, log=true)
     addToStackTrace("UOARNumberToDecimalInteger", "Number is null", log);
     return null;
   }
-  number = number.copy();
-  number.fraction = "";
   if(!isValidUOARNumber(number)){
-    addToStackTrace("UOARNumberToDecimalInteger", "Invalid number \"" + number.toSigned() + "\"", log);
+    addToStackTrace("UOARNumberToDecimalInteger", "Invalid number \"" + number.toString() + "\"", log);
     return null;
   }
+  number = number.copy();
   let sign_mult = getSignMultiplierForNumber(number, standardized);
   if(sign_mult==0){
     return null;
@@ -37,6 +37,8 @@ export function UOARNumberToDecimalInteger(number, standardized=false, log=true)
       case NumberTypes.TC:
         number = complement(number);
         break;
+      default:
+        return null;
     }
   }
   let res = 0;
@@ -56,7 +58,7 @@ export function UOARNumberToDecimalInteger(number, standardized=false, log=true)
  * @returns {number} Number converted to an integer
  */
 export function baseToDecimalInteger(number, base, number_type, log=true){
-  number = number.split(/[.,]/)[0];
+  number = number.split(RADIX_REPLACE)[0];
   let sign = getSign(number, base, number_type, log);
   let whole = removeSign(number, base, number_type, log);
   let num = new UOARNumber(sign, whole, "", base, number_type);
@@ -76,11 +78,12 @@ export function toDecimal(number, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number === null){
-      addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
+    let standardized_number = standardizeUOARNumber(number.copy(), log);
+    if(standardized_number === null){
+      addToStackTrace("toDecimal", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number =  standardized_number;
   } else {
     number = number.copy();
   }
@@ -96,6 +99,12 @@ export function toDecimal(number, standardized=false, log=true){
     case NumberTypes.SIGNED:
       sign = number.sign;
       break;
+    case NumberTypes.SMR:
+      if(number.sign.charAt(0)==toValue(number.base-1, false))
+        sign = "9";
+      else
+        sign = "0";
+      break;
     case NumberTypes.OC:
     case NumberTypes.TC:
       sign = "0";
@@ -104,6 +113,8 @@ export function toDecimal(number, standardized=false, log=true){
         toComplement = true;
       }
       break;
+    default:
+      return null;
   }
 
   let whole = 0;
@@ -141,16 +152,21 @@ export function fromDecimal(number, base, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number === null){
-      addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), log);
+    if(standardized_number === null){
+      addToStackTrace("fromDecimal", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   } else {
     number = number.copy();
   }
   if(number.base!=10){
     addToStackTrace("fromDecimal", "Number isn't decimal", log);
+    return null;
+  }
+  if(!isValidBase(base)){
+    addToStackTrace("fromDecimal", "Invalid base \"" + base + "\"", log);
     return null;
   }
   if(base==10){
@@ -165,6 +181,12 @@ export function fromDecimal(number, base, standardized=false, log=true){
     case NumberTypes.SIGNED:
       sign = number.sign;
       break;
+    case NumberTypes.SMR:
+      if(number.sign.charAt(0)=="9")
+        sign = toValue(base-1, false);
+      else
+        sign = "0";
+      break;
     case NumberTypes.OC:
     case NumberTypes.TC:
       sign = "0";
@@ -173,6 +195,8 @@ export function fromDecimal(number, base, standardized=false, log=true){
         toComplement = true;
       }
       break;
+    default:
+      return null;
   }
   
   let whole = "";
@@ -180,7 +204,7 @@ export function fromDecimal(number, base, standardized=false, log=true){
   do {
     whole = toValue(whole_dec%base, false).concat(whole);
     whole_dec = Math.floor(whole_dec/base);
-  } while(whole_dec>0)
+  } while(whole_dec>0);
 
   let fraction = "";
   if(number.fraction!=""){
@@ -222,11 +246,12 @@ export function convertBases(number, base_to, standardized=false, log=true){
     return null;
   }
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number === null){
-      addToStackTrace("convertBases", "Invalid number \"" + number.toSigned() + "\" for base " + number.base, log);
+    let standardized_number = standardizeUOARNumber(number.copy(), log);
+    if(standardized_number === null){
+      addToStackTrace("convertBases", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   } else {
     number = number.copy();
   }
@@ -249,6 +274,10 @@ export function convertBases(number, base_to, standardized=false, log=true){
  * @returns {string} Digit converted to binary
  */
 export function digitToBinary(number, index, log=true){
+  if(index<0 || number.length <= index){
+    addToStackTrace("digitToBinary", "Index out of bounds " + index + " for \"" + number + "\"", log);
+    return null;
+  }
   let val = getValueAt(number, index, false);
   if(val===null){
     addToStackTrace("digitToBinary", "Invalid digit \"" + number.charAt(index) + "\"", log);
@@ -287,19 +316,17 @@ export function numberToBinary(number, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {number} Number converted from binary
  */
-export function binaryToDigit(number, log=true){
+export function binaryToNumber(number, log=true){
   if(!isValidNumber(number, 2, NumberTypes.UNSIGNED)){
-    addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
+    addToStackTrace("binaryToNumber", "Invalid number \"" + number + "\"", log);
     return null;
   }
   let res = 0;
   let temp;
   for(let i=0; i<number.length; i++){
+    if(SPACE_MATCH.test(number.charAt(i)))
+      continue;
     temp = getValueAt(number, i, false);
-    if(temp===null){
-      addToStackTrace("binaryToDigit", "Invalid number \"" + number + "\"", log);
-      return null;
-    }
     res = res*2 + temp;
   }
   return res;
@@ -315,8 +342,10 @@ export function decimalTo8421(number, log=true){
   let res = "";
   let temp;
   for(let i=0; i<number.length; i++){
+    if(SPACE_MATCH.test(number.charAt(i)))
+      continue;
     temp = getValueAt(number, i, log);
-    if(temp===null || temp>15){
+    if(temp===null || temp>9){
       addToStackTrace("decimalTo8421", "Invalid value in \"" + number + "\"", log);
       return null;
     }
@@ -333,10 +362,11 @@ export function decimalTo8421(number, log=true){
  * @returns {string} Number converted to decimal 
  */
 export function decimalFrom8421(number, log=true){
+  number = number.replace(SPACE_REPLACE, '');
   let res = "";
   let temp;
   for(let i=0; i<number.length; i+=4){
-    temp = binaryToDigit(number.substr(i, 4));
+    temp = binaryToNumber(number.substr(i, 4), false);
     if(temp===null){
       addToStackTrace("decimalFrom8421", "Invalid number", log);
       return null;
@@ -345,7 +375,7 @@ export function decimalFrom8421(number, log=true){
       addToStackTrace("decimalFrom8421", "Digit out of bounds", log);
       return null;
     }
-    temp = toValue(temp, log);
+    temp = toValue(temp, false);
     res = res.concat(temp);
   }
   return res;

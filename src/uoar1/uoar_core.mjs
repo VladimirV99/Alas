@@ -3,10 +3,10 @@ import { addToStackTrace } from './output.mjs';
 
 const ASCII_0 = '0'.charCodeAt(0);
 const ASCII_A = 'A'.charCodeAt(0);
-const SPACE_MATCH = /^[ \t\n]$/;
-const SPACE_REPLACE = /[ \t\n]/g;
-const RADIX_MATCH = /^[.,]$/;
-const RADIX_REPLACE = /[.,]/g;
+export const SPACE_MATCH = /^[ \t\n]$/;
+export const SPACE_REPLACE = /[ \t\n]/g;
+export const RADIX_MATCH = /^[.,]$/;
+export const RADIX_REPLACE = /[.,]/g;
 export const PLUS = '+';
 export const MINUS = '-';
 
@@ -83,7 +83,7 @@ export class UOARNumber{
  */
 export function getValueAt(number, index, log=true){
   if(index<0 || number.length <= index){
-    addToStackTrace("getValueAt", "Index out of bounds " + index + " in \"" + number + "\"", log);
+    addToStackTrace("getValueAt", "Index out of bounds " + index + " for \"" + number + "\"", log);
     return null;
   }
   let valCode = number.charCodeAt(index);
@@ -160,7 +160,7 @@ function isSignAt(number, base, number_type, index){
     return false;
   }
   if(index<0 || number.length <= index){
-    addToStackTrace("isSignAt", "Index out of bounds " + index + " in \"" + number + "\"", log);
+    addToStackTrace("isSignAt", "Index out of bounds " + index + " for \"" + number + "\"", log);
     return false;
   }
   let temp = number.charAt(index);
@@ -174,6 +174,7 @@ function isSignAt(number, base, number_type, index){
     case NumberTypes.TC:
       return index==0 && (temp==toValue(0, false) || temp==toValue(base-1, false));
     default:
+      addToStackTrace("isSignAt", "Invalid number type", log);
       return false;
   }
 }
@@ -228,8 +229,10 @@ function getSignEnd(number, base, number_type, log=true){
         return j;
       }
       return 0;
+    default:
+      addToStackTrace("getSignEnd", "Invalid number type", log);
+      return -1;
   }
-  return -1;
 }
 
 /**
@@ -257,6 +260,7 @@ export function getSign(number, base, number_type, log=true){
         addToStackTrace("getSign", "Missing sign for signed number \"" + number + "\", assuming positive", log);
         return "0";
       default:
+        addToStackTrace("getSign", "Invalid number type", log);
         return null;
     }
   }
@@ -370,6 +374,9 @@ function getSignMultiplier(sign, base, number_type, standardized=false){
         }
       }
       break;
+    default:
+      addToStackTrace("getSignMultiplier", "Invalid number type", log);
+      return 0;
   }
   return 0;
 }
@@ -485,7 +492,7 @@ export function toUOARNumber(number, base, number_type, log=true){
  */
 export function trimSign(number){
   if(!isValidSign(number.sign, number.base, number.number_type)){
-    addToStackTrace("trimSign", "Invalid sign \"" + number.sign + "\" for number " + number.toString(), log);
+    addToStackTrace("trimSign", "Invalid sign \"" + number.sign + "\" for number " + number.toString(), true);
     return null;
   }
   switch(number.number_type){
@@ -503,8 +510,10 @@ export function trimSign(number){
     case NumberTypes.TC:
       number.sign = number.sign.charAt(0);
       return number;
+    default:
+      addToStackTrace("trimSign", "Invalid number type", true);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -556,6 +565,9 @@ export function trimNumber(number){
         }
       }
       break;
+    default:
+      addToStackTrace("trimNumber", "Invalid number type", true);
+      return null;
   }
   return number;
 }
@@ -612,6 +624,9 @@ export function wholeToLength(number, length, log=true){
     case NumberTypes.TC:
       whole = createConstantString(number.sign.charAt(0), toAdd).concat(whole);
       break;
+    default:
+      addToStackTrace("wholeToLength", "Invalid number type", log);
+      return null;
   }
   number.whole = whole;
   return number;

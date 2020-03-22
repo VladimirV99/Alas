@@ -24,8 +24,10 @@ export function convertToType(number, type, standardized=false, log=true) {
       return convertToOC(number, standardized, log);
     case NumberTypes.TC:
       return convertToTC(number, standardized, log);
+    default:
+      addToStackTrace("convertToType", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -37,11 +39,12 @@ export function convertToType(number, type, standardized=false, log=true) {
  */
 export function convertToUnsigned(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      addToStackTrace("convertToUnsigned", "Number is invalid", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), false);
+    if(standardized_number===null){
+      addToStackTrace("convertToUnsigned", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   }else{
     number = number.copy();
   }
@@ -71,8 +74,10 @@ export function convertToUnsigned(number, standardized=false, log=true){
       number.sign = "";
       number.number_type = NumberTypes.UNSIGNED;
       return number;
+    default:
+      addToStackTrace("convertToUnsigned", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -84,11 +89,12 @@ export function convertToUnsigned(number, standardized=false, log=true){
  */
 export function convertToSigned(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      addToStackTrace("convertToSigned", "Number is invalid", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), false);
+    if(standardized_number===null){
+      addToStackTrace("convertToSigned", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   }else{
     number = number.copy();
   }
@@ -117,8 +123,10 @@ export function convertToSigned(number, standardized=false, log=true){
       }
       number.number_type = NumberTypes.SIGNED;
       return number;
+    default:
+      addToStackTrace("convertToSigned", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -130,11 +138,12 @@ export function convertToSigned(number, standardized=false, log=true){
  */
 export function convertToSMR(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      addToStackTrace("convertToSMR", "Number is invalid", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), false);
+    if(standardized_number===null){
+      addToStackTrace("convertToSMR", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   }else{
     number = number.copy();
   }
@@ -161,8 +170,10 @@ export function convertToSMR(number, standardized=false, log=true){
       }
       number.number_type = NumberTypes.SMR;
       return number;
+    default:
+      addToStackTrace("convertToSMR", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -174,11 +185,12 @@ export function convertToSMR(number, standardized=false, log=true){
  */
 export function convertToOC(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      addToStackTrace("convertToOC", "Number is invalid", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), log);
+    if(standardized_number===null){
+      addToStackTrace("convertToOC", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   }else{
     number = number.copy();
   }
@@ -211,8 +223,10 @@ export function convertToOC(number, standardized=false, log=true){
         number = addToLowestPoint(number, -1, false);
       }
       return number;
+    default:
+      addToStackTrace("convertToOC", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
 
 /**
@@ -224,11 +238,12 @@ export function convertToOC(number, standardized=false, log=true){
  */
 export function convertToTC(number, standardized=false, log=true){
   if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number===null){
-      addToStackTrace("convertToTC", "Number is invalid", log);
+    let standardized_number = standardizeUOARNumber(number.copy(), log);
+    if(standardized_number===null){
+      addToStackTrace("convertToTC", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
+    number = standardized_number;
   }else{
     number = number.copy();
   }
@@ -261,6 +276,8 @@ export function convertToTC(number, standardized=false, log=true){
       return number;
     case NumberTypes.TC:
       return number;
+    default:
+      addToStackTrace("convertToTC", "Invalid number type", log);
+      return null;
   }
-  return null;
 }
