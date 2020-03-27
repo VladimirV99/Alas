@@ -299,7 +299,7 @@ describe('Base Converter', function() {
   describe('decimalTo8421', function() {
 
     it('invalid number', function() {
-      expect(decimalTo8421("47A3", false)).to.be.null;
+      expect(decimalTo8421("47G3", false)).to.be.null;
     });
 
     it('valid number', function() {

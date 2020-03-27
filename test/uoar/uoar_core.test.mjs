@@ -472,7 +472,13 @@ describe('UOAR Core', function() {
     it('spaces', function() {
       let number = new UOARNumber(" - ", " 10 ", " 5 ", 10, NumberTypes.SIGNED);
       let res = new UOARNumber("-", "10", "5", 10, NumberTypes.SIGNED);
-      expect(trimSign(number)).to.deep.equal(res);
+      expect(trimNumber(number)).to.deep.equal(res);
+    });
+
+    it('zero fraction', function() {
+      let number = new UOARNumber("-", "10", "0", 10, NumberTypes.SIGNED);
+      let res = new UOARNumber("-", "10", "", 10, NumberTypes.SIGNED);
+      expect(trimNumber(number)).to.deep.equal(res);
     });
 
   });

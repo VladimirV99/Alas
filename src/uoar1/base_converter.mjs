@@ -345,7 +345,7 @@ export function decimalTo8421(number, log=true){
     if(SPACE_MATCH.test(number.charAt(i)))
       continue;
     temp = getValueAt(number, i, log);
-    if(temp===null || temp>9){
+    if(temp===null || temp>15){
       addToStackTrace("decimalTo8421", "Invalid value in \"" + number + "\"", log);
       return null;
     }

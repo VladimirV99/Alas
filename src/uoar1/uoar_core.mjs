@@ -535,10 +535,12 @@ export function trimNumber(number){
         }
       }
       for(let i=number.fraction.length-1; i>=0; i--){
-        if(number.fraction.charAt(i)!='0' || i==0){
+        if(number.fraction.charAt(i)!='0'){
           number.fraction = number.fraction.substr(0, i+1);
           break;
         }
+        if(i==0)
+          number.fraction = "";
       }
       break;
     case NumberTypes.OC:
