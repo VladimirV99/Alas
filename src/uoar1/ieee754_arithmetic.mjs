@@ -1,10 +1,11 @@
-import { NumberTypes, toUOARNumber, toLength, trimSign, trimNumber, fractionToLength } from './uoar_core.mjs';
+import { NumberTypes, UOARNumber, PLUS, toUOARNumber, toLength, trimSign, trimNumber, fractionToLength } from './uoar_core.mjs';
 import { fromDecimal, baseToDecimalInteger } from './base_converter.mjs';
-import { add } from './uoar_arithmetic.mjs';
+import { add, isGreater } from './uoar_arithmetic.mjs';
 import { 
   IEEE754Number, POS_ZERO, NEG_ZERO, POS_INF, NEG_INF, QNAN, SNAN, IEEE754Formats, 
   BINARY32, BINARY32_SPECIAL_VALUES, toIEEE754Number, getSpecialValueBinary32, normalizeBinary
 } from './ieee754_core.mjs';
+import { createZeroString } from './util.mjs';
 import { addToStackTrace } from './output.mjs';
 
 /** 
@@ -43,7 +44,7 @@ export function addIEEE754(operand1, operand2, log=true){
   let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special1==SNAN || special2==QNAN || special2==SNAN || 
-      (special1==POS_INF && specail2==NEG_INF) || (special1==NEG_INF && special2==POS_INF)){
+      (special1==POS_INF && special2==NEG_INF) || (special1==NEG_INF && special2==POS_INF)){
       return BINARY32_SPECIAL_VALUES.QNAN;
     } else if((special1==POS_INF && special2!=NEG_INF) || (special2==POS_INF && special1!=NEG_INF)){
       return BINARY32_SPECIAL_VALUES.POS_INF;
@@ -61,7 +62,9 @@ export function addIEEE754(operand1, operand2, log=true){
   let significand1 = new UOARNumber(operand1.sign, (exponent==0?"0":"1")+operand1.significand.substr(0, exponent1), operand1.significand.substr(exponent1), 2, NumberTypes.SMR);
   let significand2 = new UOARNumber(operand2.sign, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SMR);
   let significand = add(significand1, significand2, true, false);
-  exponent += normalizeBinary(significand, true, false);
+  let normalized = normalizeBinary(significand, true, false);
+  significand = normalized.significand;
+  exponent += normalized.exponent;
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
   } else if(exponent <= 0){
@@ -98,9 +101,9 @@ export function subtractIEEE754(operand1, operand2, log=true){
   let special2 = getSpecialValueBinary32(operand2);
   if(special1!=null || special2!=null){
     if(special1==QNAN || special1==SNAN || special2==QNAN || special2==SNAN || 
-      (special1==POS_INF && specail2==POS_INF) || (special1==NEG_INF && special2==NEG_INF)){
+      (special1==POS_INF && special2==POS_INF) || (special1==NEG_INF && special2==NEG_INF)){
       return BINARY32_SPECIAL_VALUES.QNAN;
-    }else if((special1==POS_INF && specail2==NEG_INF) || (special1==POS_INF && special2!=POS_INF) || (special2==NEG_INF && special1!=NEG_INF)){
+    }else if((special1==POS_INF && special2==NEG_INF) || (special1==POS_INF && special2!=POS_INF) || (special2==NEG_INF && special1!=NEG_INF)){
       return BINARY32_SPECIAL_VALUES.POS_INF;
     }else if((special1==NEG_INF && special2==POS_INF) || (special1==NEG_INF && special2!=NEG_INF) || (special2==POS_INF && special1!=POS_INF)){
       return BINARY32_SPECIAL_VALUES.NEG_INF;
@@ -117,7 +120,9 @@ export function subtractIEEE754(operand1, operand2, log=true){
   let significand2 = trimNumber(new UOARNumber(operand2.sign, (exponent==0?"0":"1")+operand2.significand.substr(0, exponent2), operand2.significand.substr(exponent2), 2, NumberTypes.SMR));
   significand2.sign = significand2.sign=="0" ? "1" : "0";
   let significand = add(significand1, significand2, true, false);
-  exponent += normalizeBinary(significand, true, false);
+  let normalized = normalizeBinary(significand, true, false);
+  significand = normalized.significand;
+  exponent += normalized.exponent;
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
   } else if(exponent <= 0){
@@ -155,16 +160,16 @@ export function multiplyIEEE754(operand1, operand2, log=true){
   if(special1!=null || special2!=null){
     if(special1==QNAN || special2==QNAN || special1==SNAN || special2==SNAN ||
       ((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_INF || special2==NEG_INF)) ||
-      ((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_INF || special2==NEG_INF))){
+      ((special2==POS_ZERO || special2==NEG_ZERO) && (special1==POS_INF || special1==NEG_INF))){
       return BINARY32_SPECIAL_VALUES.QNAN;
     }else if(special1==POS_ZERO || special2==POS_ZERO || special1==NEG_ZERO || special2==NEG_ZERO){
-      return operand1.sign==operand2.sign? BINARY_POS_ZERO : BINARY_NEG_ZERO;
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
     }else if((special1==POS_INF && special2==NEG_INF) || (special1==NEG_INF && special2==POS_INF)){
       return BINARY32_SPECIAL_VALUES.NEG_INF;
     }else if(special1==POS_INF || special2==POS_INF){
-      return BINARY32_SPECIAL_VALUES.POS_INF;
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }else if(special1==NEG_INF || special2==NEG_INF){
-      return BINARY32_SPECIAL_VALUES.NEG_INF;
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }
   }
 
@@ -191,8 +196,9 @@ export function multiplyIEEE754(operand1, operand2, log=true){
   significand.fraction = significand.whole.substr(significand.whole.length-significand_fraction_len);
   significand.whole = significand.whole.substr(0, significand.whole.length-significand_fraction_len);
 
-  let normalize_exponent = normalizeBinary(significand, true, false);
-  exponent += normalize_exponent;
+  let normalized = normalizeBinary(significand, true, false);
+  significand = normalized.significand;
+  exponent += normalized.exponent;
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
   } else if(exponent <= 0){
@@ -232,10 +238,10 @@ export function divideIEEE754(operand1, operand2, log=true){
       ((special1==POS_ZERO || special1==NEG_ZERO) && (special2==POS_ZERO || special2==NEG_ZERO)) ||
       ((special1==POS_INF || special1==NEG_INF) && (special2==POS_INF || special2==NEG_INF))){
       return BINARY32_SPECIAL_VALUES.QNAN;
-    }else if(special2==POS_INF || special2==NEG_INF){
-      return operand1.sign==operand2.sign? BINARY_POS_ZERO : BINARY_NEG_ZERO;
-    }else if(special2==POS_ZERO || special2==NEG_ZERO){
-      return operand1.sign==operand2.sign? BINARY_POS_INF : BINARY_NEG_INF;
+    }else if(special1==POS_ZERO || special1==NEG_ZERO || special2==POS_INF || special2==NEG_INF){
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
+    }else if(special1==POS_INF || special1==NEG_INF || special2==POS_ZERO || special2==NEG_ZERO){
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }
   }
 
@@ -284,8 +290,9 @@ export function divideIEEE754(operand1, operand2, log=true){
   }
   trimNumber(significand);
 
-  let normalize_exponent = normalizeBinary(significand, true, false);
-  exponent += normalize_exponent;
+  let normalized = normalizeBinary(significand, true, false);
+  significand = normalized.significand;
+  exponent += normalized.exponent;
   if(exponent > BINARY32.MAX_EXPONENT+BINARY32.OFFSET){
     return significand.sign==PLUS ? POS_INF : NEG_INF;
   } else if(exponent <= 0){
