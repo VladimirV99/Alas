@@ -1,12 +1,6 @@
 let output = "";
 let stackTrace = [];
 
-if (!Array.prototype.last){
-  Array.prototype.last = function(){
-      return this[this.length - 1];
-  };
-};
-
 export function addToOutput(text){
   output = output.concat(text + "\n");
 }
@@ -31,10 +25,16 @@ export function clearStackTrace(){
 
 export function printStackTrace(){
   for(item of stackTrace){
-    console.log(stackTrace.source + ": " + stackTrace.message);
+    console.error(stackTrace.source + ": " + stackTrace.message);
   }
 }
 
 export function getStackTrace(){
   return stackTrace;
+}
+
+export function getStackTraceLast(){
+  if(stackTrace.length==0)
+    return "";
+  return stackTrace[stackTrace.length-1];
 }

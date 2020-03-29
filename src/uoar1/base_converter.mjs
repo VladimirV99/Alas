@@ -139,8 +139,8 @@ export function toDecimal(number, standardized=false, log=true){
 }
 
 /**
- * Converts given standardized signed nimber from base 10 to the given base
- * @param {UOARNumber} number Number to convert from decimal 
+ * Converts given number from base 10 to the given base
+ * @param {UOARNumber} number Standardized signed number to convert
  * @param {number} base Base to convert to
  * @param {boolean} [standardized=false] Treat as standardized
  * @param {boolean} [log=true] Should log
@@ -236,19 +236,19 @@ export function fromDecimal(number, base, standardized=false, log=true){
  * @param {boolean} [log=true] Should log
  * @returns {UOARNumber} Number converted to base base_to
  */
-export function convertBases(number, base_to, standardized=false, log=true){
+export function convertToBase(number, base_to, standardized=false, log=true){
   if(number===null){
-    addToStackTrace("convertBases", "Number is null", log);
+    addToStackTrace("convertToBase", "Number is null", log);
     return null;
   }
   if(!isValidBase(base_to)){
-    addToStackTrace("convertBases", "Invalid base \"" + base_to + "\"", log);
+    addToStackTrace("convertToBase", "Invalid base \"" + base_to + "\"", log);
     return null;
   }
   if(!standardized){
     let standardized_number = standardizeUOARNumber(number.copy(), log);
     if(standardized_number === null){
-      addToStackTrace("convertBases", "Invalid number \"" + number.toString() + "\"", log);
+      addToStackTrace("convertToBase", "Invalid number \"" + number.toString() + "\"", log);
       return null;
     }
     number = standardized_number;
@@ -261,7 +261,7 @@ export function convertBases(number, base_to, standardized=false, log=true){
   }
   let res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
   if(res===null){
-    addToStackTrace("convertBases", "Conversion error, result null", log);
+    addToStackTrace("convertToBase", "Conversion error", log);
   }
   return res;
 }

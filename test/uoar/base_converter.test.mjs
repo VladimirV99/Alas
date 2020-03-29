@@ -3,7 +3,7 @@ const expect = chai.expect;
 
 import { UOARNumber, NumberTypes } from '../../src/uoar1/uoar_core.mjs';
 import { 
-  UOARNumberToDecimalInteger, baseToDecimalInteger, toDecimal, fromDecimal, convertBases,
+  UOARNumberToDecimalInteger, baseToDecimalInteger, toDecimal, fromDecimal, convertToBase,
   digitToBinary, numberToBinary, binaryToNumber, decimalTo8421, decimalFrom8421
 } from '../../src/uoar1/base_converter.mjs';
 
@@ -215,38 +215,38 @@ describe('Base Converter', function() {
 
   });
 
-  describe('convertBases', function() {
+  describe('convertToBase', function() {
 
     it('null value', function() {
-      expect(convertBases(null, 16, false, false)).to.be.null;
+      expect(convertToBase(null, 16, false, false)).to.be.null;
     });
 
     it('invalid number', function() {
       let number = new UOARNumber("0", "A7", "125", 10, NumberTypes.TC);
-      expect(convertBases(number, 16, false, false)).to.be.null;
+      expect(convertToBase(number, 16, false, false)).to.be.null;
     });
 
     it('not standardized', function() {
       let number = new UOARNumber("", "004257", "2320", 8, NumberTypes.UNSIGNED);
       let res = new UOARNumber("", "8AF", "4D", 16, NumberTypes.UNSIGNED);
-      expect(convertBases(number, res.base, false, false)).to.deep.equal(res);
+      expect(convertToBase(number, res.base, false, false)).to.deep.equal(res);
     });
 
     it('invalid base', function() {
       let number = new UOARNumber("+", "4257", "232", 8, NumberTypes.SIGNED);
-      expect(convertBases(number, 0, true, false)).to.be.null;
+      expect(convertToBase(number, 0, true, false)).to.be.null;
     });
 
     it('positive number', function() {
       let number = new UOARNumber("0", "4257", "232", 8, NumberTypes.TC);
       let res = new UOARNumber("0", "8AF", "4D", 16, NumberTypes.TC);
-      expect(convertBases(number, res.base, true, false)).to.deep.equal(res);
+      expect(convertToBase(number, res.base, true, false)).to.deep.equal(res);
     });
 
     it('negative number', function() {
       let number = new UOARNumber("7", "4257", "232", 8, NumberTypes.TC);
       let res = new UOARNumber("F", "8AF", "4D", 16, NumberTypes.TC);
-      expect(convertBases(number, res.base, true, false)).to.deep.equal(res);
+      expect(convertToBase(number, res.base, true, false)).to.deep.equal(res);
     });
 
   });

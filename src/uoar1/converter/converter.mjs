@@ -5,82 +5,60 @@ import {
 import { baseToDecimalInteger } from '../base_converter.mjs';
 import { convertToSMR, convertToOC, convertToTC } from '../type_converter.mjs';
 import { isValidBase } from '../util.mjs';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
+import { addToStackTrace, addToOutput } from '../output.mjs';
 
 import '../common.scss';
 
-function convertBase(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  let val = document.getElementById('input_number').value;
-  let base1 = document.getElementById('input_base_src').value;
-  let base2 = document.getElementById('input_base_dest').value;
-  clearStackTrace();
-  clearOutput();
-  if(val=="" || base1=="" || base2==""){
+/**
+ * Converts a number from bases base_from to base_to
+ * @param {string} val Value to convert
+ * @param {number} base_from Base to convert from
+ * @param {number} base_to Base to convert to
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Number converted from base_from to base_to
+ */
+export function convertToBase(val, base_from, base_to, log=true){
+  if(val=="" || base_from=="" || base_to==""){
     addToStackTrace("convertBase", "Empty input", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
-  if(!isValidBase(base1)){
+  if(!isValidBase(base_from)){
     addToStackTrace("convertBase", "Invalid base \"" + base1 + "\"", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
-  if(!isValidBase(base2)){
+  if(!isValidBase(base_to)){
     addToStackTrace("convertBase", "Invalid base \"" + base2 + "\"", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
-    return null;
-  }
-  if(!isValidNumber(val, base1, NumberTypes.SIGNED)){
-    addToStackTrace("convertBase", "Number is invalid", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
 
-  let res = convertBases(toUOARNumber(val, base1, NumberTypes.SIGNED, true), base2, false, true);
-  if(res===null){
-    addToStackTrace("convertBase", "Conversion Error", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
+  let number = toUOARNumber(val, base_from, NumberTypes.SIGNED, log);
+  if(number===null){
+    addToStackTrace("convertBase", "Invalid number \"" + val + "\" for base " + base_from, log);
     return null;
   }
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
-  return res;
-}
-
-function convertBases(number, base_to, log=true){
   if(number.base==base_to){
     return number;
   }
-  let res = fromDecimal(toDecimal(number, true, log), base_to, true, log);
+  let res = fromDecimal(toDecimal(number, log), base_to, log);
   if(res===null){
-    addToStackTrace("convertBases", "Conversion error, result null", log);
+    addToStackTrace("convertBase", "Conversion error", log);
   }
   return res;
 }
 
-function toDecimal(number, standardized=false, log=true){
-  if(!standardized){
-    number = standardizeUOARNumber(number.copy(), false);
-    if(number === null){
-      addToStackTrace("toDecimal", "Invalid number \"" + number + "\" for base " + base, log);
-      return null;
-    }
-  }
+/**
+ * Converts given nimber to base 10
+ * @param {UOARNumber} number Standardized signed number to convert
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Number converted to base 10
+ */
+function toDecimal(number, log=true){
+  number = number.copy();
   if(number.base==10){
     return number;
   }
+
   let work1 = "";
   let work2 = "";
 
@@ -127,14 +105,15 @@ function toDecimal(number, standardized=false, log=true){
   return res;
 }
 
-function fromDecimal(number, base, standardized=false, log=true){
-  if(!standardized){
-    number = standardizeUOARNumber(number.copy(), log);
-    if(number === null){
-      addToStackTrace("fromDecimal", "Invalid number \"" + number + "\" for base 10", log);
-      return null;
-    }
-  }
+/**
+ * Converts given number from base 10 to the given base
+ * @param {UOARNumber} number Standardized signed number to convert
+ * @param {number} base Base to convert to
+ * @param {boolean} [log=true] Should log
+ * @returns {UOARNumber} Number converted to specified base
+ */
+function fromDecimal(number, base, log=true){
+  number = number.copy();
   if(base==10){
     return number;
   }
@@ -198,48 +177,43 @@ function fromDecimal(number, base, standardized=false, log=true){
   return res;
 }
 
-function convertType(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  let val = document.getElementById('input_number').value;
-  let base = document.getElementById('input_base_src').value;
-  clearStackTrace();
-  clearOutput();
-
+/**
+ * Converts given number to all number types
+ * @param {string} val Value to convert 
+ * @param {number} base Base of the value
+ * @param {boolean} [log=true] Should log
+ * @returns {object} Object containing the value represented as different types
+ */
+export function convertToType(val, base, log=true){
   if(val=="" || base==""){
-    addToStackTrace("convertBase", "Empty input", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
+    addToStackTrace("convertToType", "Empty input", log);
     return null;
   }
     
   let number = toUOARNumber(val, base, NumberTypes.SIGNED, false);
   if(number===null){
-    addToStackTrace("convertType", "Invalid number", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
+    addToStackTrace("convertToType", "Invalid number \"" + val + "\" for base " + base_from, log);
     return null;
   }
-  
+
+  let number_smr = convertToSMR(number, false, true);
+  let number_oc = convertToOC(number, false, true);
+  let number_tc = convertToTC(number, false, true);
+  if(number===null || number_smr===null || number_oc===null || number_tc===null){
+    addToStackTrace("convertToType", "Conversion error", log);
+    return null;
+  }
+
   addToOutput("<table id=\"representations\">");
   addToOutput("<tr><th colspan=\"2\">");
   addToOutput("(" + number.toSigned() + ")" + number.base + "</th></tr>");
   addToOutput("<tr><td>ZAV:</td>");
-  addToOutput("<td>(" + convertToSMR(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+  addToOutput("<td>(" + number_smr.toSigned() + ")" + number.base + "</td></tr>");
   addToOutput("<tr><td>NK:</td>");
-  addToOutput("<td>(" + convertToOC(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+  addToOutput("<td>(" + number_oc.toSigned() + ")" + number.base + "</td></tr>");
   addToOutput("<tr><td>PK:</td>");
-  addToOutput("<td>(" + convertToTC(number, false, true).toSigned() + ")" + number.base + "</td></tr>");
+  addToOutput("<td>(" + number_tc.toSigned() + ")" + number.base + "</td></tr>");
   addToOutput("</table>");
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
-  return number;
+  return { signed: number, smr: number_smr, oc: number_oc, tc: number_tc };
 }
-
-window.convertBase = convertBase;
-window.convertType = convertType;

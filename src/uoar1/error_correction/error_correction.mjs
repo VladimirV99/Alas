@@ -1,38 +1,22 @@
 import { NumberTypes, addZeroesBefore } from '../uoar_core.mjs';
 import { numberToBinary } from '../base_converter.mjs';
 import { createZeroString } from '../util.mjs';
-import { addToStackTrace, getStackTrace, clearStackTrace, addToOutput, getOutput, clearOutput } from '../output.mjs';
+import { addToStackTrace, addToOutput } from '../output.mjs';
 
-import '../common.scss';
-
-function encodeCRC(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  clearStackTrace();
-  clearOutput();
-
-  let message = document.getElementById('input_message1').value;
-  let generator = document.getElementById('input_generator').value;
+export function encodeCRC(message, generator, log=true){
   if(message=="" || generator==""){
     addToStackTrace("encodeCRC", "Empty input", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
   if(!isBinaryInteger(message) || !isBinaryInteger(generator)){
     addToStackTrace("encodeCRC", "Input isn't binary", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
 
   for(let i=0; i<generator.length; i++){
     if(generator.charAt(i)=="0"){
       if(i==generator.length-1){
+        addToStackTrace("encodeCRC", "Invalid generator \"" + generator + "\"", log);
         return null;
       }
       continue;
@@ -72,39 +56,23 @@ function encodeCRC(log=true){
   res = message + createZeroString(generator.length-res.length-1) + res;
   addToOutput("<p>Kodirana poruka: " + res + "</p>");
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
   return res;
 }
 
-function decodeCRC(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  clearStackTrace();
-  clearOutput();
-
-  let message = document.getElementById('input_message1').value;
-  let generator = document.getElementById('input_generator').value;
+export function decodeCRC(message, generator, log=true){
   if(message=="" || generator==""){
     addToStackTrace("decodeCRC", "Empty input", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
   if(!isBinaryInteger(message) || !isBinaryInteger(generator)){
     addToStackTrace("encodeCRC", "Input isn't binary", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
 
   for(let i=0; i<generator.length; i++){
     if(generator.charAt(i)=="0"){
       if(i==generator.length-1){
+        addToStackTrace("encodeCRC", "Invalid generator \"" + generator + "\"", log);
         return null;
       }
       continue;
@@ -145,41 +113,16 @@ function decodeCRC(log=true){
     addToOutput("<p>poruka je ispravno primljena</p>");
   }
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
   return res;
 }
 
-function isBinaryInteger(number){
-  for(let i = 0; i<number.length; i++){
-    if(number.charAt(i)!="0" && number.charAt(i)!="1"){
-      return false;
-    }
-  }
-  return true;
-}
-
-function encodeHammingSEC(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  clearStackTrace();
-  clearOutput();
-
-  let message = document.getElementById('input_message2').value;
+export function encodeHammingSEC(message, log=true){
   if(message.length!=8){
     addToStackTrace("encodeCRC", "Message must be 8 digits long", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
   if(!isBinaryInteger(message)){
     addToStackTrace("encodeCRC", "Message isn't binary", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
 
@@ -262,32 +205,16 @@ function encodeHammingSEC(log=true){
   res = message + res.join("");
   addToOutput("<p>Kodirana poruka: " + res + "</p>");
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
   return res;
 }
 
-function decodeHammingSEC(log=true){
-  let solution = document.getElementById('solution');
-  let error = document.getElementById('error');
-  if(!solution.classList.contains('hidden'))
-    solution.classList.add('hidden');
-  if(!error.classList.contains('hidden'))
-    error.classList.add('hidden');
-  clearStackTrace();
-  clearOutput();
-
-  let message = document.getElementById('input_message2').value;
+export function decodeHammingSEC(message, log=true){
   if(message.length!=12){
     addToStackTrace("encodeCRC", "Message must be 12 digits long", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
   if(!isBinaryInteger(message)){
     addToStackTrace("encodeCRC", "Message isn't binary", log);
-    error.innerHTML="<p>"+getStackTrace()[0].message+"</p>";
-    error.classList.remove('hidden');
     return null;
   }
 
@@ -392,12 +319,14 @@ function decodeHammingSEC(log=true){
     addToOutput("<p>poruka ispravna</p>");
   }
 
-  solution.innerHTML=getOutput();
-  solution.classList.remove('hidden');
   return res;
 }
 
-window.encodeCRC = encodeCRC;
-window.decodeCRC = decodeCRC;
-window.encodeHammingSEC = encodeHammingSEC;
-window.decodeHammingSEC = decodeHammingSEC;
+function isBinaryInteger(number){
+  for(let i = 0; i<number.length; i++){
+    if(number.charAt(i)!="0" && number.charAt(i)!="1"){
+      return false;
+    }
+  }
+  return true;
+}

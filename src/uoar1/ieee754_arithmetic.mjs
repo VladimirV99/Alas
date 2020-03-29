@@ -164,11 +164,7 @@ export function multiplyIEEE754(operand1, operand2, log=true){
       return BINARY32_SPECIAL_VALUES.QNAN;
     }else if(special1==POS_ZERO || special2==POS_ZERO || special1==NEG_ZERO || special2==NEG_ZERO){
       return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
-    }else if((special1==POS_INF && special2==NEG_INF) || (special1==NEG_INF && special2==POS_INF)){
-      return BINARY32_SPECIAL_VALUES.NEG_INF;
-    }else if(special1==POS_INF || special2==POS_INF){
-      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
-    }else if(special1==NEG_INF || special2==NEG_INF){
+    }else if(special1==POS_INF || special1==NEG_INF || special2==POS_INF || special2==NEG_INF){
       return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }
   }

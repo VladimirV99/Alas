@@ -159,8 +159,6 @@ export function convertToIEEE754Binary32(significand, exponent, standardized=fal
       return new IEEE754Number("0", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
     else
       return new IEEE754Number("1", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
-  }else{
-    significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH-significand.whole.length, log);
   }
   let converted_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, false);
   if(converted_exponent===null){
@@ -212,8 +210,6 @@ export function convertToIEEE754Binary64(significand, exponent, standardized=fal
       return new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
     else
       return new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
-  }else{
-    significand = fractionToLength(significand, BINARY64.SIGNIFICAND_LENGTH-significand.whole.length, log);
   }
   let converted_exponent = baseToDecimalInteger(exponent, 10, NumberTypes.SIGNED, false, false);
   if(converted_exponent===null){
