@@ -70,10 +70,12 @@ export function addIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
   }
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   return new IEEE754Number(significand.sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
@@ -128,10 +130,12 @@ export function subtractIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
   }
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   return new IEEE754Number(significand.sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
@@ -200,10 +204,12 @@ export function multiplyIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
   }
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   return new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }
@@ -294,10 +300,12 @@ export function divideIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
   }
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   return new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
 }

@@ -879,6 +879,8 @@ function addIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
     addToOutput("</p>");
     addToOutput("<p>subnormalan broj: " + significand.toSigned());
   }
@@ -887,7 +889,7 @@ function addIEEE754(operand1, operand2, log=true){
   addToOutput("<p>znak: " + (significand.sign==PLUS?"0":"1") + "</p>");
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   let res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
@@ -977,6 +979,8 @@ function subtractIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
     addToOutput("</p>");
     addToOutput("<p>subnormalan broj: " + significand.toSigned());
   }
@@ -985,7 +989,7 @@ function subtractIEEE754(operand1, operand2, log=true){
   addToOutput("<p>znak: " + (significand.sign==PLUS?"0":"1") + "</p>");
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   let res = new IEEE754Number(significand.sign==PLUS?"0":"1", exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput(res.toString());
@@ -1076,13 +1080,15 @@ function multiplyIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
     addToOutput("</p>");
     addToOutput("<p>subnormalan broj: " + significand.toSigned());
   }
   addToOutput("</p>");
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   let res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");
@@ -1197,13 +1203,15 @@ function divideIEEE754(operand1, operand2, log=true){
   } else if(exponent <= 0){
     significand.fraction = createZeroString(-exponent-1) + significand.whole + significand.fraction;
     significand.whole = "0";
+    significand = trimNumber(fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log));
+    exponent = 0;
     addToOutput("</p>");
     addToOutput("<p>subnormalan broj: " + significand.toSigned());
   }
   addToOutput("</p>");
 
   significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, false);
-  exponent = toLength(fromDecimal(trimSign(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  exponent = toLength(fromDecimal(toUOARNumber(exponent.toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
 
   let res = new IEEE754Number(sign, exponent, significand.fraction, IEEE754Formats.BINARY32);
   addToOutput("<p>"+res.toString()+"</p>");

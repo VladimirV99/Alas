@@ -66,6 +66,9 @@ export class IEEE754Number {
     this.format = format;
   }
   toString(){
+    return this.sign + " " + this.exponent + " " + this.significand;
+  }
+  toFormatString(){
     return this.sign + " " + this.exponent + " " + this.significand + "(" + this.getFormat() + ")";
   }
   getFormat(){
@@ -176,7 +179,7 @@ export function convertToIEEE754Binary32(significand, exponent, standardized=fal
   }
 
   let res_sign = significand.sign==PLUS ? "0" : "1";
-  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY32.OFFSET+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_exponent = toLength(fromDecimal(toUOARNumber((BINARY32.OFFSET+exponent).toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY32.EXPONENT_LENGTH, 0, log).toUnsigned();
   let res_significand = fractionToLength(significand, BINARY32.SIGNIFICAND_LENGTH, log).fraction;
   return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY32);
 }
@@ -227,7 +230,7 @@ export function convertToIEEE754Binary64(significand, exponent, standardized=fal
   }
 
   let res_sign = significand.sign==PLUS ? "0" : "1";
-  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((BINARY64.OFFSET+exponent).toString(), 10 , NumberTypes.SIGNED, log)), 2, true, log), BINARY64.EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_exponent = toLength(fromDecimal(toUOARNumber((BINARY64.OFFSET+exponent).toString(), 10 , NumberTypes.UNSIGNED, log), 2, true, log), BINARY64.EXPONENT_LENGTH, 0, log).toUnsigned();
   let res_significand = fractionToLength(significand, BINARY64.SIGNIFICAND_LENGTH, log).fraction;
   return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.BINARY64);
 }
@@ -286,7 +289,7 @@ export function convertToIEEE754Decimal32DPD(significand, exponent, standardized
   let res_sign = significand.sign==PLUS ? "0" : "1";
   let res_exponent;
   let na = addZeroesBefore(digitToBinary(significand.whole, 0), 10, NumberTypes.UNSIGNED, 4, log);
-  let nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
+  let nb = wholeToLength(fromDecimal(toUOARNumber((DECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.UNSIGNED, log), 2, true, log), 8, log).toUnsigned();
   if(na.charAt(0)=='0'){
     res_exponent = nb.substr(0,2)+na.substr(1,3)+nb.substr(2,6);
   }else{
@@ -353,7 +356,7 @@ export function convertToIEEE754Decimal32BID(significand, exponent, standardized
   let res_sign = significand.sign==PLUS ? "0" : "1";
   let res_exponent;
   let na = significand.whole.substr(0,4);
-  let nb = wholeToLength(fromDecimal(trimSign(toUOARNumber((DECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), 8, log).toUnsigned();
+  let nb = wholeToLength(fromDecimal(toUOARNumber((DECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.UNSIGNED, log), 2, true, log), 8, log).toUnsigned();
   if(na.charAt(0)=='0'){
     res_exponent = nb+na.substr(1,3);
   }else{
@@ -409,7 +412,7 @@ export function convertToIEEE754Hexadecimal32(significand, exponent, standardize
   }
 
   let res_sign = significand.sign==PLUS ? "0" : "1";
-  let res_exponent = toLength(fromDecimal(trimSign(toUOARNumber((HEXADECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.SIGNED, log)), 2, true, log), HEXADECIMAL32.EXPONENT_LENGTH, 0, log).toUnsigned();
+  let res_exponent = toLength(fromDecimal(toUOARNumber((HEXADECIMAL32.OFFSET+exponent).toString(), 10, NumberTypes.UNSIGNED, log), 2, true, log), HEXADECIMAL32.EXPONENT_LENGTH, 0, log).toUnsigned();
   let res_significand = decimalTo8421(significand.fraction);
   return new IEEE754Number(res_sign, res_exponent, res_significand, IEEE754Formats.HEXADECIMAL32);
 }
