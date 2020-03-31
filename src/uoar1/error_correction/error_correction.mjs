@@ -108,12 +108,12 @@ export function decodeCRC(message, generator, log=true){
   if(res!=""){
     addToOutput(res+"</p>");
     addToOutput("<p>poruka nije ispravno primljena</p>");
+    return false;
   }else{
     addToOutput("0</p>");
     addToOutput("<p>poruka je ispravno primljena</p>");
+    return true;
   }
-
-  return res;
 }
 
 export function encodeHammingSEC(message, log=true){
@@ -220,7 +220,8 @@ export function decodeHammingSEC(message, log=true){
 
   let control_bits = 4;
 
-  let bits = [];
+  let m_bits = [];
+  let c_bits = [];
   addToOutput("<p><table style=\"border: none;\">");
   addToOutput("<tbody>");
   let m_count = message.length;
@@ -228,10 +229,11 @@ export function decodeHammingSEC(message, log=true){
   for(let i = message.length; i>0; i--){
     addToOutput("<tr>");
     if((i&(i-1))!=0){
-      bits.unshift(addZeroesBefore(numberToBinary(i, false), 2, NumberTypes.UNSIGNED, control_bits));
-      addToOutput("<td>"+i+"</td><td>"+bits[bits.length-1]+"</td><td>m"+m_count+"</td>");
+      m_bits.unshift(addZeroesBefore(numberToBinary(i, false), 2, NumberTypes.UNSIGNED, control_bits));
+      addToOutput("<td>"+i+"</td><td>"+m_bits[m_bits.length-1]+"</td><td>m"+m_count+"</td>");
       m_count--;
     }else{
+      c_bits.unshift(addZeroesBefore(numberToBinary(i, false), 2, NumberTypes.UNSIGNED, control_bits));
       addToOutput("<td>"+i+"</td><td>"+addZeroesBefore(numberToBinary(i, false), 2, NumberTypes.UNSIGNED, control_bits)+"</td><td>c"+c_count+"</td>");
       c_count--;
     }
@@ -267,8 +269,8 @@ export function decodeHammingSEC(message, log=true){
   let check_code = [];
   for(let i = 0; i<control_bits; i++){
     let ones = 0;
-    for(let j = 0; j<bits.length; j++){
-      if(bits[j].charAt(i)=="1" && message.charAt(message.length-control_bits-j-1)=="1"){
+    for(let j = 0; j<m_bits.length; j++){
+      if(m_bits[j].charAt(i)=="1" && message.charAt(message.length-control_bits-j-1)=="1"){
         ones++;
       }
     }
@@ -283,8 +285,8 @@ export function decodeHammingSEC(message, log=true){
     let work = "";
     addToOutput("c" + i + "' = ");
     let first = true;
-    for(let j=0; j<bits.length; j++){
-      if(bits[j].charAt(control_bits-i)=="1"){
+    for(let j=0; j<m_bits.length; j++){
+      if(m_bits[j].charAt(control_bits-i)=="1"){
         if(first){
           first=false;
         }else{
@@ -308,11 +310,17 @@ export function decodeHammingSEC(message, log=true){
   let res = message;
 
   let has_error = false;
-  for(let i = 0; i<bits.length; i++){
-    if(code_error==bits[i]){
+  for(let i = 0; i<m_bits.length; i++){
+    if(code_error==m_bits[i]){
       has_error = true;
       res = res.substr(0, message.length-control_bits-i-1) + (res.charAt(message.length-control_bits-i-1)=="0"?"1":"0") + res.substr(message.length-control_bits-i);
       addToOutput("<p>greska u bitu m" + (i+1) + "<br>korekcija: " + res + "</p>");
+    }
+  }
+  for(let i = 0; i<c_bits.length; i++){
+    if(code_error==c_bits[i]){
+      res = res.substr(0, message.length-i-1) + (res.charAt(message.length-i-1)=="0"?"1":"0") + res.substr(message.length-i);
+      addToOutput("<p>greska u kontrolnom bitu c" + (i+1) + "</p>");
     }
   }
   if(!has_error){
