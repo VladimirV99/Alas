@@ -1,6 +1,6 @@
 import { 
   PLUS, MINUS, SPACE_REPLACE, NumberTypes, UOARNumber, isValidNumber, standardizeUOARNumber, toUOARNumber,
-  toLength, trimSign, trimNumber, wholeToLength, fractionToLength, addZeroesBefore
+  toLength, trimNumber, wholeToLength, fractionToLength, addZeroesBefore
 } from './uoar_core.mjs';
 import { add } from './uoar_arithmetic.mjs';
 import { baseToDecimalInteger, fromDecimal, toDecimal, digitToBinary, decimalFrom8421, decimalTo8421 } from './base_converter.mjs';

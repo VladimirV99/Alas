@@ -6,8 +6,9 @@ import { add, isGreater } from '../uoar_arithmetic.mjs';
 import { baseToDecimalInteger, fromDecimal, toDecimal, digitToBinary, numberToBinary, decimalTo8421, decimalFrom8421 } from '../base_converter.mjs';
 import { 
   IEEE754Formats, IEEE754Number, SignificandExponentPair, BINARY32, BINARY64, DECIMAL32, HEXADECIMAL32,
+  POS_ZERO, NEG_ZERO, POS_INF, NEG_INF, QNAN, SNAN, BINARY32_SPECIAL_VALUES,
   normalizeBinary, normalizeDecimal, normalizeHexadecimal, decimalToDPD, DPDtoDecimal, toIEEE754Number, isValidIEEE754,
-  getSpecialValueBinary32, getSpecialValueBinary64, getSpecialValueDecimal32, BINARY32_SPECIAL_VALUES
+  getSpecialValueBinary32, getSpecialValueBinary64, getSpecialValueDecimal32
 } from '../ieee754_core.mjs';
 import { ArithmeticOperations } from '../ieee754_arithmetic.mjs';
 import { isInBounds, createZeroString } from '../util.mjs';
@@ -15,7 +16,7 @@ import { addToStackTrace, addToOutput } from '../output.mjs';
 
 /**
  * Converts a significand and exponent to IEEE754
- * @param {UOARNumber} significand Significand
+ * @param {string} significand Significand
  * @param {string} exponent Exponent
  * @param {IEEE754Formats} format Format to convert to
  * @param {boolean} [log=true] Should log
@@ -90,9 +91,9 @@ function convertToIEEE754Binary32(significand, exponent, standardized=false, log
   if(significand.whole.length>BINARY32.SIGNIFICAND_LENGTH){
     let res;
     if(significand.sign==PLUS)
-      res = new IEEE754Number("0", "11111111", "00000000000000000000000");
+      res = new IEEE754Number("0", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
     else
-      res = new IEEE754Number("1", "11111111", "00000000000000000000000");
+      res = new IEEE754Number("1", "11111111", "00000000000000000000000", IEEE754Formats.BINARY32);
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
   }
@@ -155,9 +156,9 @@ function convertToIEEE754Binary64(significand, exponent, standardized=false, log
   if(significand.whole.length>BINARY64.SIGNIFICAND_LENGTH){
     let res;
     if(significand.sign==PLUS){
-      res = new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000");
+      res = new IEEE754Number("0", "11111111111", "0000000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
     }else{
-      res = new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000");
+      res = new IEEE754Number("1", "11111111111", "0000000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
     }
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
@@ -216,9 +217,9 @@ function convertToIEEE754Decimal32DPD(significand, exponent, standardized=false,
   if(significand.whole.length>DECIMAL32.DIGITS){
     let res;
     if(significand.sign==PLUS)
-      res = new IEEE754Number("0", "11110000000", "00000000000000000000");
+      res = new IEEE754Number("0", "11110000000", "00000000000000000000", IEEE754Formats.DECIMAL32DPD);
     else
-      res = new IEEE754Number("1", "11110000000", "00000000000000000000");
+      res = new IEEE754Number("1", "11110000000", "00000000000000000000", IEEE754Formats.DECIMAL32DPD);
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
   }
@@ -308,9 +309,9 @@ function convertToIEEE754Decimal32BID(significand, exponent, standardized=false,
   if(significand.whole.length>DECIMAL32.DIGITS){
     let res;
     if(significand.sign==PLUS)
-      res = new IEEE754Number("0", "11110000000", "00000000000000000000");
+      res = new IEEE754Number("0", "11110000000", "00000000000000000000", IEEE754Formats.DECIMAL32BID);
     else
-      res = new IEEE754Number("1", "11110000000", "00000000000000000000");
+      res = new IEEE754Number("1", "11110000000", "00000000000000000000", IEEE754Formats.DECIMAL32BID);
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
   }
@@ -384,9 +385,9 @@ function convertToIEEE754Hexadecimal32(significand, exponent, standardized=false
   if(significand.whole.length>HEXADECIMAL32.DIGITS){
     let res;
     if(significand.sign==PLUS)
-      res = new IEEE754Number("0", "11111111", "00000000000000000000000");
+      res = new IEEE754Number("0", "11111111", "00000000000000000000000", IEEE754Formats.HEXADECIMAL32);
     else
-      res = new IEEE754Number("1", "11111111", "00000000000000000000000");
+      res = new IEEE754Number("1", "11111111", "00000000000000000000000", IEEE754Formats.HEXADECIMAL32);
     addToOutput("<p>"+res.toString()+"</p>");
     return res;
   }
@@ -763,8 +764,8 @@ function convertFromIEEE754Hexadecimal32(number, log=true){
 
 /**
  * Performs given arithmetic operation on two IEEE754 binary32 numbers
- * @param {IEEE754Number} operand1 First operand
- * @param {IEEE754Number} operand2 Second operand
+ * @param {string} operand1 First operand
+ * @param {string} operand2 Second operand
  * @param {ArithmeticOperations} operation Operation to perform
  * @param {boolean} [log=true] Should log
  * @returns {IEEE754Number} Result of applying the given operation on the operands
@@ -1029,11 +1030,11 @@ function multiplyIEEE754(operand1, operand2, log=true){
       addToOutput("<p>"+POS_INF.toString()+" * "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
       return BINARY32_SPECIAL_VALUES.NEG_INF;
     }else if(special1==POS_INF || special2==POS_INF){
-      addToOutput("<p>x * "+POS_INF.toString()+" = "+POS_INF.toString()+"</p>");
-      return BINARY32_SPECIAL_VALUES.POS_INF;
+      addToOutput("<p>x * "+POS_INF.toString()+" = "+POS_INF.toString()+"("+NEG_INF.toString()+")</p>");
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }else if(special1==NEG_INF || special2==NEG_INF){
-      addToOutput("<p>x * "+NEG_INF.toString()+" = "+NEG_INF.toString()+"</p>");
-      return BINARY32_SPECIAL_VALUES.NEG_INF;
+      addToOutput("<p>x * "+NEG_INF.toString()+" = "+POS_INF.toString()+"("+NEG_INF.toString()+")</p>");
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }
   }
 
@@ -1131,10 +1132,10 @@ function divideIEEE754(operand1, operand2, log=true){
       return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
     }else if(special1==POS_INF || special1==NEG_INF){
       addToOutput("<p>"+POS_INF.toString()+"("+NEG_INF.toString()+") / x = "+POS_INF.toString()+"("+NEG_INF.toString()+")</p>");
-      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }else if(special2==POS_ZERO || special2==NEG_ZERO){
       addToOutput("<p>x / "+POS_ZERO.toString()+"("+NEG_ZERO.toString()+") = "+POS_INF.toString()+"("+NEG_INF.toString()+")</p>");
-      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_ZERO : BINARY32_SPECIAL_VALUES.NEG_ZERO;
+      return operand1.sign==operand2.sign? BINARY32_SPECIAL_VALUES.POS_INF : BINARY32_SPECIAL_VALUES.NEG_INF;
     }
   }
 

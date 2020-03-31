@@ -2,9 +2,8 @@ import chai from 'chai';
 const expect = chai.expect;
 
 import { UOARNumber, NumberTypes } from '../../src/uoar1/uoar_core.mjs';
-import { SignificandExponentPair } from '../../src/uoar1/ieee754_core.mjs';
 import {
-  IEEE754Number, IEEE754Formats, BINARY32, BINARY64, DECIMAL32, HEXADECIMAL32, POS_ZERO, NEG_ZERO, POS_INF, NEG_INF, QNAN, SNAN,
+  IEEE754Number, IEEE754Formats, SignificandExponentPair, BINARY32, BINARY64, DECIMAL32, HEXADECIMAL32, POS_ZERO, NEG_ZERO, POS_INF, NEG_INF, QNAN, SNAN,
   convertToIEEE754Binary32, convertToIEEE754Binary64, convertToIEEE754Decimal32DPD,
   convertToIEEE754Decimal32BID, convertToIEEE754Hexadecimal32,
   normalizeBinary, normalizeDecimal, normalizeHexadecimal, decimalToDPD, DPDtoDecimal, isValidIEEE754, toIEEE754Number,
