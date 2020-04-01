@@ -3,6 +3,13 @@ import { numberToBinary } from '../base_converter.mjs';
 import { createZeroString } from '../util.mjs';
 import { addToStackTrace, addToOutput } from '../output.mjs';
 
+/**
+ * Encodes the message using the CRC algorithm
+ * @param {string} message Message to encode 
+ * @param {string} generator CRC generator
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Message encoded using the given generator
+ */
 export function encodeCRC(message, generator, log=true){
   if(message=="" || generator==""){
     addToStackTrace("encodeCRC", "Empty input", log);
@@ -59,6 +66,13 @@ export function encodeCRC(message, generator, log=true){
   return res;
 }
 
+/**
+ * Decodes the message using the CRC algorithm
+ * @param {string} message Message to decode 
+ * @param {string} generator CRC generator
+ * @param {boolean} [log=true] Should log
+ * @returns {boolean} True if message is valid for given generator, false otherwise
+ */
 export function decodeCRC(message, generator, log=true){
   if(message=="" || generator==""){
     addToStackTrace("decodeCRC", "Empty input", log);
@@ -116,6 +130,12 @@ export function decodeCRC(message, generator, log=true){
   }
 }
 
+/**
+ * Encodes the message using the Hamming Single Error Correction algorithm
+ * @param {string} message Message to encode
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Message encoded using the Hamming SEC algorithm
+ */
 export function encodeHammingSEC(message, log=true){
   if(message.length!=8){
     addToStackTrace("encodeCRC", "Message must be 8 digits long", log);
@@ -208,6 +228,12 @@ export function encodeHammingSEC(message, log=true){
   return res;
 }
 
+/**
+ * Decodes the message using the Hamming Single Error Correction algorithm
+ * @param {string} message Message to decode
+ * @param {boolean} [log=true] Should log
+ * @returns {string} Message decoded and corrected using the Hamming SEC algorithm
+ */
 export function decodeHammingSEC(message, log=true){
   if(message.length!=12){
     addToStackTrace("encodeCRC", "Message must be 12 digits long", log);
@@ -330,6 +356,11 @@ export function decodeHammingSEC(message, log=true){
   return res;
 }
 
+/**
+ * Checks whether number is a valid binary string
+ * @param {string} number Number to check
+ * @returns {boolean} True if number is a valid binary string, false otherwise
+ */
 function isBinaryInteger(number){
   for(let i = 0; i<number.length; i++){
     if(number.charAt(i)!="0" && number.charAt(i)!="1"){
