@@ -1,13 +1,11 @@
 import { 
-  UOARNumber, NumberTypes, PRECISION, PRECISION_NUMBER, isValidNumber, getValueAt, toValue,
+  UOARNumber, NumberTypes, PRECISION, PRECISION_NUMBER, getValueAt, toValue,
   toUOARNumber, fractionToLength, trimNumber, standardizeUOARNumber
 } from '../uoar_core.mjs';
 import { baseToDecimalInteger } from '../base_converter.mjs';
 import { convertToSMR, convertToOC, convertToTC } from '../type_converter.mjs';
 import { isValidBase } from '../util.mjs';
 import { addToStackTrace, addToOutput } from '../output.mjs';
-
-import '../common.scss';
 
 /**
  * Converts a number from bases base_from to base_to
@@ -23,15 +21,15 @@ export function convertToBase(val, base_from, base_to, log=true){
     return null;
   }
   if(!isValidBase(base_from)){
-    addToStackTrace("convertBase", "Invalid base \"" + base1 + "\"", log);
+    addToStackTrace("convertBase", "Invalid base \"" + base_from + "\"", log);
     return null;
   }
   if(!isValidBase(base_to)){
-    addToStackTrace("convertBase", "Invalid base \"" + base2 + "\"", log);
+    addToStackTrace("convertBase", "Invalid base \"" + base_to + "\"", log);
     return null;
   }
 
-  let number = toUOARNumber(val, base_from, NumberTypes.SIGNED, log);
+  let number = standardizeUOARNumber(toUOARNumber(val, base_from, NumberTypes.SIGNED, log));
   if(number===null){
     addToStackTrace("convertBase", "Invalid number \"" + val + "\" for base " + base_from, log);
     return null;
@@ -189,16 +187,20 @@ export function convertToType(val, base, log=true){
     addToStackTrace("convertToType", "Empty input", log);
     return null;
   }
+  if(!isValidBase(base)){
+    addToStackTrace("convertToType", "Invalid base \"" + base + "\"", log);
+    return null;
+  }
     
-  let number = toUOARNumber(val, base, NumberTypes.SIGNED, false);
+  let number = standardizeUOARNumber(toUOARNumber(val, base, NumberTypes.SIGNED, false));
   if(number===null){
-    addToStackTrace("convertToType", "Invalid number \"" + val + "\" for base " + base_from, log);
+    addToStackTrace("convertToType", "Invalid number \"" + val + "\" for base " + base, log);
     return null;
   }
 
-  let number_smr = convertToSMR(number, false, true);
-  let number_oc = convertToOC(number, false, true);
-  let number_tc = convertToTC(number, false, true);
+  let number_smr = convertToSMR(number, true, true);
+  let number_oc = convertToOC(number, true, true);
+  let number_tc = convertToTC(number, true, true);
   if(number===null || number_smr===null || number_oc===null || number_tc===null){
     addToStackTrace("convertToType", "Conversion error", log);
     return null;

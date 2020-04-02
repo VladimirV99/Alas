@@ -485,6 +485,10 @@ describe('UOAR Core', function() {
 
   describe('standardizeUOARNumber', function() {
 
+    it('null value', function() {
+      expect(standardizeUOARNumber(null, false)).to.be.null;
+    });
+
     it('unsigned', function() {
       let number = new UOARNumber("", "0010", "50", 10, NumberTypes.UNSIGNED);
       let res = new UOARNumber("", "10", "5", 10, NumberTypes.UNSIGNED);

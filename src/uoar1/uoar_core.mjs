@@ -581,6 +581,10 @@ export function trimNumber(number){
  * @returns {UOARNumber} Standardized number
  */
 export function standardizeUOARNumber(number, log=true){
+  if(number===null){
+    addToStackTrace("standardizeUOARNumber", "Number is null", log);
+    return null;
+  }
   if(!isValidBase(number.base)){
     addToStackTrace("standardizeUOARNumber", "Invalid base \"" + number.base + "\"", log);
     return null;
