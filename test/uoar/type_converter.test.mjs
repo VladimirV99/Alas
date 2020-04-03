@@ -68,6 +68,19 @@ describe('Type Converter', function() {
       expect(convertToUnsigned(number, false, false)).to.be.null;
     });
 
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "00C4", "100", 16, NumberTypes.SIGNED);
+      let res = new UOARNumber("", "C4", "1", 16, NumberTypes.UNSIGNED);
+      expect(convertToUnsigned(number, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      convertToUnsigned(number, true, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertToSigned', function() {
@@ -127,6 +140,19 @@ describe('Type Converter', function() {
     it('invalid number', function() {
       let number = new UOARNumber("+", "G4", "1", 16, NumberTypes.SIGNED);
       expect(convertToSigned(number, false, false)).to.be.null;
+    });
+
+    it('not standardized', function() {
+      let number = new UOARNumber("", "00C4", "100", 16, NumberTypes.UNSIGNED);
+      let res = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      expect(convertToSigned(number, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("", "C4", "1", 16, NumberTypes.UNSIGNED);
+      let number_copy = number.copy();
+      convertToSigned(number, true, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -190,6 +216,19 @@ describe('Type Converter', function() {
       expect(convertToSMR(number, false, false)).to.be.null;
     });
 
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "00C4", "100", 16, NumberTypes.SIGNED);
+      let res = new UOARNumber("0", "C4", "1", 16, NumberTypes.SMR);
+      expect(convertToSMR(number, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      convertToSMR(number, true, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertToOC', function() {
@@ -249,6 +288,19 @@ describe('Type Converter', function() {
     it('invalid number', function() {
       let number = new UOARNumber("0", "G4", "1", 16, NumberTypes.OC);
       expect(convertToOC(number, false, false)).to.be.null;
+    });
+
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "00C4", "100", 16, NumberTypes.SIGNED);
+      let res = new UOARNumber("0", "C4", "1", 16, NumberTypes.OC);
+      expect(convertToOC(number, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      convertToOC(number, true, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -312,6 +364,19 @@ describe('Type Converter', function() {
       expect(convertToTC(number, false, false)).to.be.null;
     });
 
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "00C4", "100", 16, NumberTypes.SIGNED);
+      let res = new UOARNumber("0", "C4", "1", 16, NumberTypes.TC);
+      expect(convertToTC(number, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      convertToTC(number, true, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertToType', function() {
@@ -344,6 +409,19 @@ describe('Type Converter', function() {
       let number = new UOARNumber("F", "C4", "1", 16, NumberTypes.SMR);
       let res = new UOARNumber("F", "3B", "F", 16, NumberTypes.TC);
       expect(convertToType(number, NumberTypes.TC, true, false)).to.deep.equal(res);
+    });
+
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "00C4", "100", 16, NumberTypes.SIGNED);
+      let res = new UOARNumber("0", "C4", "1", 16, NumberTypes.TC);
+      expect(convertToType(number, NumberTypes.TC, false, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "C4", "1", 16, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      convertToType(number, NumberTypes.TC, true, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });

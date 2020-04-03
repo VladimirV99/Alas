@@ -87,6 +87,9 @@ export class IEEE754Number {
         return "invalid";
     }
   }
+  copy(){
+    return new IEEE754Number(this.sign, this.exponent, this.significand, this.format);
+  }
 }
 
 export const BINARY32_SPECIAL_VALUES = Object.freeze({

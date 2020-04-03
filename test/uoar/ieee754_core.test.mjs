@@ -80,6 +80,14 @@ describe('IEEE754 Core', function() {
       expect(convertToIEEE754Binary32(significand, exponent, true, false)).to.be.null;
     });
 
+    it('immutability', function() {
+      let significand = new UOARNumber("+", "19", "125", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      let exponent = "7";
+      convertToIEEE754Binary32(significand, exponent, true, false);
+      expect(significand).to.deep.equal(significand_copy);
+    });
+
   });
 
   describe('convertToIEEE754Binary64', function() {
@@ -147,6 +155,14 @@ describe('IEEE754 Core', function() {
       let significand = new UOARNumber("+", "1", "5", 10, NumberTypes.SIGNED);
       let exponent = (BINARY64.MAX_EXPONENT+1).toString();
       expect(convertToIEEE754Binary64(significand, exponent, true, false)).to.be.null;
+    });
+
+    it('immutability', function() {
+      let significand = new UOARNumber("-", "199", "625", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      let exponent = "0";
+      convertToIEEE754Binary64(significand, exponent, true, false);
+      expect(significand).to.deep.equal(significand_copy);
     });
 
   });
@@ -225,6 +241,14 @@ describe('IEEE754 Core', function() {
       expect(convertToIEEE754Decimal32DPD(significand, exponent, true, false)).to.be.null;
     });
 
+    it('immutability', function() {
+      let significand = new UOARNumber("-", "246", "8957", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      let exponent = "0";
+      convertToIEEE754Decimal32DPD(significand, exponent, true, false);
+      expect(significand).to.deep.equal(significand_copy);
+    });
+
   });
 
   describe('convertToIEEE754Decimal32BID', function() {
@@ -285,6 +309,14 @@ describe('IEEE754 Core', function() {
       let significand = new UOARNumber("+", "1", "", 10, NumberTypes.SIGNED);
       let exponent = (DECIMAL32.MAX_EXPONENT+1).toString();
       expect(convertToIEEE754Decimal32BID(significand, exponent, true, false)).to.be.null;
+    });
+
+    it('immutability', function() {
+      let significand = new UOARNumber("-", "14", "37", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      let exponent = "-15";
+      convertToIEEE754Decimal32BID(significand, exponent, true, false);
+      expect(significand).to.deep.equal(significand_copy);
     });
 
   });
@@ -356,6 +388,14 @@ describe('IEEE754 Core', function() {
       expect(convertToIEEE754Hexadecimal32(significand, exponent, true, false)).to.be.null;
     });
 
+    it('immutability', function() {
+      let significand = new UOARNumber("+", "202", "515625", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      let exponent = "0";
+      convertToIEEE754Hexadecimal32(significand, exponent, true, false);
+      expect(significand).to.deep.equal(significand_copy);
+    });
+
   });
 
   describe('normalizeBinary', function() {
@@ -386,6 +426,13 @@ describe('IEEE754 Core', function() {
       let normalized = normalizeBinary(significand, true, false);
       let res = new SignificandExponentPair(new UOARNumber("+", "1", "10011", 2, NumberTypes.SIGNED), 2, 0, "");
       expect(normalized).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let significand = new UOARNumber("+", "0", "011001", 2, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      normalizeBinary(significand, true, false);
+      expect(significand).to.deep.equal(significand_copy);
     });
 
   });
@@ -426,6 +473,13 @@ describe('IEEE754 Core', function() {
       expect(normalized).to.be.null;
     });
 
+    it('immutability', function() {
+      let significand = new UOARNumber("-", "0", "045781", 10, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      normalizeDecimal(significand, true, false);
+      expect(significand).to.deep.equal(significand_copy);
+    });
+
   });
 
   describe('normalizeHexadecimal', function() {
@@ -456,6 +510,13 @@ describe('IEEE754 Core', function() {
       let normalized = normalizeHexadecimal(significand, true, false);
       let res = new SignificandExponentPair(new UOARNumber("+", "0", "A50000", 16, NumberTypes.SIGNED), 16, 0, "");
       expect(normalized).to.deep.equal(res);
+    });
+
+    it('negative exponent', function() {
+      let significand = new UOARNumber("-", "0", "01F", 16, NumberTypes.SIGNED);
+      let significand_copy = significand.copy();
+      normalizeHexadecimal(significand, true, false);
+      expect(significand).to.deep.equal(significand_copy);
     });
 
   });
@@ -663,6 +724,13 @@ describe('IEEE754 Core', function() {
       expect(getSpecialValueBinary32(number_neg, false)).to.deep.equal(SNAN);
     });
 
+    it('immutability', function(){
+      let number = new IEEE754Number("0", "00000000", "00000000000000000000000", IEEE754Formats.BINARY32);
+      let number_copy = number.copy();
+      getSpecialValueBinary32(number, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('getSpecialValueBinary64', function() {
@@ -704,6 +772,13 @@ describe('IEEE754 Core', function() {
       expect(getSpecialValueBinary64(number_pos, false)).to.deep.equal(SNAN);
       let number_neg = new IEEE754Number("1", "11111111111", "0100000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
       expect(getSpecialValueBinary64(number_neg, false)).to.deep.equal(SNAN);
+    });
+
+    it('immutability', function(){
+      let number = new IEEE754Number("0", "00000000000", "0000000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
+      let number_copy = number.copy();
+      getSpecialValueBinary64(number, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -749,6 +824,13 @@ describe('IEEE754 Core', function() {
       expect(getSpecialValueDecimal32(number_neg, false)).to.deep.equal(SNAN);
     });
 
+    it('immutability', function(){
+      let number = new IEEE754Number("0", "01000111111", "00000000000000000000", IEEE754Formats.DECIMAL32DPD);
+      let number_copy = number.copy();
+      getSpecialValueDecimal32(number, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertFromIEEE754Binary32', function(){
@@ -773,6 +855,13 @@ describe('IEEE754 Core', function() {
     it('special value', function(){
       let number = new IEEE754Number("1", "11111111", "10000000000000000000000", IEEE754Formats.BINARY32);
       expect(convertFromIEEE754Binary32(number, false)).to.deep.equal(QNAN);
+    });
+
+    it('immutability', function(){
+      let number = new IEEE754Number("1", "10000110", "00010011010100000000000", IEEE754Formats.BINARY32);
+      let number_copy = number.copy();
+      convertFromIEEE754Binary32(number, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -801,6 +890,13 @@ describe('IEEE754 Core', function() {
       expect(convertFromIEEE754Binary64(number, false)).to.deep.equal(QNAN);
     });
 
+    it('normal number', function(){
+      let number = new IEEE754Number("1", "10000011001", "1011000000000000000000000000000000000000000000000000", IEEE754Formats.BINARY64);
+      let number_copy = number.copy();
+      convertFromIEEE754Binary64(number, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertFromIEEE754Decimal32DPD', function(){
@@ -819,6 +915,13 @@ describe('IEEE754 Core', function() {
     it('special value', function(){
       let number = new IEEE754Number("0", "11111000000", "00000000000000000000", IEEE754Formats.DECIMAL32DPD);
       expect(convertFromIEEE754Decimal32DPD(number, false)).to.deep.equal(QNAN);
+    });
+
+    it('immutability', function(){
+      let number = new IEEE754Number("0", "10000110010", "11100011100000000000", IEEE754Formats.DECIMAL32DPD);
+      let number_copy = number.copy();
+      convertFromIEEE754Decimal32DPD(number, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -841,6 +944,13 @@ describe('IEEE754 Core', function() {
       expect(convertFromIEEE754Decimal32BID(number, false)).to.deep.equal(QNAN);
     });
 
+    it('immutability', function(){
+      let number = new IEEE754Number("1", "11011010000", "00000000000000000000", IEEE754Formats.DECIMAL32BID);
+      let number_copy = number.copy();
+      convertFromIEEE754Decimal32BID(number, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertFromIEEE754Hexadecimal32', function(){
@@ -860,6 +970,13 @@ describe('IEEE754 Core', function() {
       let number = new IEEE754Number("1", "0000000", "000000010001000000000000", IEEE754Formats.HEXADECIMAL32);
       let res = new SignificandExponentPair(new UOARNumber("-", "17", "", 10, NumberTypes.SIGNED), 16, -67);
       expect(convertFromIEEE754Hexadecimal32(number, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function(){
+      let number = new IEEE754Number("0", "1000011", "001011100011100000000000", IEEE754Formats.HEXADECIMAL32);
+      let number_copy = number.copy();
+      convertFromIEEE754Hexadecimal32(number, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });

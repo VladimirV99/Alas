@@ -20,6 +20,12 @@ describe('Base Converter', function() {
       expect(UOARNumberToDecimalInteger(number, false, false)).to.be.null;
     });
 
+    it('not standardized', function() {
+      let number = new UOARNumber("00", "008AF", "4D00", 16, NumberTypes.TC);
+      let res = 2223;
+      expect(UOARNumberToDecimalInteger(number, false, false)).to.equal(res);
+    });
+
     it('positive number', function() {
       let number = new UOARNumber("0", "8AF", "4D", 16, NumberTypes.TC);
       let res = 2223;
@@ -32,17 +38,20 @@ describe('Base Converter', function() {
       expect(UOARNumberToDecimalInteger(number, false, false)).to.equal(res);
     });
 
-    it('mutability', function() {
+    it('immutability', function() {
       let number = new UOARNumber("", "25", "6", 10, NumberTypes.UNSIGNED);
       let number_copy = number.copy();
-      let res = 25;
-      expect(UOARNumberToDecimalInteger(number, false, false)).to.equal(res);
+      UOARNumberToDecimalInteger(number, false, false);
       expect(number).to.deep.equal(number_copy);
     });
 
   });
 
   describe('baseToDecimalInteger', function() {
+
+    it('invalid number', function() {
+      expect(baseToDecimalInteger("+-8AG", 16, NumberTypes.SIGNED, false)).to.be.null;
+    });
 
     it('without fraction', function() {
       expect(baseToDecimalInteger("+-8AF", 16, NumberTypes.SIGNED, false)).to.equal(-2223);
@@ -130,6 +139,13 @@ describe('Base Converter', function() {
       expect(toDecimal(number, true, false)).to.deep.equal(res);
     });
 
+    it('immutability', function() {
+      let number = new UOARNumber("", "8AF", "8", 16, NumberTypes.UNSIGNED);
+      let number_copy = number.copy();
+      toDecimal(number, true, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('fromDecimal', function() {
@@ -213,6 +229,13 @@ describe('Base Converter', function() {
       expect(fromDecimal(number, res.base, true, false)).to.deep.equal(res);
     });
 
+    it('immutability', function() {
+      let number = new UOARNumber("", "107", "125", 10, NumberTypes.UNSIGNED);
+      let number_copy = number.copy();
+      fromDecimal(number, 16, true, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('convertToBase', function() {
@@ -247,6 +270,13 @@ describe('Base Converter', function() {
       let number = new UOARNumber("7", "4257", "232", 8, NumberTypes.TC);
       let res = new UOARNumber("F", "8AF", "4D", 16, NumberTypes.TC);
       expect(convertToBase(number, res.base, true, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("0", "4257", "232", 8, NumberTypes.TC);
+      let number_copy = number.copy();
+      convertToBase(number, 16, true, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });

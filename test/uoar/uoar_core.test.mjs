@@ -354,6 +354,13 @@ describe('UOAR Core', function() {
       expect(isValidUOARNumber(number)).to.be.false;
     });
 
+    it('immutability', function() {
+      let number = new UOARNumber("99", "10", "50", 10, NumberTypes.TC);
+      let number_copy = number.copy();
+      isValidUOARNumber(number);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('isValidNumber', function() {
@@ -730,6 +737,14 @@ describe('UOAR Core', function() {
 
   describe('equalizeLength', function() {
 
+    it('null value', function() {
+      let number1 = new UOARNumber("+", "10", "5", 10, NumberTypes.SIGNED);
+      let number2 = null;
+      expect(equalizeLength(number1, number2, true, false)).to.be.false;
+      expect(number1).to.deep.equal(number1);
+      expect(number2).to.be.null;
+    });
+
     it('first larger whole', function() {
       let number1 = new UOARNumber("+", "2000", "", 10, NumberTypes.SIGNED);
       let number2 = new UOARNumber("-", "10", "", 10, NumberTypes.SIGNED);
@@ -770,20 +785,22 @@ describe('UOAR Core', function() {
       expect(number2).to.deep.equal(res2);
     });
 
-    it('null value', function() {
-      let number1 = new UOARNumber("+", "10", "5", 10, NumberTypes.SIGNED);
-      let number2 = null;
-      expect(equalizeLength(number1, number2, true, false)).to.be.false;
-      expect(number1).to.deep.equal(number1);
-      expect(number2).to.be.null;
-    });
-
     it('incompatible number types', function() {
       let number1 = new UOARNumber("+", "10", "5", 10, NumberTypes.SIGNED);
       let number2 = new UOARNumber("-", "10", "200", 10, NumberTypes.SMR);
       expect(equalizeLength(number1, number2, true, false)).to.be.false;
       expect(number1).to.deep.equal(number1);
       expect(number2).to.deep.equal(number2);
+    });
+
+    it('not standardized', function() {
+      let number1 = new UOARNumber("++", "02000", "", 10, NumberTypes.SIGNED);
+      let number2 = new UOARNumber("-+", "010", "", 10, NumberTypes.SIGNED);
+      let res1 = new UOARNumber("+", "2000", "", 10, NumberTypes.SIGNED);
+      let res2 = new UOARNumber("-", "0010", "", 10, NumberTypes.SIGNED);
+      expect(equalizeLength(number1, number2, false, false)).to.be.true;
+      expect(number1).to.deep.equal(res1);
+      expect(number2).to.deep.equal(res2);
     });
 
   });

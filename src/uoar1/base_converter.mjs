@@ -35,7 +35,7 @@ export function UOARNumberToDecimalInteger(number, standardized=false, log=true)
         break;
       case NumberTypes.OC:
       case NumberTypes.TC:
-        number = complement(number);
+        number = complement(number, standardized, log);
         break;
       default:
         return null;

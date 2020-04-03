@@ -22,7 +22,7 @@ describe('UOAR Arithmetic', function() {
 
     it('not standardized', function() {
       let number1 = new UOARNumber("0", "2B", "C3", 16, NumberTypes.TC);
-      let number2 = new UOARNumber("0", "010", "A1", 16, NumberTypes.TC);
+      let number2 = new UOARNumber("00", "010", "A10", 16, NumberTypes.TC);
       expect(isGreater(number1, number2, false, false)).to.be.true;
       expect(isGreater(number2, number1, false, false)).to.be.false;
     });
@@ -67,6 +67,16 @@ describe('UOAR Arithmetic', function() {
       let number2 = new UOARNumber("0", "10", "A1", 16, NumberTypes.TC);
       expect(isGreater(number1, number2, true, false)).to.be.true;
       expect(isGreater(number2, number1, true, false)).to.be.false;
+    });
+
+    it('immutability', function() {
+      let number1 = new UOARNumber("0", "10", "A1", 16, NumberTypes.TC);
+      let number1_copy = number1.copy();
+      let number2 = new UOARNumber("F", "2B", "C3", 16, NumberTypes.TC);
+      let number2_copy = number2.copy();
+      isGreater(number1, number2, true, false);
+      expect(number1).to.deep.equal(number1_copy);
+      expect(number2).to.deep.equal(number2_copy);
     });
 
   });
@@ -126,6 +136,13 @@ describe('UOAR Arithmetic', function() {
       expect(getAbsoluteValue(number, false)).to.deep.equal(res);
     });
 
+    it('immutability', function() {
+      let number = new UOARNumber("-", "10", "50", 10, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      getAbsoluteValue(number, false);
+      expect(number).to.deep.equal(number_copy);
+    });
+
   });
 
   describe('add', function() {
@@ -146,6 +163,13 @@ describe('UOAR Arithmetic', function() {
       let number1 = new UOARNumber("9", "10", "50", 10, NumberTypes.OC);
       let number2 = new UOARNumber("9", "20", "60", 10, NumberTypes.TC);
       expect(add(number1, number2, true, false)).to.be.null;
+    });
+
+    it('not standardized', function() {
+      let number1 = new UOARNumber("0", "10", "5", 10, NumberTypes.TC);
+      let number2 = new UOARNumber("00", "020", "60", 10, NumberTypes.TC);
+      let res = new UOARNumber("0", "31", "1", 10, NumberTypes.TC);
+      expect(add(number1, number2, false, false)).to.deep.equal(res);
     });
 
     it('unsigned', function() {
@@ -253,6 +277,16 @@ describe('UOAR Arithmetic', function() {
       expect(add(number1, number2, true, false)).to.deep.equal(res);
     });
 
+    it('immutability', function() {
+      let number1 = new UOARNumber("+", "10", "5", 10, NumberTypes.SIGNED);
+      let number1_copy = number1.copy();
+      let number2 = new UOARNumber("+", "20", "6", 10, NumberTypes.SIGNED);
+      let number2_copy = number2.copy();
+      add(number1, number2, true, false);
+      expect(number1).to.deep.equal(number1_copy);
+      expect(number2).to.deep.equal(number2_copy);
+    });
+
   });
 
   describe('complement', function() {
@@ -260,6 +294,12 @@ describe('UOAR Arithmetic', function() {
     it('invalid operand', function() {
       let number = new UOARNumber("+", "10", "A0", 10, NumberTypes.SIGNED);
       expect(complement(number, true, false)).to.be.null;
+    });
+
+    it('not standardized', function() {
+      let number = new UOARNumber("++", "010", "50", 10, NumberTypes.SIGNED);
+      let res = new UOARNumber("-", "010", "50", 10, NumberTypes.SIGNED);
+      expect(complement(number, false, false)).to.deep.equal(res);
     });
 
     it('unsigned', function() {
@@ -313,6 +353,13 @@ describe('UOAR Arithmetic', function() {
       let number = new UOARNumber("9", "10", "5", 10, NumberTypes.TC);
       let res = new UOARNumber("0", "89", "5", 10, NumberTypes.TC);
       expect(complement(number, true, false)).to.deep.equal(res);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "10", "5", 10, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      complement(number, true, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });
@@ -430,6 +477,13 @@ describe('UOAR Arithmetic', function() {
       let number_tc = new UOARNumber("9", "9", "6", 10, NumberTypes.TC);
       let res_tc = new UOARNumber("0", "0", "1", 10, NumberTypes.TC);
       expect(addToLowestPoint(number_tc, 5, false)).to.deep.equal(res_tc);
+    });
+
+    it('immutability', function() {
+      let number = new UOARNumber("+", "16", "", 10, NumberTypes.SIGNED);
+      let number_copy = number.copy();
+      addToLowestPoint(number, 5, false);
+      expect(number).to.deep.equal(number_copy);
     });
 
   });

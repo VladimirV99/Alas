@@ -101,8 +101,8 @@ export function getAbsoluteValue(number, log=true){
     case NumberTypes.OC:
     case NumberTypes.TC:
       let res = number.copy();
-      if(getSignMultiplierForNumber(number,false)==-1){
-        res = complement(res);
+      if(getSignMultiplierForNumber(number, false)==-1){
+        res = complement(res, false, log);
       }
       return res;
     default:
