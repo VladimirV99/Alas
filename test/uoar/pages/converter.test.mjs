@@ -91,7 +91,7 @@ describe('Converter', function() {
     it('invalid number', function() {
       let number = "186.3";
       let base = 7;
-      expect(convertToBase(number, base, false)).to.be.null;
+      expect(convertToType(number, base, false)).to.be.null;
     });
 
     it('not standardized', function() {

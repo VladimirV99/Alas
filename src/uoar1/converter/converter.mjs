@@ -17,21 +17,21 @@ import { addToStackTrace, addToOutput } from '../output.mjs';
  */
 export function convertToBase(val, base_from, base_to, log=true){
   if(val=="" || base_from=="" || base_to==""){
-    addToStackTrace("convertBase", "Empty input", log);
+    addToStackTrace("convertToBase", "Empty input", log);
     return null;
   }
   if(!isValidBase(base_from)){
-    addToStackTrace("convertBase", "Invalid base \"" + base_from + "\"", log);
+    addToStackTrace("convertToBase", "Invalid base \"" + base_from + "\"", log);
     return null;
   }
   if(!isValidBase(base_to)){
-    addToStackTrace("convertBase", "Invalid base \"" + base_to + "\"", log);
+    addToStackTrace("convertToBase", "Invalid base \"" + base_to + "\"", log);
     return null;
   }
 
-  let number = standardizeUOARNumber(toUOARNumber(val, base_from, NumberTypes.SIGNED, log));
+  let number = standardizeUOARNumber(toUOARNumber(val, base_from, NumberTypes.SIGNED, log), false);
   if(number===null){
-    addToStackTrace("convertBase", "Invalid number \"" + val + "\" for base " + base_from, log);
+    addToStackTrace("convertToBase", "Invalid number \"" + val + "\" for base " + base_from, log);
     return null;
   }
 
@@ -40,7 +40,7 @@ export function convertToBase(val, base_from, base_to, log=true){
   }
   let res = fromDecimal(toDecimal(number, log), base_to, log);
   if(res===null){
-    addToStackTrace("convertBase", "Conversion error", log);
+    addToStackTrace("convertToBase", "Conversion error", log);
   }
   return res;
 }
@@ -192,7 +192,7 @@ export function convertToType(val, base, log=true){
     return null;
   }
     
-  let number = standardizeUOARNumber(toUOARNumber(val, base, NumberTypes.SIGNED, false));
+  let number = standardizeUOARNumber(toUOARNumber(val, base, NumberTypes.SIGNED, false), false);
   if(number===null){
     addToStackTrace("convertToType", "Invalid number \"" + val + "\" for base " + base, log);
     return null;

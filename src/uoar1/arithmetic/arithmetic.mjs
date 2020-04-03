@@ -1,10 +1,10 @@
 import { 
-  UOARNumber, NumberTypes, PLUS, MINUS, trimSign, toUOARNumber,
+  UOARNumber, NumberTypes, PLUS, MINUS, trimSign, trimNumber, toUOARNumber,
   equalizeLength, getSignMultiplierForNumber, wholeToLength, toLength
 } from '../uoar_core.mjs';
 import { ShiftTypes, add, complement, shift } from '../uoar_arithmetic.mjs';
 import { fromDecimal, toDecimal } from '../base_converter.mjs';
-import { convertToType, convertToSigned } from '../type_converter.mjs';
+import { convertToType, convertToUnsigned, convertToSigned } from '../type_converter.mjs';
 import { createZeroString } from '../util.mjs';
 import { addToStackTrace, addToOutput } from '../output.mjs';
 
@@ -66,7 +66,8 @@ export function multiplyUnsigned(operand1, operand2, log=true){
       registers[1] = add(registers[1], m, true, log);
       work1 = "+" + m.toWhole() + "<br>" + registers[1].toWhole() + "<br>";
       if(registers[1].whole.length>m.whole.length){
-        registers[0].sign = registers[1].whole.charAt(0);
+        registers[0].sign = registers[1].sign;
+        registers[1].sign = registers[1].whole.charAt(0);
         registers[1].whole = registers[1].whole.substr(1);
       }
       work2 = work2.concat("A = A + M");
@@ -92,8 +93,10 @@ export function multiplyUnsigned(operand1, operand2, log=true){
   let AP = registers[1].toWhole() + registers[2].toWhole();
   let AP_frac_len = 2 * operand1.fraction.length;
   AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
-  let res = toUOARNumber(AP, 2, NumberTypes.TC, false);
-  addToOutput("Rezultat: (" + res.toSigned() + ")2");
+  let res = toUOARNumber(AP, 2, NumberTypes.TC, log);
+  addToOutput("Rezultat: (" + res.toSigned() + ")2 = ");
+  res = trimNumber(toDecimal(convertToUnsigned(res, false, log), true, log));
+  addToOutput(res.toUnsigned());
   addToOutput("</p>");
   return res;
 }
@@ -151,11 +154,11 @@ export function multiplyBooth(operand1, operand2, log=true){
     if(op=="00" || op=="11"){
       work2 = work2.concat("NOOP");
     }else if(op=="10"){
-      registers[0] = add(registers[0], neg_m, true, log);
+      registers[0] = wholeToLength(add(registers[0], neg_m, true, log), len-1, log);
       work1 = "+" + neg_m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
       work2 = work2.concat("A = A - M");
     }else if(op=="01"){
-      registers[0] = add(registers[0], m, true, log);
+      registers[0] = wholeToLength(add(registers[0], m, true, log), len-1, log);
       work1 = "+" + m.toWhole() + "<br>" + registers[0].toWhole() + "<br>";
       work2 = work2.concat("A = A + M"); 
     }
@@ -180,8 +183,10 @@ export function multiplyBooth(operand1, operand2, log=true){
   let AP = registers[0].toWhole() + registers[1].toWhole();
   let AP_frac_len = 2 * operand1.fraction.length;
   AP = AP.substr(0, AP.length-AP_frac_len) + "." + AP.substr(AP.length-AP_frac_len);
-  let res = toUOARNumber(AP, 2, NumberTypes.TC, false);
+  let res = toUOARNumber(AP, 2, NumberTypes.TC, log);
   addToOutput("Rezultat: (" + res.toSigned() + ")2");
+  res = trimNumber(toDecimal(convertToSigned(res, false, log), true, log));
+  addToOutput(res.toSigned());
   addToOutput("</p>");
   return res;
 }
@@ -243,7 +248,7 @@ export function multiplyModifiedBooth(operand1, operand2, log=true){
     coded_mults.unshift(2*mults[i]+mults[i+1]);
   }
 
-  let res = new UOARNumber("0", "0", "0", 2, NumberTypes.TC);
+  let res = new UOARNumber("0", "0", "", 2, NumberTypes.TC);
   let registers = [operand1];
 
   addToOutput("<table style=\"border: none;\"");
@@ -260,11 +265,11 @@ export function multiplyModifiedBooth(operand1, operand2, log=true){
       work1 = createZeroString(operand1.whole.length);
     }else if(coded_mults[i]==temp){
       work1 = multiplier.toWhole();
-      res = add(res, multiplier, false, log);
+      res = wholeToLength(add(res, multiplier, true, log), operand1.whole.length, log);
     }else if(coded_mults[i]==2*temp){
       multiplier.whole = multiplier.whole.substr(1) + "0";
       work1 = multiplier.toWhole();
-      res = add(res, multiplier, false, log);
+      res = wholeToLength(add(res, multiplier, true, log), operand1.whole.length, log);
     }
 
     addToOutput("<tr>");
@@ -279,10 +284,20 @@ export function multiplyModifiedBooth(operand1, operand2, log=true){
       return null;
     }
   }
+  addToOutput("<tr>");
+  addToOutput("<td colspan='3'></td>");
+  addToOutput("<td>" + res.toWhole() + "</td>");
+  addToOutput("</tr>");
+
   addToOutput("</tbody>");
   addToOutput("</table>");
 
-  addToOutput("<p>Rezultat: (" + res.toSigned() + ")2</p>");
+  addToOutput("<p>");
+  addToOutput("Rezultat: (" + res.toSigned() + ")2 = ");
+  res = trimNumber(toDecimal(convertToSigned(res, false, log), true, log));
+  addToOutput(res.toSigned());
+  addToOutput("</p>");
+
   return res;
 }
 
@@ -314,7 +329,7 @@ export function divideUnsigned(operand1, operand2, log=true){
   equalizeLength(operand1, operand2, true, log);
   let len = operand1.sign.length + operand1.whole.length;
 
-  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, operand1.fraction.length);
+  let a = toLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, operand1.fraction.length);
   let p = operand1;
   let m = operand2;
   let neg_m = complement(operand2, true, log);
@@ -361,13 +376,13 @@ export function divideUnsigned(operand1, operand2, log=true){
   addToOutput("</table>");
 
   addToOutput("<p>");
-  let quotient = toDecimal(registers[1], false, false);
+  let quotient = trimNumber(toDecimal(convertToUnsigned(registers[1], false, log)), true, log);
   addToOutput("Kolicnik: P = (" + registers[1].toWhole() + ")2 = " + quotient.toUnsigned() + "<br>");
-  let rest = toDecimal(registers[0], false ,false);
-  addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + rest.toUnsigned() + "<br>");
+  let remainder = trimNumber(toDecimal(convertToUnsigned(registers[0], false ,log)), true, log);
+  addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + remainder.toUnsigned() + "<br>");
   addToOutput("</p>");
   
-  return quotient;
+  return { quotient, remainder };
 }
 
 /**
@@ -390,12 +405,16 @@ export function divideSigned(operand1, operand2, log=true){
     return null;
   }
 
-  operand1 = convertToType(trimSign(operand1), NumberTypes.TC, true, log);
-  operand2 = convertToType(trimSign(operand2), NumberTypes.TC, true, log);
+  operand1 = convertToType(trimSign(operand1), NumberTypes.TC, false, log);
+  operand2 = convertToType(trimSign(operand2), NumberTypes.TC, false, log);
   equalizeLength(operand1, operand2, true, log);
   let len = operand1.sign.length + operand1.whole.length;
 
-  let a = toLength(new UOARNumber("0", "0", "0", 2, NumberTypes.TC), len-1, operand1.fraction.length);
+  let a;
+  if(getSignMultiplierForNumber(operand1, false)==1)
+    a = toLength(new UOARNumber("0", "0", "", 2, NumberTypes.TC), len-1, operand1.fraction.length);
+  else
+    a = toLength(new UOARNumber("1", "1", "", 2, NumberTypes.TC), len-1, operand1.fraction.length);
   let p = operand1;
   let m = operand2;
   let neg_m = complement(operand2, true, log);
@@ -431,17 +450,20 @@ export function divideSigned(operand1, operand2, log=true){
       return null;
     }
 
-    work1 = registers[0].toWhole() + "<br>"
-    registers[0] = wholeToLength(add(registers[0], operation==PLUS?m:neg_m, true, log), registers[0].whole.length, false);
+    work1 = registers[0].toWhole() + "<br>";
+    registers[0] = wholeToLength(add(registers[0], operation==PLUS?m:neg_m, true, log), registers[0].whole.length, log);
     work1 = work1 + operation + m.toWhole() + "<br>" + registers[0].toWhole();
     work2 = "A = A " + operation + " M";
 
-    if(registers[0].sign!=sign){
-      registers[0] = wholeToLength(add(registers[0], operation==PLUS?neg_m:m, true, log), registers[0].whole.length, false);
-      work1 = work1 + "<br>" + registers[0].toWhole();
-      work2 = work2 + "<br>A menja znak <br> Restauracija";
-    }else{
+    if(registers[0].sign==sign){
       registers[1].whole = registers[1].whole.substr(0, registers[1].whole.length-1) + "1";
+    }else if(registers[0].toWhole()==createZeroString(registers[0].toWhole().length) && registers[1].toWhole().charAt(im)=="0"){
+      registers[1].whole = registers[1].whole.substr(0, registers[1].whole.length-1) + "1";
+      work2 = work2 + "<br>AP" + (im+1) + "=0 , Prihvatamo";
+    }else{
+      registers[0] = wholeToLength(add(registers[0], operation==PLUS?neg_m:m, true, log), registers[0].whole.length, log);
+      work1 = work1 + "<br>" + registers[0].toWhole();
+      work2 = work2 + "<br>A menja znak <br> Restauracija";      
     }
 
     addToOutput("<td class=\"align-right\">" + work1 + "</td>");
@@ -453,7 +475,7 @@ export function divideSigned(operand1, operand2, log=true){
   addToOutput("</table>");
 
   addToOutput("<p>");
-  let quotient = convertToSigned(toDecimal(registers[1], false, false));
+  let quotient = trimNumber(toDecimal(convertToSigned(registers[1], false, log), true, log));
   if(operation==PLUS){
     quotient = complement(quotient, true, log);
     addToOutput("Kolicnik: -P = -(" + registers[1].toWhole() + ")2 = " + quotient.toSigned() + "<br>");
@@ -461,9 +483,9 @@ export function divideSigned(operand1, operand2, log=true){
     addToOutput("Kolicnik: P = (" + registers[1].toWhole() + ")2 = " + quotient.toSigned() + "<br>");
   }
   
-  let rest = convertToSigned(toDecimal(registers[0], false ,false));
-  addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + rest.toUnsigned() + "<br>");
+  let remainder = trimNumber(toDecimal(convertToSigned(registers[0], false, log), true, log));
+  addToOutput("Ostatak: A = (" + registers[0].toWhole() + ")2 = " + remainder.toSigned() + "<br>");
   addToOutput("</p>");
   
-  return quotient;
+  return { quotient, remainder };
 }

@@ -565,6 +565,8 @@ export function trimNumber(number){
           number.fraction = number.fraction.substr(0, i+1);
           break;
         }
+        if(i==0)
+          number.fraction = "";
       }
       break;
     default:
